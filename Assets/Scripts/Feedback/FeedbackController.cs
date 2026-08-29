@@ -252,7 +252,7 @@ public class FeedbackController : MonoBehaviour
 
     /// <summary>
     /// danger(位置)とprogress(時間)を合成し、殻の発光(eggCrackGlowController)へ渡す。
-    /// 仕様書5章: 
+    /// 仕様書5章: どちらか高い方を採用(Max)することで、2つの意味を1チャンネルに矛盾なく載せる。
     /// </summary>
     private void RecomputeVisualCrack()
     {

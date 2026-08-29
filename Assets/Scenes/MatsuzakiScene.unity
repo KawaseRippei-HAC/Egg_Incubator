@@ -1667,7 +1667,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7f54a80aaea394439b694928c10f72c8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::GameManager
-  eggTest: {fileID: 0}
 --- !u!4 &1879224678
 Transform:
   m_ObjectHideFlags: 0
@@ -1760,6 +1759,9 @@ GameObject:
   m_Component:
   - component: {fileID: 1977832798}
   - component: {fileID: 1977832797}
+  - component: {fileID: 1977832801}
+  - component: {fileID: 1977832800}
+  - component: {fileID: 1977832799}
   m_Layer: 0
   m_Name: GameManager
   m_TagString: Untagged
@@ -1784,10 +1786,15 @@ MonoBehaviour:
   gameProgress: 0
   dangerLevel: 0
   crackProgress: 0
+  successResultDelay: 3
   debugNormalizedDistance: 0
-  _timerManager: {fileID: 0}
-  _difficultyManager: {fileID: 0}
-  _eggStateController: {fileID: 0}
+  _timerManager: {fileID: 1977832801}
+  _difficultyManager: {fileID: 1977832800}
+  _eggStateController: {fileID: 1977832799}
+  _feedbackController: {fileID: 1879224679}
+  _uiController: {fileID: 1088077289}
+  _eggHatchController: {fileID: 2014392420}
+  _eggBreakController: {fileID: 2014392414}
 --- !u!4 &1977832798
 Transform:
   m_ObjectHideFlags: 0
@@ -1803,6 +1810,54 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1977832799
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1977832796}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c4322b9dcd1f4beeac75c9294fc1a233, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Gameplay.EggStateController
+  crackProgress: 0
+--- !u!114 &1977832800
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1977832796}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3258af4f5dca452fb33a66a26e7807a7, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Gameplay.DifficultyManager
+  minForceMultiplier: 1
+  maxForceMultiplier: 5
+  maxForceInterval: 2
+  minForceInterval: 0.5
+  minDirectionVariance: 0.1
+  maxDirectionVariance: 1
+  minMaxLinearSpeed: 2
+  maxMaxLinearSpeed: 8
+  minMaxAngularSpeed: 5
+  maxMaxAngularSpeed: 20
+--- !u!114 &1977832801
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1977832796}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cf37986fc0ef4eea8a71f01cf956492b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Gameplay.TimerManager
+  timeLimit: 120
 --- !u!1 &1984799489
 GameObject:
   m_ObjectHideFlags: 0
@@ -1891,7 +1946,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::EggBreakController
   shellWhole: {fileID: 2014392409}
   fracturedPieces: {fileID: 1691902211}
-  autoTriggerOnCollision: 1
+  autoTriggerOnCollision: 0
   groundTag: Ground
   baseExplosionForce: 0.3
   velocityForceMultiplier: 0.3

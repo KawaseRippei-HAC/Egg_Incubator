@@ -200,6 +200,8 @@
 //     }
 // }
 
+// スクリプトの最上部に追加
+using UnityEngine.InputSystem;
 using System.Collections;
 using Proto.Core;
 using UnityEngine;
@@ -241,6 +243,7 @@ namespace Gameplay
         // 自動発火するため必須ではないが、EggHatchControllerは自動発火の仕組みがないため
         // TriggerHatch()の呼び出し元が必要。ゲームループのテストのため暫定的に追加。要A/B担当確認。
         [SerializeField] private EggHatchController _eggHatchController = null;
+        [SerializeField] private EggBreakController _eggBreakController = null; // 2025/08/29追加: autoTriggerOnCollisionをoffにしたため、明示的にTriggerBreak()を呼ぶ必要がある
 
         public void StartIntro()
         {
@@ -329,11 +332,19 @@ namespace Gameplay
                 }
             }
             // Debug
-            if (Input.GetKeyDown(KeyCode.T)) StartIntro();         // Tキー: 画面タップ（Title -> Intro）
-            if (Input.GetKeyDown(KeyCode.L)) HandleEggLanded();
-            if (Input.GetKeyDown(KeyCode.F)) HandleEggFall();       // Fキーで落下開始
-            if (Input.GetKeyDown(KeyCode.G)) HandleGroundImpact();  // Gキーで地面衝突
-            if (Input.GetKeyDown(KeyCode.R)) Retry();
+            // if (Input.GetKeyDown(KeyCode.T)) StartIntro();         // Tキー: 画面タップ（Title -> Intro）
+            // if (Input.GetKeyDown(KeyCode.L)) HandleEggLanded();
+            // if (Input.GetKeyDown(KeyCode.F)) HandleEggFall();       // Fキーで落下開始
+            // if (Input.GetKeyDown(KeyCode.G)) HandleGroundImpact();  // Gキーで地面衝突
+            // if (Input.GetKeyDown(KeyCode.R)) Retry();
+            if (Keyboard.current != null)
+            {
+                if (Keyboard.current.tKey.wasPressedThisFrame) StartIntro();         // Tキー: 画面タップ（Title -> Intro）
+                if (Keyboard.current.lKey.wasPressedThisFrame) HandleEggLanded();
+                if (Keyboard.current.fKey.wasPressedThisFrame) HandleEggFall();       // Fキーで落下開始
+                if (Keyboard.current.gKey.wasPressedThisFrame) HandleGroundImpact();  // Gキーで地面衝突
+                if (Keyboard.current.rKey.wasPressedThisFrame) Retry();
+            }
             
 
         }
@@ -369,6 +380,11 @@ namespace Gameplay
             // NOTE: 視覚的な破壊(殻の破片化)自体はEggBreakController.autoTriggerOnCollision=true
             // であれば地面(Groundタグ)との物理衝突で自動発火する想定。手動発火にしたい場合は
             // EggBreakControllerの参照を追加しTriggerBreak()を呼ぶ運用に変更してください。
+            // 2025/08/29修正: 上記NOTEの通り autoTriggerOnCollisionをfalseにしたため、ここで明示的にTriggerBreak()を呼ぶ。
+            if (_eggBreakController != null)
+            {
+                _eggBreakController.TriggerBreak();
+            }
 
             _gameResult = GameResult.FAILURE;
             _gameState = GameState.RESULT;
