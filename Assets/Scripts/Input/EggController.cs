@@ -116,10 +116,9 @@ public class EggController : MonoBehaviour
     }
     public void DropEgg()
     {
+        rb.isKinematic = false;
         rb.linearVelocity = Vector3.zero;
         rb.angularVelocity = Vector3.zero;
-
-        rb.isKinematic = false;
 
         forceTimer = 0f;
 
