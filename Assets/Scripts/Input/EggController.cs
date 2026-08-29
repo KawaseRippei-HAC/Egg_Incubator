@@ -1,8 +1,9 @@
 ﻿using UnityEngine;
+using UnityEngine.Serialization;
 
 // 共通データ構造体（難易度のパラメータ群）
 [System.Serializable]
-public struct DifficultyParams
+public struct DebugDifficultyParams
 {
     [Tooltip("力の強さの倍率（1.0が基準）")]
     public float forceMultiplier;
@@ -37,16 +38,17 @@ public class EggController : MonoBehaviour
     [Tooltip("1回のアクションで加わる力の最大値。一気に吹っ飛ぶのを防ぎます")]
     public float maxForceMagnitude = 8.0f;
 
+    [FormerlySerializedAs("difficulty")]
     [Header("現在の難易度状況 (デバッグ確認用)")]
     [Tooltip("ゲーム進行度に応じて変化するパラメータ。実行中にここの数値が変わります")]
-    public DifficultyParams difficulty;
+    public DebugDifficultyParams debugDifficulty;
 
     void Start()
     {
         rb = GetComponent<Rigidbody>();
 
         // テスト用の初期値（後でManagerからSetDifficultyで上書きされる想定）
-        difficulty = new DifficultyParams
+        debugDifficulty = new DebugDifficultyParams
         {
             forceMultiplier = 1.0f,
             forceInterval = 0.5f,
@@ -64,7 +66,7 @@ public class EggController : MonoBehaviour
     {
         forceTimer += Time.fixedDeltaTime;
         // 指定した秒数（forceInterval）が経過したら、タマゴを暴れさせる
-        if (forceTimer >= difficulty.forceInterval)
+        if (forceTimer >= debugDifficulty.forceInterval)
         {
             ApplyInternalForce();
             forceTimer = 0f;
@@ -92,11 +94,11 @@ public class EggController : MonoBehaviour
 
         // 3. 最終的な力の算出と上限の適用
         // 押し出す力
-        Vector3 appliedForce = forceDir * (baseForce * difficulty.forceMultiplier * safeMultiplier);
+        Vector3 appliedForce = forceDir * (baseForce * debugDifficulty.forceMultiplier * safeMultiplier);
         appliedForce = Vector3.ClampMagnitude(appliedForce, maxForceMagnitude); // 一定以上の力にならないよう制限
 
         // 回転させる力
-        Vector3 appliedTorque = Random.onUnitSphere * (baseTorque * difficulty.forceMultiplier);
+        Vector3 appliedTorque = Random.onUnitSphere * (baseTorque * debugDifficulty.forceMultiplier);
 
         // 4. 力の適用
         rb.AddForce(appliedForce, ForceMode.Impulse);
@@ -120,9 +122,9 @@ public class EggController : MonoBehaviour
 
     // --- 外部連携用メソッド ---
     // Managerスクリプトから、難易度を更新するために呼ばれる
-    public void SetDifficulty(DifficultyParams newParams)
+    public void SetDifficulty(DebugDifficultyParams newParams)
     {
-        difficulty = newParams;
+        debugDifficulty = newParams;
     }
 
     public Vector3 GetPosition() { return transform.position; }

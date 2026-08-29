@@ -81,7 +81,7 @@ namespace Gameplay
                 Debug.Log(gameProgress);
                 if (_difficultyManager != null)
                 {
-                    DifficultyParams currentDifficulty = _difficultyManager.GetDifficultyParams(gameProgress);
+                    DifficultyParams currentDebugDifficulty = _difficultyManager.GetDifficultyParams(gameProgress);
                     // TODO: A担当のEggControllerへ currentDifficulty を渡す ( eggController.SetDifficulty(currentDifficulty) )
                     float currentDistance = debugNormalizedDistance; 
                 
