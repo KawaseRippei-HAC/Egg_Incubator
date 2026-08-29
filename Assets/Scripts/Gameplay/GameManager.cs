@@ -23,7 +23,7 @@ namespace Gameplay
         
         [Header("Reference")]
         [SerializeField] private TimerManager _timerManager = null;
-        // [SerializeField] private DifficultyMangaer _difficultyManger = null;
+        [SerializeField] private DifficultyManager _difficultyManger = null;
         // [SerializeField] private EggController _eggController = null;
         // [SerializeField] private EggFallDetector _eggFallDetector = null;
         // [SerializeField] private PanController  _panController = null;
@@ -73,6 +73,12 @@ namespace Gameplay
             {
                 _timerManager.UpdateTimer();
                 gameProgress = _timerManager.GetProgress();
+                if (_difficultyManger != null)
+                {
+                    DifficultyParams currentDifficulty = _difficultyManger.GetDifficultyParams(gameProgress);
+                    // TODO: A担当のEggControllerへ currentDifficulty を渡す ( eggController.SetDifficulty(currentDifficulty) )
+                }
+                
                 if (_timerManager.IsTimeUp())
                 {
                     Success();
