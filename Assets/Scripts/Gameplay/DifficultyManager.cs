@@ -1,5 +1,5 @@
-using Proto.Core;
 using UnityEngine;
+using Proto.Core;
 
 namespace Gameplay
 {
@@ -31,14 +31,11 @@ namespace Gameplay
 
             DifficultyParams parameters = new DifficultyParams();
             
-            // progressに応じて各値を連続補間(Lerp)する
             parameters.forceMultiplier = Mathf.Lerp(minForceMultiplier, maxForceMultiplier, progress);
-            // Intervalのみ、時間が進むにつれて値が小さく（間隔が短く）なる点に注意
             parameters.forceInterval = Mathf.Lerp(maxForceInterval, minForceInterval, progress); 
             parameters.directionVariance = Mathf.Lerp(minDirectionVariance, maxDirectionVariance, progress);
             parameters.maxLinearSpeed = Mathf.Lerp(minMaxLinearSpeed, maxMaxLinearSpeed, progress);
             parameters.maxAngularSpeed = Mathf.Lerp(minMaxAngularSpeed, maxMaxAngularSpeed, progress);
-            
             return parameters;
         }
 
