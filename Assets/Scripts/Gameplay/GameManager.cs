@@ -15,6 +15,8 @@ namespace Gameplay
         [SerializeField] private float gameProgress = 0f;
         [SerializeField] private float dangerLevel = 0f;
         [SerializeField] private float crackProgress = 0f;
+        // フィードバック担当の演出完了を待つための疑似的な遅延時間
+        [SerializeField] private float successResultDelay = 3f;
         
         [Header("Debug")]
         [SerializeField, Range(0f,1f)] private float debugNormalizedDistance = 0f;
@@ -144,14 +146,32 @@ namespace Gameplay
 
         public void Success()
         {
-            // TODO: 120秒到達時のHATCHING移行処理（Phase B9）
-            Debug.Log("Success");
+            if (_gameState != GameState.PLAYING) return;
+            _gameState = GameState.HATCHING;
+            Debug.Log("[GameManager] 120秒到達！ HATCHING状態へ移行し、孵化を待機します。");
+            
+            if (_timerManager != null)
+            {
+                _timerManager.StopTimer();
+            }
+
+            if (_eggStateController != null)
+            {
+                _eggStateController.Hatch();
+            }
+
+            StartCoroutine(SuccessSequence());
         }
 
         public IEnumerator SuccessSequence()
         {
-            // TODO: 孵化演出待ちとSUCCESS Result移行処理（Phase B9）
-            yield return null;
+            yield return new WaitForSeconds(successResultDelay);
+            
+            _gameResult = GameResult.SUCCESS;
+            _gameState = GameState.RESULT;
+            
+            // TODO: C担当へ通知 ( uiController.ShowSuccessResult() )
+            Debug.Log("[GameManager] 孵化完了！ SUCCESS RESULT画面へ進みます。");
         }
 
         public void Retry()

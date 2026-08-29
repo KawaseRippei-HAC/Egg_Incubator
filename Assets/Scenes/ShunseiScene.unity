@@ -156,6 +156,7 @@ MonoBehaviour:
   gameProgress: 0
   dangerLevel: 0
   crackProgress: 0
+  successResultDelay: 3
   debugNormalizedDistance: 0
   _timerManager: {fileID: 152586456}
   _difficultyManager: {fileID: 152586457}
@@ -187,7 +188,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: cf37986fc0ef4eea8a71f01cf956492b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Gameplay.TimerManager
-  timeLimit: 120
+  timeLimit: 5
 --- !u!114 &152586457
 MonoBehaviour:
   m_ObjectHideFlags: 0
