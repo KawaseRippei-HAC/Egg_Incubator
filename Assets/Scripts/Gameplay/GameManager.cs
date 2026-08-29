@@ -37,6 +37,7 @@ namespace Gameplay
         // [SerializeField] private EggFallDetector _eggFallDetector = null;
         [SerializeField] private PanController _panController = null;
         [SerializeField] private EggController _eggController = null;
+        [SerializeField] private GroundImpactDetector  _groundImpactDetector = null;
         // [SerializeField] private EggStateController _eggStateController = null;
         // [SerializeField] private FeedbackController _feedbackController = null;
         // [SerializeField] private UIController _uiController = null;
@@ -46,6 +47,7 @@ namespace Gameplay
             if (_eggController != null)
             {
                 _eggController.OnEggLanded += HandleEggLanded;
+                _groundImpactDetector.OnGroundImpact += HandleGroundImpact;
                 //eggController.OnGroundImpact += HandleGroundImpact;
             }
             // if (eggFallDetector != null)
@@ -59,7 +61,7 @@ namespace Gameplay
             if (_eggController != null)
             {
                 _eggController.OnEggLanded -= HandleEggLanded;
-                //eggController.OnGroundImpact -= HandleGroundImpact;
+                _groundImpactDetector.OnGroundImpact -= HandleGroundImpact;
             }
             // if (eggFallDetector != null)
             // {
