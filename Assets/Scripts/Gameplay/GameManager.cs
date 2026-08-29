@@ -34,16 +34,36 @@ namespace Gameplay
         public void StartIntro()
         {
             // TODO: TITLEからINTROへの遷移処理（Phase B5）
+            if (_gameState != GameState.TITLE && _gameState != GameState.RESULT) return;
+            
+            _gameState = GameState.INTRO;
+            Debug.Log("[GameManager] Intro開始！ タイマーはまだ動かず、卵が落下します。");
+            // TODO: A担当の eggController.DropEgg() を呼ぶ
+            // TODO: C担当のUIやフィードバックを呼ぶ
         }
         
         public void HandleEggLanded()
         {
             // TODO: 卵着地時の処理（Phase B5）
+            if (_gameState != GameState.INTRO) return;
+            
+            Debug.Log("[GameManager] フライパンに着地！ ゲームを開始します。");
+            StartGame();
+            
         }
 
         public void StartGame()
         {
             // TODO: PLAYING移行とTimer開始処理（Phase B5）
+            _gameState = GameState.PLAYING;
+
+            // 着地してPLAYINGになった瞬間からタイマーを開始
+            if (_timerManager != null)
+            {
+                _timerManager.StartTimer();
+            }
+        
+            Debug.Log("[GameManager] PLAYING開始！ 60秒タイマーが動き出します。");
         }
 
         public void Update()
@@ -59,10 +79,13 @@ namespace Gameplay
                 }
             }
             // Debug
+            if (Input.GetKeyDown(KeyCode.T)) StartIntro();         // Tキー: 画面タップ（Title -> Intro）
+            if (Input.GetKeyDown(KeyCode.L)) HandleEggLanded();
             if (Input.GetKeyDown(KeyCode.F)) HandleEggFall();       // Fキーで落下開始
             if (Input.GetKeyDown(KeyCode.G)) HandleGroundImpact();  // Gキーで地面衝突
             if (Input.GetKeyDown(KeyCode.R)) Retry();
             
+
         }
 
         public void HandleEggFall()
