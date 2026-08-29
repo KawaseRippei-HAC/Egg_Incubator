@@ -4,15 +4,15 @@ using UnityEngine.Events;
 public class GroundImpactDetector : MonoBehaviour
 {
     public string targetTag = "Player";
-    public UnityEvent onGroundImpact;
+    public System.Action OnGroundImpact;
 
-    // •¨—“I‚ÉÕ“Ë‚µ‚½uŠÔ‚ÉŒÄ‚Î‚ê‚éi’n–Ê‚Åƒ^ƒ}ƒS‚ğƒoƒEƒ“ƒh‚³‚¹‚½‚¢E~‚ß‚½‚¢ê‡j
+    // ï¿½ï¿½ï¿½ï¿½ï¿½Iï¿½ÉÕ“Ë‚ï¿½ï¿½ï¿½ï¿½uï¿½Ô‚ÉŒÄ‚Î‚ï¿½ï¿½iï¿½nï¿½Ê‚Åƒ^ï¿½}ï¿½Sï¿½ï¿½ï¿½oï¿½Eï¿½ï¿½ï¿½hï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Eï¿½~ï¿½ß‚ï¿½ï¿½ï¿½ï¿½ê‡ï¿½j
     private void OnCollisionEnter(Collision collision)
     {
         if (collision.gameObject.CompareTag(targetTag))
         {
-            Debug.Log("[GroundImpactDetector] ’n–Ê‚ÉŒƒ“Ë‚µ‚½I");
-            onGroundImpact.Invoke();
+            Debug.Log("[GroundImpactDetector] ï¿½nï¿½Ê‚ÉŒï¿½ï¿½Ë‚ï¿½ï¿½ï¿½ï¿½I");
+            OnGroundImpact.Invoke();
         }
     }
 }
