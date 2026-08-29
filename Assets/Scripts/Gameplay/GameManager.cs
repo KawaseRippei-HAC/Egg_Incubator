@@ -16,6 +16,9 @@ namespace Gameplay
         [SerializeField] private float dangerLevel = 0f;
         [SerializeField] private float crackProgress = 0f;
         
+        [Header("Debug")]
+        [SerializeField, Range(0f,1f)] private float debugNormalizedDistance = 0f;
+        
         public float Progress => gameProgress;
         public float DangerLevel => dangerLevel;
         public float CrackProgress => crackProgress;
@@ -23,7 +26,7 @@ namespace Gameplay
         
         [Header("Reference")]
         [SerializeField] private TimerManager _timerManager = null;
-        [SerializeField] private DifficultyManager _difficultyManger = null;
+        [SerializeField] private DifficultyManager _difficultyManager = null;
         // [SerializeField] private EggController _eggController = null;
         // [SerializeField] private EggFallDetector _eggFallDetector = null;
         // [SerializeField] private PanController  _panController = null;
@@ -73,10 +76,23 @@ namespace Gameplay
             {
                 _timerManager.UpdateTimer();
                 gameProgress = _timerManager.GetProgress();
-                if (_difficultyManger != null)
+                Debug.Log(gameProgress);
+                if (_difficultyManager != null)
                 {
-                    DifficultyParams currentDifficulty = _difficultyManger.GetDifficultyParams(gameProgress);
+                    DifficultyParams currentDifficulty = _difficultyManager.GetDifficultyParams(gameProgress);
                     // TODO: A担当のEggControllerへ currentDifficulty を渡す ( eggController.SetDifficulty(currentDifficulty) )
+                    float currentDistance = debugNormalizedDistance; 
+                
+                    /* 本実装時は以下のようにA担当から値を取得する
+                    if (eggController != null && panController != null)
+                    {
+                        currentDistance = panController.GetNormalizedDistanceFromCenter(eggController.GetPosition());
+                    }
+                    */
+
+                    dangerLevel = _difficultyManager.CalculateDanger(currentDistance);
+
+                    // TODO: C担当へ渡す ( feedbackController.UpdateDangerFeedback(dangerLevel) )
                 }
                 
                 if (_timerManager.IsTimeUp())

@@ -41,6 +41,11 @@ namespace Gameplay
             
             return parameters;
         }
+
+        public float CalculateDanger(float normalizedDistance)
+        {
+            return Mathf.Clamp01(normalizedDistance);
+        }
     }
     
 }
