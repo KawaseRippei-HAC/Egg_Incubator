@@ -2,35 +2,53 @@ using UnityEngine;
 
 public class PanController : MonoBehaviour
 {
-    [Header("ƒtƒ‰ƒCƒpƒ“‚Ì‘€ìİ’è")]
-    [Tooltip("ƒtƒ‰ƒCƒpƒ“‚ªŒX‚­Å‘åŠp“x")]
+    [Header("ãƒ•ãƒ©ã‚¤ãƒ‘ãƒ³ã®æ“ä½œè¨­å®š")]
+    [Tooltip("ãƒ•ãƒ©ã‚¤ãƒ‘ãƒ³ãŒå‚¾ãæœ€å¤§è§’åº¦")]
     [SerializeField] private float maxAngle = 25.0f;
 
-    [Tooltip("ƒXƒ}ƒz‚ğŒX‚¯‚½‚Æ‚«‚ÌŠ´“x")]
+    [Tooltip("ã‚¹ãƒãƒ›å´ã®å‚¾ãã‚’ã©ã®ãã‚‰ã„åæ˜ ã™ã‚‹ã‹ã®æ„Ÿåº¦")]
     [SerializeField] private float sensitivity = 1.5f;
 
-    [Tooltip("ƒtƒ‰ƒCƒpƒ“‚Ì“®‚«‚ÌŠŠ‚ç‚©‚³B”’l‚ğ‰º‚°‚é‚Æ‚Ê‚é‚Á‚ÆAã‚°‚é‚ÆƒLƒrƒLƒr")]
+    [Tooltip("ãƒ•ãƒ©ã‚¤ãƒ‘ãƒ³ã®å‹•ãã®æ»‘ã‚‰ã‹ã•ã€‚æ•°å€¤ãŒå¤§ãã„ã¨ç´ æ—©ãã€å°ã•ã„ã¨ã‚†ã£ãŸã‚Š")]
     [SerializeField] private float smoothSpeed = 10.0f;
+
+    [Header("å±é™ºåº¦åˆ¤å®š (2025/08/29è¿½åŠ )")]
+    [Tooltip("åµãŒã“ã®åŠå¾„(ãƒ¯ãƒ¼ãƒ«ãƒ‰å˜ä½)ã ã‘ãƒ‘ãƒ³ä¸­å¿ƒã‹ã‚‰é›¢ã‚Œã‚‹ã¨å±é™ºåº¦1.0(=ãƒ‘ãƒ³ã®å¤–)ã¨ã¿ãªã™ã€‚" +
+             "ãƒ‘ãƒ³ã®å®Ÿå¯¸ã«åˆã‚ã›ã¦èª¿æ•´ã—ã¦ãã ã•ã„")]
+    [SerializeField] private float effectiveRadius = 1.0f;
 
     void Start()
     {
-        // ’[––‚ÌƒWƒƒƒCƒƒZƒ“ƒT[‚ğ—LŒø‰»
+        // ç«¯æœ«ã®ã‚¸ãƒ£ã‚¤ãƒ­ã‚»ãƒ³ã‚µãƒ¼ã‚’æœ‰åŠ¹åŒ–
         Input.gyro.enabled = true;
     }
 
     void Update()
     {
-        // ƒXƒ}ƒz‚Ì‰Á‘¬“xƒZƒ“ƒT[‚ğæ“¾‚µ‚ÄAŒX‚«‚ğŒŸ’m
+        // ã‚¹ãƒãƒ›ã®åŠ é€Ÿåº¦ã‚»ãƒ³ã‚µãƒ¼ã‚’å–å¾—ã—ã¦ã€å‚¾ãã‚’æ¤œçŸ¥
         Vector3 accel = Input.acceleration;
 
-        // ƒXƒ}ƒz‚Ìc‚ÌŒX‚«‚Æ‰¡‚ÌŒX‚«‚ğŒvZ‚µAÅ‘åŠp“x ‚Å§ŒÀ‚µ‚Ü‚·B
+        // ã‚¹ãƒãƒ›ã®ç¸¦ã®å‚¾ãã¨æ¨ªã®å‚¾ãã‚’è¨ˆç®—ã—ã€æœ€å¤§è§’åº¦ã§åˆ¶é™ã—ã¾ã™ã€‚
         float pitch = Mathf.Clamp(accel.y * sensitivity * maxAngle, -maxAngle, maxAngle);
         float roll = Mathf.Clamp(-accel.x * sensitivity * maxAngle, -maxAngle, maxAngle);
 
-        // –Ú“I‚Æ‚È‚éƒtƒ‰ƒCƒpƒ“‚ÌŠp“x‚ğì¬
+        // ç›®çš„ã¨ãªã‚‹ãƒ•ãƒ©ã‚¤ãƒ‘ãƒ³ã®è§’åº¦ã‚’ä½œæˆ
         Quaternion targetRot = Quaternion.Euler(pitch, 0f, roll);
 
-        // Œ»İ‚ÌŠp“x‚©‚ç–Ú“I‚ÌŠp“x‚ÖAŠŠ‚ç‚©‚É‰ñ“]‚³‚¹‚é
+        // ç¾åœ¨ã®è§’åº¦ã‹ã‚‰ç›®çš„ã®è§’åº¦ã¸ã€æ»‘ã‚‰ã‹ã«å›è»¢ã•ã›ã‚‹
         transform.localRotation = Quaternion.Slerp(transform.localRotation, targetRot, Time.deltaTime * smoothSpeed);
+    }
+
+    /// <summary>
+    /// åµã®æ°´å¹³ä½ç½®(XZå¹³é¢)ãŒãƒ‘ãƒ³ä¸­å¿ƒã‹ã‚‰ã©ã‚Œã ã‘é›¢ã‚Œã¦ã„ã‚‹ã‹ã‚’0ã€œ1(ä»¥ä¸Š)ã§è¿”ã™ã€‚
+    /// 1.0ä»¥ä¸Šã§ãƒ‘ãƒ³ã®ç¸ã®å¤–ã«å‡ºãŸã¨ã¿ãªã™ã€‚GameManager.Update()ã‹ã‚‰dangerLevelç®—å‡ºã«ä½¿ã†ã€‚
+    /// EggFallDetectorã‹ã‚‰ã€Œãƒ‘ãƒ³ã‚’å¤–ã‚ŒãŸã‹ã€ã®åˆ¤å®šã«ã‚‚ä½¿ã†ã€‚
+    /// </summary>
+    public float GetNormalizedDistanceFromCenter(Vector3 worldPosition)
+    {
+        Vector3 toEgg = worldPosition - transform.position;
+        toEgg.y = 0f; // é«˜ã•ã¯ç„¡è¦–ã—ã€æ°´å¹³è·é›¢ã ã‘ã§åˆ¤å®šã™ã‚‹
+        if (effectiveRadius <= 0f) return 0f;
+        return toEgg.magnitude / effectiveRadius;
     }
 }
