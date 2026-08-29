@@ -265,7 +265,7 @@ namespace Gameplay
             // if (_panController != null) _panController.ResetPan();
             //
             // if (_uiController != null) _uiController.ShowTitle();
-
+            if (_eggController != null) _eggController.ResetEgg();
             // 状態をリセットして開始シーケンスへ戻る
             StartIntro();
             Debug.Log("[GameManager] リトライ！ 各種値をリセットし、Introへ戻ります。");
