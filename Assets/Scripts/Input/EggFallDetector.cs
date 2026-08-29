@@ -15,7 +15,7 @@ using Proto.Core;
 public class EggFallDetectorInput : MonoBehaviour
 {
     [Header("参照")]
-    [Tooltip("卵とパンの距離判定に使う。パンの実寸に合わせてPanController側のeffectiveRadiusを調整すること")]
+    [Tooltip("卵とパンの距離判定に使う。パンの実寸に合わせてPanController側のpanRadiusを調整すること")]
     public PanController panController;
 
     [Tooltip("状態遷移の通知先")]
