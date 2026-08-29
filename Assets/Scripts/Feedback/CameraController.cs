@@ -23,6 +23,8 @@ public class CameraController : MonoBehaviour
 
     [Header("危険シェイクの強さ (仕様書統合ガイド5.1節のCameraShake実装例を流用可)")]
     public float shakeMagnitude = 0.15f;
+    [Tooltip("この危険度を超えたときだけ揺れ始める(「落ちそう」という臨界警告用。常時揺れると意味が薄れるため)")]
+    public float dangerShakeThreshold = 0.6f;
 
     [Header("落下追従")]
     public float followSpeed = 4f;
@@ -111,14 +113,18 @@ public class CameraController : MonoBehaviour
         _fallTarget = null;
     }
 
-    /// <summary>危険度が高い間、微小な揺れを加える。FeedbackControllerから毎フレーム呼んでもよい</summary>
+    /// <summary>危険度が閾値(dangerShakeThreshold)を超えている間だけ、微小な揺れを加える。
+    /// 「落ちそう」という臨界警告用の演出であり、常時弱く揺らすものではない。
+    /// FeedbackControllerから毎フレーム呼んでよい</summary>
     public void PlayDangerShake(float danger)
     {
-        _currentDanger = Mathf.Clamp01(danger);
+        float clamped = Mathf.Clamp01(danger);
+        float range = Mathf.Max(1f - dangerShakeThreshold, 0.0001f);
+        _currentDanger = Mathf.Clamp01((clamped - dangerShakeThreshold) / range);
 
         if (_mode == Mode.Normal || _mode == Mode.Shake)
         {
-            _mode = _currentDanger > 0.01f ? Mode.Shake : Mode.Normal;
+            _mode = clamped >= dangerShakeThreshold ? Mode.Shake : Mode.Normal;
         }
     }
 

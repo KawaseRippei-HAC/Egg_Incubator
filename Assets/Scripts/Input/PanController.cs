@@ -16,10 +16,14 @@ public class PanController : MonoBehaviour
     [Tooltip("フライパンの半径(中心から端までの距離)。この値で危険度の最大ラインが決まります")]
     public float panRadius = 0.4f;
 
+    private Rigidbody rb;
+    private Quaternion targetRot = Quaternion.identity;
+
     void Start()
     {
         // 端末のジャイロセンサーを有効化
         Input.gyro.enabled = true;
+        rb = GetComponent<Rigidbody>();
     }
 
     void Update()
@@ -32,10 +36,16 @@ public class PanController : MonoBehaviour
         float roll = Mathf.Clamp(-accel.x * sensitivity * maxAngle, -maxAngle, maxAngle);
 
         // 目的となるフライパンの角度を作成
-        Quaternion targetRot = Quaternion.Euler(pitch, 0f, roll);
+        targetRot = Quaternion.Euler(pitch, 0f, roll);
+    }
 
+    void FixedUpdate()
+    {
         // 現在の角度から目的の角度へ、滑らかに回転させる
-        transform.localRotation = Quaternion.Slerp(transform.localRotation, targetRot, Time.deltaTime * smoothSpeed);
+        // (Kinematic Rigidbodyの回転はRigidbody.MoveRotation()で適用しないと、
+        //  物理エンジンが速度を正しく計算できず上に乗っている物体が異常に弾かれることがあるため)
+        Quaternion nextRot = Quaternion.Slerp(rb.rotation, targetRot, Time.deltaTime * smoothSpeed);
+        rb.MoveRotation(nextRot);
     }
     public float GetNormalizedDistanceFromCenter(Vector3 eggPosition)
     {
