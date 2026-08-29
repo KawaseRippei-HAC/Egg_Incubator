@@ -107,6 +107,17 @@ namespace Gameplay
 
         public void Update()
         {
+            if (Input.GetMouseButtonDown(0))
+            {
+                if (gameState == GameState.TITLE)
+                {
+                    StartIntro();
+                }
+                else if (gameState == GameState.RESULT)
+                {
+                    Retry();
+                }
+            }
             // TODO: PLAYING状態での毎フレーム更新処理（Timer, progress, dangerLevelの更新など）
             if (gameState == GameState.PLAYING && _timerManager != null)
             {
@@ -166,8 +177,6 @@ namespace Gameplay
             if (Input.GetKeyDown(KeyCode.F)) HandleEggFall();       // Fキーで落下開始
             if (Input.GetKeyDown(KeyCode.G)) HandleGroundImpact();  // Gキーで地面衝突
             if (Input.GetKeyDown(KeyCode.R)) Retry();
-            
-
         }
 
         public void HandleEggFall()
