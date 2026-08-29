@@ -35,10 +35,9 @@ namespace Gameplay
         
         // [Header("References A")]
         // [SerializeField] private EggFallDetector _eggFallDetector = null;
-        [SerializeField] private PanController  _panController = null;
+        [SerializeField] private PanController _panController = null;
         [SerializeField] private EggController _eggController = null;
-        //
-        // [Header("References C")]
+        // [SerializeField] private EggStateController _eggStateController = null;
         // [SerializeField] private FeedbackController _feedbackController = null;
         // [SerializeField] private UIController _uiController = null;
         
@@ -117,14 +116,22 @@ namespace Gameplay
                 if (_difficultyManager != null)
                 {
                     DifficultyParams currentDifficulty = _difficultyManager.GetDifficultyParams(gameProgress);
-                    float currentDistance = debugNormalizedDistance; //仮の値
-                    
-                    // float currentDistance = 0f;
-                    // if (eggController != null && panController != null)
-                    // {
-                    //     eggController.SetDifficulty(currentDifficulty);
-                    //     currentDistance = panController.GetNormalizedDistanceFromCenter(eggController.GetPosition());
-                    // }
+
+                    // TODO: A担当のEggControllerへ currentDifficulty を渡す ( eggController.SetDifficulty(currentDifficulty) )
+                    if(_eggController != null)
+                    {
+                        _eggController.SetDifficulty(currentDifficulty);
+                    }
+                    //Debug.Log($"[難易度変化] 進行度:{gameProgress:F2} | 力の倍率:{currentDifficulty.forceMultiplier:F2} | 発生間隔:{currentDifficulty.forceInterval:F2}秒 | 速度上限:{currentDifficulty.maxLinearSpeed:F1}");
+
+                    float currentDistance = debugNormalizedDistance; 
+                
+                    /* 本実装時は以下のようにA担当から値を取得する
+                    if (eggController != null && panController != null)
+                    {
+                        currentDistance = panController.GetNormalizedDistanceFromCenter(eggController.GetPosition());
+                    }
+                    */
 
                     dangerLevel = _difficultyManager.CalculateDanger(currentDistance);
                 }

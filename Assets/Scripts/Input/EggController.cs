@@ -1,19 +1,5 @@
 ﻿using UnityEngine;
-using UnityEngine.Serialization;
-
-// 共通データ構造体（難易度のパラメータ群）
-[System.Serializable]
-public struct DebugDifficultyParams
-{
-    [Tooltip("力の強さの倍率（1.0が基準）")]
-    public float forceMultiplier;
-
-    [Tooltip("力が加わる間隔（秒）。小さいほど頻繁に暴れます")]
-    public float forceInterval;
-
-    [Tooltip("方向のばらつき（0.0〜1.0）。今回は水平方向のランダム度合いに影響します")]
-    public float directionVariance;
-}
+using Proto.Core;
 
 [RequireComponent(typeof(Rigidbody))]
 public class EggController : MonoBehaviour
@@ -40,20 +26,20 @@ public class EggController : MonoBehaviour
 
     [FormerlySerializedAs("difficulty")]
     [Header("現在の難易度状況 (デバッグ確認用)")]
-    [Tooltip("ゲーム進行度に応じて変化するパラメータ。実行中にここの数値が変わります")]
-    public DebugDifficultyParams debugDifficulty;
+    [Tooltip("ゲーム進行度に応じて変化するパラメータ")]
+    public DifficultyParams difficulty;
 
     void Start()
     {
         rb = GetComponent<Rigidbody>();
 
-        // テスト用の初期値（後でManagerからSetDifficultyで上書きされる想定）
-        debugDifficulty = new DebugDifficultyParams
-        {
-            forceMultiplier = 1.0f,
-            forceInterval = 0.5f,
-            directionVariance = 0.3f
-        };
+        //// テスト用の初期値（後でManagerからSetDifficultyで上書きされる想定）
+        //difficulty = new DifficultyParams
+        //{
+        //    forceMultiplier = 1.0f,
+        //    forceInterval = 0.5f,
+        //    directionVariance = 0.3f
+        //};
     }
 
     void FixedUpdate()
@@ -108,15 +94,15 @@ public class EggController : MonoBehaviour
     private void LimitVelocity()
     {
         // 移動速度(Linear Speed)が上限を超えていたら、方向はそのままに速度だけ上限値に抑える
-        if (rb.linearVelocity.magnitude > maxLinearSpeed)
+        if (rb.linearVelocity.magnitude > difficulty.maxLinearSpeed)
         {
-            rb.linearVelocity = rb.linearVelocity.normalized * maxLinearSpeed;
+            rb.linearVelocity = rb.linearVelocity.normalized * difficulty.maxLinearSpeed;
         }
 
         // 回転速度(Angular Speed)が上限を超えていたら、同様に上限値に抑える
-        if (rb.angularVelocity.magnitude > maxAngularSpeed)
+        if (rb.angularVelocity.magnitude > difficulty.maxAngularSpeed)
         {
-            rb.angularVelocity = rb.angularVelocity.normalized * maxAngularSpeed;
+            rb.angularVelocity = rb.angularVelocity.normalized * difficulty.maxAngularSpeed;
         }
     }
 
