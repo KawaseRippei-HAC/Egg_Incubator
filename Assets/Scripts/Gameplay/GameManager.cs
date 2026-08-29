@@ -16,8 +16,8 @@ namespace Gameplay
         [SerializeField] private float dangerLevel = 0f;
         [SerializeField] private float crackProgress = 0f;
         
-        // [Header("Reference")]
-        // [SerializeField] private TimerManger _timerManger = null;
+        [Header("Reference")]
+        [SerializeField] private TimerManager _timerManager = null;
         // [SerializeField] private DifficultyMangaer _difficultyManger = null;
         // [SerializeField] private EggController _eggController = null;
         // [SerializeField] private EggFallDetector _eggFallDetector = null;
@@ -44,6 +44,17 @@ namespace Gameplay
         public void Update()
         {
             // TODO: PLAYING状態での毎フレーム更新処理（Timer, progress, dangerLevelの更新など）
+            if (_gameState == GameState.PLAYING && _timerManager != null)
+            {
+                _timerManager.UpdateTimer();
+                gameProgress = _timerManager.GetProgress();
+                Debug.Log("gameProgress" + gameProgress);
+                if (_timerManager.IsTimeUp())
+                {
+                    Success();
+                }
+            }
+            
         }
 
         public void HandleEggFall()
@@ -59,6 +70,7 @@ namespace Gameplay
         public void Success()
         {
             // TODO: 120秒到達時のHATCHING移行処理（Phase B9）
+            Debug.Log("Success");
         }
 
         public IEnumerator SuccessSequence()
