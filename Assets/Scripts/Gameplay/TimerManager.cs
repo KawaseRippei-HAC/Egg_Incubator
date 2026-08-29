@@ -29,7 +29,7 @@ namespace Gameplay
 
         public float GetProgress()
         {
-            if (timeLimit > 0f) return 1f;
+            if (timeLimit <= 0f) return 1f;
             return Mathf.Clamp01(elapsedTime / timeLimit);
             
         }
@@ -37,6 +37,11 @@ namespace Gameplay
         public bool IsTimeUp()
         {
             return elapsedTime > timeLimit;
+        }
+
+        public void ResetTimer()
+        {
+            elapsedTime = 0f;
         }
     }
 }

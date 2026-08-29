@@ -27,7 +27,7 @@ namespace Gameplay
         [Header("Reference")]
         [SerializeField] private TimerManager _timerManager = null;
         [SerializeField] private DifficultyManager _difficultyManager = null;
-        // [SerializeField] private EggController _eggController = null;
+        [SerializeField] private EggStateController _eggStateController = null;
         // [SerializeField] private EggFallDetector _eggFallDetector = null;
         // [SerializeField] private PanController  _panController = null;
         // [SerializeField] private EggStateController _eggStateController = null;
@@ -95,6 +95,14 @@ namespace Gameplay
                     // TODO: C担当へ渡す ( feedbackController.UpdateDangerFeedback(dangerLevel) )
                 }
                 
+                crackProgress = gameProgress;
+
+                if (_eggStateController != null)
+                {
+                    _eggStateController.SetCrackProgress(crackProgress);
+                }
+                // TODO: C担当へ渡す ( feedbackController.UpdateCrackFeedback(crackProgress) )
+                
                 if (_timerManager.IsTimeUp())
                 {
                     Success();
@@ -156,9 +164,14 @@ namespace Gameplay
 
             if (_timerManager != null)
             {
-                _timerManager.StopTimer();
+                _timerManager.ResetTimer();
             }
             // TODO: 他クラスの初期化 (EggStateController, FeedbackController, PanController)
+            
+            if (_eggStateController != null)
+            {
+                _eggStateController.ResetState();
+            }
 
             // 状態をリセットして開始シーケンスへ戻る
             StartIntro();
