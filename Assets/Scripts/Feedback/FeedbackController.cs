@@ -355,5 +355,6 @@ public class FeedbackController : MonoBehaviour
 
         cameraController?.ResetCamera();
         audioController?.PlayBGM(AudioController.BGMType.Title);
+        uiController?.ShowTitle();
     }
 }
