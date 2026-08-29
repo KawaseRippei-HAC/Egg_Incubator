@@ -23,7 +23,7 @@ namespace Gameplay
             if (isRunning)
             {
                 elapsedTime += Time.deltaTime;
-                Debug.Log("elapsedTime" + elapsedTime);
+                // Debug.Log("elapsedTime" + elapsedTime);
             }
         }
 
