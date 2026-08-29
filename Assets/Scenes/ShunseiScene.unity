@@ -130,6 +130,7 @@ GameObject:
   - component: {fileID: 152586455}
   - component: {fileID: 152586454}
   - component: {fileID: 152586456}
+  - component: {fileID: 152586457}
   m_Layer: 0
   m_Name: GameObject
   m_TagString: Untagged
@@ -155,6 +156,7 @@ MonoBehaviour:
   dangerLevel: 0
   crackProgress: 0
   _timerManager: {fileID: 152586456}
+  _difficultyManger: {fileID: 152586457}
 --- !u!4 &152586455
 Transform:
   m_ObjectHideFlags: 0
@@ -183,6 +185,28 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Gameplay.TimerManager
   timeLimit: 120
+--- !u!114 &152586457
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 152586453}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3258af4f5dca452fb33a66a26e7807a7, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Gameplay.DifficultyManager
+  minForceMultiplier: 1
+  maxForceMultiplier: 5
+  maxForceInterval: 2
+  minForceInterval: 0.5
+  minDirectionVariance: 0.1
+  maxDirectionVariance: 1
+  minMaxLinearSpeed: 2
+  maxMaxLinearSpeed: 8
+  minMaxAngularSpeed: 5
+  maxMaxAngularSpeed: 20
 --- !u!1 &1865602464
 GameObject:
   m_ObjectHideFlags: 0
