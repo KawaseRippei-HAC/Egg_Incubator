@@ -12,7 +12,7 @@ using Proto.Core;
 ///   2. その後、Groundタグの付いたコライダーに接触した瞬間      → HandleGroundImpact()
 /// </summary>
 [RequireComponent(typeof(Rigidbody))]
-public class EggFallDetector : MonoBehaviour
+public class EggFallDetectorInput : MonoBehaviour
 {
     [Header("参照")]
     [Tooltip("卵とパンの距離判定に使う。パンの実寸に合わせてPanController側のeffectiveRadiusを調整すること")]

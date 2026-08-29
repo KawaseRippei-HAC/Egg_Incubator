@@ -35,9 +35,9 @@ namespace Gameplay
         [SerializeField] private EggStateController _eggStateController = null;
 
         [Header("References A")]
-        // [SerializeField] private EggFallDetector _eggFallDetector = null;
         [SerializeField] private PanController _panController = null;
         [SerializeField] private EggController _eggController = null;
+        [SerializeField] private GroundImpactDetector _groundImpactDetector = null;
 
         [Header("References C")]
         [SerializeField] private FeedbackController _feedbackController = null;
@@ -59,31 +59,41 @@ namespace Gameplay
         private Quaternion _eggInitialRotation;
         private bool _eggInitialCaptured;
 
-        // private void OnEnable()
-        // {
-        //     if (eggController != null)
-        //     {
-        //         eggController.OnEggLanded += HandleEggLanded;
-        //         eggController.OnGroundImpact += HandleGroundImpact;
-        //     }
-        //     if (eggFallDetector != null)
-        //     {
-        //         eggFallDetector.OnEggFall += HandleEggFall;
-        //     }
-        // }
-        //
-        // private void OnDisable()
-        // {
-        //     if (eggController != null)
-        //     {
-        //         eggController.OnEggLanded -= HandleEggLanded;
-        //         eggController.OnGroundImpact -= HandleGroundImpact;
-        //     }
-        //     if (eggFallDetector != null)
-        //     {
-        //         eggFallDetector.OnEggFall -= HandleEggFall;
-        //     }
-        // }
+        private void OnEnable()
+        {
+            if (_eggController != null)
+            {
+                _eggController.OnEggLanded += HandleEggLanded;
+            }
+
+            if (_groundImpactDetector != null)
+            {
+                _groundImpactDetector.OnGroundImpact += HandleGroundImpact;
+            }
+
+            if (_eggFallDetector != null)
+            {
+                _eggFallDetector.OnEggFall += HandleEggFall;
+            }
+        }
+
+        private void OnDisable()
+        {
+            if (_eggController != null)
+            {
+                _eggController.OnEggLanded -= HandleEggLanded;
+            }
+
+            if (_groundImpactDetector != null)
+            {
+                _groundImpactDetector.OnGroundImpact -= HandleGroundImpact;
+            }
+
+            if (_eggFallDetector != null)
+            {
+                _eggFallDetector.OnEggFall -= HandleEggFall;
+            }
+        }
 
         private void Awake()
         {
@@ -109,8 +119,10 @@ namespace Gameplay
             gameState = GameState.INTRO;
             Debug.Log("[GameManager] Intro開始！ タイマーはまだ動かず、卵が落下します。");
 
-            // TODO: A担当の eggController.DropEgg() を呼ぶ
-            // if (eggController != null) eggController.DropEgg();
+            if (_eggController != null)
+            {
+                _eggController.DropEgg();
+            }
 
             // 2025/08/29追加: ここで初めて卵の物理演算を有効化し、実際に落下させる。
             // (以前はRigidbodyが最初から非Kinematicだったため、Tキーを押す前から自由落下していた)
@@ -155,6 +167,18 @@ namespace Gameplay
 
         public void Update()
         {
+            // タップでの進行操作: TITLE中のタップでStartIntro()、RESULT中のタップでRetry()
+            if (Input.GetMouseButtonDown(0))
+            {
+                if (gameState == GameState.TITLE)
+                {
+                    StartIntro();
+                }
+                else if (gameState == GameState.RESULT)
+                {
+                    Retry();
+                }
+            }
             // TODO: PLAYING状態での毎フレーム更新処理（Timer, progress, dangerLevelの更新など）
             if (gameState == GameState.PLAYING && _timerManager != null)
             {
@@ -361,11 +385,13 @@ namespace Gameplay
                 _eggRigidbody.isKinematic = true;
             }
 
-            // 状態をリセットして開始シーケンスへ
-            // 2025/08/29修正: EggFallDetectorも次ラウンドで再判定できるようリセットする。
-            if (_eggFallDetector != null)
+            if (_panController != null)
             {
-                _eggFallDetector.ResetForTesting();
+                _panController.ResetPan();
+            }
+            if (_eggController != null)
+            {
+                _eggController.ResetEgg();
             }
 
             // 2025/08/29仕様変更: 以前はRetry()から自動でStartIntro()を呼んで卵を落とし直していたが、
