@@ -3,19 +3,22 @@ using UnityEngine.Events;
 
 public class EggFallDetector : MonoBehaviour
 {
-    [Tooltip("”»’è‚·‚é‘ÎÛ‚Ìƒ^ƒO")]
+    [Tooltip("ï¿½ï¿½ï¿½è‚·ï¿½ï¿½ÎÛ‚Ìƒ^ï¿½O")]
     public string targetTag = "Player";
 
-    [Tooltip("ƒ^ƒ}ƒS‚ª’Ê‰ß‚µ‚½‚ÉŒÄ‚Î‚ê‚éƒCƒxƒ“ƒg")]
-    public UnityEvent onEggFall;
+    [Tooltip("ï¿½^ï¿½}ï¿½Sï¿½ï¿½ï¿½Ê‰ß‚ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ÉŒÄ‚Î‚ï¿½ï¿½Cï¿½xï¿½ï¿½ï¿½g")]
+    public event System.Action OnEggFall;
 
-    // Is Trigger ‚ªƒIƒ“‚ÌƒIƒuƒWƒFƒNƒg‚ğ’Ê‰ß‚µ‚½‚ÉŒÄ‚Î‚ê‚é
+    // Is Trigger ï¿½ï¿½ï¿½Iï¿½ï¿½ï¿½ÌƒIï¿½uï¿½Wï¿½Fï¿½Nï¿½gï¿½ï¿½Ê‰ß‚ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ÉŒÄ‚Î‚ï¿½ï¿½
     private void OnTriggerEnter(Collider other)
     {
+        // â–¼ è¿½åŠ ï¼šä½•ã‹ãŒè§¦ã‚ŒãŸç¬é–“ã«çµ¶å¯¾ã«ãƒ­ã‚°ã‚’å‡ºã™
+        Debug.Log($"[EggFallDetector] ä½•ã‹ãŒã‚¨ãƒªã‚¢ã«å…¥ã‚Šã¾ã—ãŸï¼ ç›¸æ‰‹ã®åå‰: {other.gameObject.name}, ã‚¿ã‚°: {other.tag}, æ¤œçŸ¥ã—ãŸã„ã‚¿ã‚°: {targetTag}");
+
         if (other.CompareTag(targetTag))
         {
-            Debug.Log("[EggFallDetector] ƒtƒ‰ƒCƒpƒ“‚©‚ç—‚¿‚½I");
-            onEggFall.Invoke();
+            Debug.Log("[EggFallDetector] ã‚¿ãƒ¼ã‚²ãƒƒãƒˆã®è½ä¸‹ã‚’æ¤œçŸ¥ã—ã¾ã—ãŸï¼");
+            OnEggFall?.Invoke();
         }
     }
 }

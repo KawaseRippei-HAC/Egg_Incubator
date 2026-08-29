@@ -50,6 +50,8 @@ public class EggController : MonoBehaviour
 
     void FixedUpdate()
     {
+        if (!hasLanded) return;
+        
         UpdateEgg();
         LimitVelocity(); // 毎フレーム、速度が上限を超えないように監視・制限する
     }
@@ -99,13 +101,19 @@ public class EggController : MonoBehaviour
 
     private void LimitVelocity()
     {
-        // 移動速度(Linear Speed)が上限を超えていたら、方向はそのままに速度だけ上限値に抑える
-        if (rb.linearVelocity.magnitude > difficulty.maxLinearSpeed)
+        // 水平方向（XとZ）の速度だけを取り出す
+        Vector3 horizontalVelocity = new Vector3(rb.linearVelocity.x, 0f, rb.linearVelocity.z);
+
+        // 水平方向の速度が上限を超えていたら制限
+        if (horizontalVelocity.magnitude > difficulty.maxLinearSpeed)
         {
-            rb.linearVelocity = rb.linearVelocity.normalized * difficulty.maxLinearSpeed;
+            horizontalVelocity = horizontalVelocity.normalized * difficulty.maxLinearSpeed;
+            
+            // Y軸（落下や跳ねる速度）はそのまま維持して再設定する
+            rb.linearVelocity = new Vector3(horizontalVelocity.x, rb.linearVelocity.y, horizontalVelocity.z);
         }
 
-        // 回転速度(Angular Speed)が上限を超えていたら、同様に上限値に抑える
+        // 回転速度(Angular Speed)が上限を超えていたら上限値に抑える
         if (rb.angularVelocity.magnitude > difficulty.maxAngularSpeed)
         {
             rb.angularVelocity = rb.angularVelocity.normalized * difficulty.maxAngularSpeed;
@@ -144,9 +152,9 @@ public class EggController : MonoBehaviour
     public void ResetEgg()
     {
         // 物理演算を一時停止（DropEggが呼ばれるまで空中で待機させる）
-        rb.isKinematic = true;
         rb.linearVelocity = Vector3.zero;
         rb.angularVelocity = Vector3.zero;
+        rb.isKinematic = true;
 
         // 初期位置と回転に戻す
         transform.position = initialPosition;
