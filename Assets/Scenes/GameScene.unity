@@ -342,6 +342,17 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &296710678 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 3415610956995016542, guid: 081caa81b86cb4680a5cae97f2f0242d, type: 3}
+  m_PrefabInstance: {fileID: 1518377600}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 028b047f0214a5d478cce38c349dc98c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::EggController
 --- !u!1 &336254472
 GameObject:
   m_ObjectHideFlags: 0
@@ -467,7 +478,7 @@ GameObject:
   - component: {fileID: 429211704}
   m_Layer: 0
   m_Name: Prim.00000000
-  m_TagString: Untagged
+  m_TagString: Pan
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -789,7 +800,7 @@ GameObject:
   - component: {fileID: 981780620}
   m_Layer: 0
   m_Name: Prim.00000000
-  m_TagString: Untagged
+  m_TagString: Pan
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -1004,8 +1015,8 @@ MonoBehaviour:
   _timerManager: {fileID: 236180037}
   _difficultyManager: {fileID: 336254473}
   _eggStateController: {fileID: 1368307371}
-  _panController: {fileID: 0}
-  _eggController: {fileID: 0}
+  _panController: {fileID: 1702614853}
+  _eggController: {fileID: 296710678}
 --- !u!4 &1057775480
 Transform:
   m_ObjectHideFlags: 0
@@ -1742,7 +1753,7 @@ GameObject:
   - component: {fileID: 1620897315}
   m_Layer: 0
   m_Name: nwar
-  m_TagString: Untagged
+  m_TagString: Pan
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -1870,6 +1881,17 @@ MonoBehaviour:
     modifyNameEnabled: 1
   modified: 0
   modifiedChildren: 0
+--- !u!114 &1702614853 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 2105076881805096727, guid: f865321086457468b81d4d39c04d0741, type: 3}
+  m_PrefabInstance: {fileID: 1606553167}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8b260f65d441fbd42b55aae209ba6076, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PanController
 --- !u!1 &1763051107
 GameObject:
   m_ObjectHideFlags: 0
@@ -1882,7 +1904,7 @@ GameObject:
   - component: {fileID: 1763051109}
   m_Layer: 0
   m_Name: fer
-  m_TagString: Untagged
+  m_TagString: Pan
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0

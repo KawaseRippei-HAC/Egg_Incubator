@@ -84,35 +84,6 @@ namespace Gameplay
         //         eggFallDetector.OnEggFall -= HandleEggFall;
         //     }
         // }
-        // [SerializeField] private EggStateController _eggStateController = null;
-        // [SerializeField] private FeedbackController _feedbackController = null;
-        // [SerializeField] private UIController _uiController = null;
-        
-        private void OnEnable()
-        {
-            if (_eggController != null)
-            {
-                _eggController.OnEggLanded += HandleEggLanded;
-                //eggController.OnGroundImpact += HandleGroundImpact;
-            }
-            // if (eggFallDetector != null)
-            // {
-            //     eggFallDetector.OnEggFall += HandleEggFall;
-            // }
-        }
-        
-        private void OnDisable()
-        {
-            if (_eggController != null)
-            {
-                _eggController.OnEggLanded -= HandleEggLanded;
-                //eggController.OnGroundImpact -= HandleGroundImpact;
-            }
-            // if (eggFallDetector != null)
-            // {
-            //     eggFallDetector.OnEggFall -= HandleEggFall;
-            // }
-        }
 
         private void Awake()
         {
@@ -147,7 +118,6 @@ namespace Gameplay
             {
                 _eggRigidbody.isKinematic = false;
             }
-            if (_eggController != null) _eggController.DropEgg();
             // TODO: C担当のUIやフィードバックを呼ぶ
         }
 
