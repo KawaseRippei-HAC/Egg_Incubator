@@ -1,15 +1,17 @@
 using System.Collections;
 using Proto.Core;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 namespace Gameplay
 {
     
     public class GameManager : MonoBehaviour
     {
+        [FormerlySerializedAs("_gameState")]
         [Header("Game State")]
-        [SerializeField] private GameState _gameState = GameState.TITLE;
-        [SerializeField] private GameResult _gameResult = GameResult.NONE;
+        [SerializeField] private GameState gameState = GameState.TITLE;
+        [SerializeField] private GameResult gameResult = GameResult.NONE;
 
         [Header("Game Values")] 
         [SerializeField] private float gameProgress = 0f;
@@ -24,50 +26,81 @@ namespace Gameplay
         public float Progress => gameProgress;
         public float DangerLevel => dangerLevel;
         public float CrackProgress => crackProgress;
-        public GameState CurrentState => _gameState;
+        public GameState CurrentState => gameState;
         
-        [Header("Reference")]
+        [Header("Reference B")]
         [SerializeField] private TimerManager _timerManager = null;
         [SerializeField] private DifficultyManager _difficultyManager = null;
         [SerializeField] private EggStateController _eggStateController = null;
+        
+        // [Header("References A")]
         // [SerializeField] private EggFallDetector _eggFallDetector = null;
         [SerializeField] private PanController _panController = null;
         [SerializeField] private EggController _eggController = null;
         // [SerializeField] private EggStateController _eggStateController = null;
         // [SerializeField] private FeedbackController _feedbackController = null;
         // [SerializeField] private UIController _uiController = null;
+        
+        // private void OnEnable()
+        // {
+        //     if (eggController != null)
+        //     {
+        //         eggController.OnEggLanded += HandleEggLanded;
+        //         eggController.OnGroundImpact += HandleGroundImpact;
+        //     }
+        //     if (eggFallDetector != null)
+        //     {
+        //         eggFallDetector.OnEggFall += HandleEggFall;
+        //     }
+        // }
+        //
+        // private void OnDisable()
+        // {
+        //     if (eggController != null)
+        //     {
+        //         eggController.OnEggLanded -= HandleEggLanded;
+        //         eggController.OnGroundImpact -= HandleGroundImpact;
+        //     }
+        //     if (eggFallDetector != null)
+        //     {
+        //         eggFallDetector.OnEggFall -= HandleEggFall;
+        //     }
+        // }
 
         public void StartIntro()
         {
             // TODO: TITLEからINTROへの遷移処理（Phase B5）
-            if (_gameState != GameState.TITLE && _gameState != GameState.RESULT) return;
+            if (gameState != GameState.TITLE && gameState != GameState.RESULT) return;
             
-            _gameState = GameState.INTRO;
+            gameState = GameState.INTRO;
             Debug.Log("[GameManager] Intro開始！ タイマーはまだ動かず、卵が落下します。");
             // TODO: A担当の eggController.DropEgg() を呼ぶ
+            // if (eggController != null) eggController.DropEgg();
             // TODO: C担当のUIやフィードバックを呼ぶ
         }
         
         public void HandleEggLanded()
         {
             // TODO: 卵着地時の処理（Phase B5）
-            if (_gameState != GameState.INTRO) return;
+            if (gameState != GameState.INTRO) return;
             
             Debug.Log("[GameManager] フライパンに着地！ ゲームを開始します。");
             StartGame();
-            
         }
 
         public void StartGame()
         {
             // TODO: PLAYING移行とTimer開始処理（Phase B5）
-            _gameState = GameState.PLAYING;
+            gameState = GameState.PLAYING;
 
             // 着地してPLAYINGになった瞬間からタイマーを開始
             if (_timerManager != null)
             {
                 _timerManager.StartTimer();
             }
+            
+            // if (_uiController != null) _uiController.ShowPlaying();
+            // if (_feedbackController != null) _feedbackController.PlayStartFeedback();
         
             Debug.Log("[GameManager] PLAYING開始！ 60秒タイマーが動き出します。");
         }
@@ -75,11 +108,11 @@ namespace Gameplay
         public void Update()
         {
             // TODO: PLAYING状態での毎フレーム更新処理（Timer, progress, dangerLevelの更新など）
-            if (_gameState == GameState.PLAYING && _timerManager != null)
+            if (gameState == GameState.PLAYING && _timerManager != null)
             {
                 _timerManager.UpdateTimer();
                 gameProgress = _timerManager.GetProgress();
-                Debug.Log(gameProgress);
+                // Debug.Log(gameProgress);
                 if (_difficultyManager != null)
                 {
                     DifficultyParams currentDifficulty = _difficultyManager.GetDifficultyParams(gameProgress);
@@ -101,8 +134,6 @@ namespace Gameplay
                     */
 
                     dangerLevel = _difficultyManager.CalculateDanger(currentDistance);
-
-                    // TODO: C担当へ渡す ( feedbackController.UpdateDangerFeedback(dangerLevel) )
                 }
                 
                 crackProgress = gameProgress;
@@ -111,7 +142,18 @@ namespace Gameplay
                 {
                     _eggStateController.SetCrackProgress(crackProgress);
                 }
-                // TODO: C担当へ渡す ( feedbackController.UpdateCrackFeedback(crackProgress) )
+                
+                // // 担当のフィードバック更新 ---
+                // if (feedbackController != null)
+                // {
+                //     feedbackController.UpdateDangerFeedback(dangerLevel);
+                //     feedbackController.UpdateCrackFeedback(crackProgress);
+                //
+                //     if (eggController != null)
+                //     {
+                //         feedbackController.PlayEggMovementFeedback(eggController.GetSpeed());
+                //     }
+                // }
                 
                 if (_timerManager.IsTimeUp())
                 {
@@ -130,32 +172,41 @@ namespace Gameplay
 
         public void HandleEggFall()
         {
-            if (_gameState != GameState.PLAYING) return;
-            _gameState = GameState.FALLING;
+            if (gameState != GameState.PLAYING) return;
+            
+            gameState = GameState.FALLING;
+            
             if (_timerManager != null)
             {
                 _timerManager.StopTimer();
             }
+            // if (_feedbackController != null && _eggController != null)
+            // {
+            //     _feedbackController.StartFallFeedback(_eggController.transform);
+            // }
             // TODO: C担当への通知 (feedbackController.StartFallFeedback(egg))
             Debug.Log("[GameManager] 落下開始！ 状態: FALLING, タイマー停止");
         }
         
         public void HandleGroundImpact()
         {
-            if (_gameState != GameState.FALLING) return;
+            if (gameState != GameState.FALLING) return;
             // TODO: C担当への通知 (eggStateController.Break(), feedbackController.PlayFailureFeedback())
 
-            _gameResult = GameResult.FAILURE;
-            _gameState = GameState.RESULT;
+            gameResult = GameResult.FAILURE;
+            gameState = GameState.RESULT;
 
             // TODO: C担当への通知 (uiController.ShowFailureResult())
+            if (_eggStateController != null) _eggStateController.Break();
+            // if (_feedbackController != null) _feedbackController.PlayFailureFeedback();
+            // if (_uiController != null) _uiController.ShowFailureResult();
             Debug.Log("[GameManager] 地面衝突！ 卵が割れた。 状態: RESULT, 結果: FAILURE");
         }
 
         public void Success()
         {
-            if (_gameState != GameState.PLAYING) return;
-            _gameState = GameState.HATCHING;
+            if (gameState != GameState.PLAYING) return;
+            gameState = GameState.HATCHING;
             Debug.Log("[GameManager] 120秒到達！ HATCHING状態へ移行し、孵化を待機します。");
             
             if (_timerManager != null)
@@ -167,6 +218,8 @@ namespace Gameplay
             {
                 _eggStateController.Hatch();
             }
+            
+            // if (_feedbackController != null) _feedbackController.PlaySuccessFeedback();
 
             StartCoroutine(SuccessSequence());
         }
@@ -175,20 +228,19 @@ namespace Gameplay
         {
             yield return new WaitForSeconds(successResultDelay);
             
-            _gameResult = GameResult.SUCCESS;
-            _gameState = GameState.RESULT;
-            
-            // TODO: C担当へ通知 ( uiController.ShowSuccessResult() )
+            gameResult = GameResult.SUCCESS;
+            gameState = GameState.RESULT;
+            // if (_uiController != null) _uiController.ShowSuccessResult();
             Debug.Log("[GameManager] 孵化完了！ SUCCESS RESULT画面へ進みます。");
         }
 
         public void Retry()
         {
-            if (_gameState != GameState.RESULT) return;
+            if (gameState != GameState.RESULT) return;
             gameProgress = 0f;
             dangerLevel = 0f;
             crackProgress = 0f;
-            _gameResult = GameResult.NONE;
+            gameResult = GameResult.NONE;
 
             if (_timerManager != null)
             {
@@ -200,6 +252,10 @@ namespace Gameplay
             {
                 _eggStateController.ResetState();
             }
+            // if (_feedbackController != null) _feedbackController.ResetFeedback();
+            // if (_panController != null) _panController.ResetPan();
+            //
+            // if (_uiController != null) _uiController.ShowTitle();
 
             // 状態をリセットして開始シーケンスへ戻る
             StartIntro();
