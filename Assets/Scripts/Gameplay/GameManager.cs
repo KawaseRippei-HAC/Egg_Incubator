@@ -40,32 +40,32 @@ namespace Gameplay
         // [SerializeField] private EggStateController _eggStateController = null;
         // [SerializeField] private FeedbackController _feedbackController = null;
         // [SerializeField] private UIController _uiController = null;
-
-        // private void OnEnable()
-        // {
-        //     if (eggController != null)
-        //     {
-        //         eggController.OnEggLanded += HandleEggLanded;
-        //         eggController.OnGroundImpact += HandleGroundImpact;
-        //     }
-        //     if (eggFallDetector != null)
-        //     {
-        //         eggFallDetector.OnEggFall += HandleEggFall;
-        //     }
-        // }
-        //
-        // private void OnDisable()
-        // {
-        //     if (eggController != null)
-        //     {
-        //         eggController.OnEggLanded -= HandleEggLanded;
-        //         eggController.OnGroundImpact -= HandleGroundImpact;
-        //     }
-        //     if (eggFallDetector != null)
-        //     {
-        //         eggFallDetector.OnEggFall -= HandleEggFall;
-        //     }
-        // }
+        
+        private void OnEnable()
+        {
+            if (_eggController != null)
+            {
+                _eggController.OnEggLanded += HandleEggLanded;
+                //eggController.OnGroundImpact += HandleGroundImpact;
+            }
+            // if (eggFallDetector != null)
+            // {
+            //     eggFallDetector.OnEggFall += HandleEggFall;
+            // }
+        }
+        
+        private void OnDisable()
+        {
+            if (_eggController != null)
+            {
+                _eggController.OnEggLanded -= HandleEggLanded;
+                //eggController.OnGroundImpact -= HandleGroundImpact;
+            }
+            // if (eggFallDetector != null)
+            // {
+            //     eggFallDetector.OnEggFall -= HandleEggFall;
+            // }
+        }
 
         public void StartIntro()
         {
@@ -75,7 +75,7 @@ namespace Gameplay
             gameState = GameState.INTRO;
             Debug.Log("[GameManager] Intro開始！ タイマーはまだ動かず、卵が落下します。");
             // TODO: A担当の eggController.DropEgg() を呼ぶ
-            // if (eggController != null) eggController.DropEgg();
+            if (_eggController != null) _eggController.DropEgg();
             // TODO: C担当のUIやフィードバックを呼ぶ
         }
         
