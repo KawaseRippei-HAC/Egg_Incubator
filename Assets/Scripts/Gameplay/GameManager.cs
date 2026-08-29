@@ -1,275 +1,139 @@
-// using System.Collections;
-// using Proto.Core;
-// using UnityEngine;
-
-// namespace Gameplay
-// {
-    
-//     public class GameManager : MonoBehaviour
-//     {
-//         [Header("Game State")]
-//         [SerializeField] private GameState _gameState = GameState.TITLE;
-//         [SerializeField] private GameResult _gameResult = GameResult.NONE;
-
-//         [Header("Game Values")] 
-//         [SerializeField] private float gameProgress = 0f;
-//         [SerializeField] private float dangerLevel = 0f;
-//         [SerializeField] private float crackProgress = 0f;
-//         // フィードバック担当の演出完了を待つための疑似的な遅延時間
-//         [SerializeField] private float successResultDelay = 3f;
-        
-//         [Header("Debug")]
-//         [SerializeField, Range(0f,1f)] private float debugNormalizedDistance = 0f;
-        
-//         public float Progress => gameProgress;
-//         public float DangerLevel => dangerLevel;
-//         public float CrackProgress => crackProgress;
-//         public GameState CurrentState => _gameState;
-        
-//         [Header("Reference")]
-//         [SerializeField] private TimerManager _timerManager = null;
-//         [SerializeField] private DifficultyManager _difficultyManager = null;
-//         [SerializeField] private EggStateController _eggStateController = null;
-//         // [SerializeField] private EggFallDetector _eggFallDetector = null;
-//         // [SerializeField] private PanController  _panController = null;
-//         // [SerializeField] private EggStateController _eggStateController = null;
-//         // [SerializeField] private FeedbackController _feedbackController = null;
-//         // [SerializeField] private UIController _uiController = null;
-
-//         public void StartIntro()
-//         {
-//             // TODO: TITLEからINTROへの遷移処理（Phase B5）
-//             if (_gameState != GameState.TITLE && _gameState != GameState.RESULT) return;
-            
-//             _gameState = GameState.INTRO;
-//             Debug.Log("[GameManager] Intro開始！ タイマーはまだ動かず、卵が落下します。");
-//             // TODO: A担当の eggController.DropEgg() を呼ぶ
-//             // TODO: C担当のUIやフィードバックを呼ぶ
-//         }
-        
-//         public void HandleEggLanded()
-//         {
-//             // TODO: 卵着地時の処理（Phase B5）
-//             if (_gameState != GameState.INTRO) return;
-            
-//             Debug.Log("[GameManager] フライパンに着地！ ゲームを開始します。");
-//             StartGame();
-            
-//         }
-
-//         public void StartGame()
-//         {
-//             // TODO: PLAYING移行とTimer開始処理（Phase B5）
-//             _gameState = GameState.PLAYING;
-
-//             // 着地してPLAYINGになった瞬間からタイマーを開始
-//             if (_timerManager != null)
-//             {
-//                 _timerManager.StartTimer();
-//             }
-        
-//             Debug.Log("[GameManager] PLAYING開始！ 60秒タイマーが動き出します。");
-//         }
-
-//         public void Update()
-//         {
-//             // TODO: PLAYING状態での毎フレーム更新処理（Timer, progress, dangerLevelの更新など）
-//             if (_gameState == GameState.PLAYING && _timerManager != null)
-//             {
-//                 _timerManager.UpdateTimer();
-//                 gameProgress = _timerManager.GetProgress();
-//                 Debug.Log(gameProgress);
-//                 if (_difficultyManager != null)
-//                 {
-//                     DifficultyParams currentDifficulty = _difficultyManager.GetDifficultyParams(gameProgress);
-//                     // TODO: A担当のEggControllerへ currentDifficulty を渡す ( eggController.SetDifficulty(currentDifficulty) )
-//                     float currentDistance = debugNormalizedDistance; 
-                
-//                     /* 本実装時は以下のようにA担当から値を取得する
-//                     if (eggController != null && panController != null)
-//                     {
-//                         currentDistance = panController.GetNormalizedDistanceFromCenter(eggController.GetPosition());
-//                     }
-//                     */
-
-//                     dangerLevel = _difficultyManager.CalculateDanger(currentDistance);
-
-//                     // TODO: C担当へ渡す ( feedbackController.UpdateDangerFeedback(dangerLevel) )
-//                 }
-                
-//                 crackProgress = gameProgress;
-
-//                 if (_eggStateController != null)
-//                 {
-//                     _eggStateController.SetCrackProgress(crackProgress);
-//                 }
-//                 // TODO: C担当へ渡す ( feedbackController.UpdateCrackFeedback(crackProgress) )
-                
-//                 if (_timerManager.IsTimeUp())
-//                 {
-//                     Success();
-//                 }
-//             }
-//             // Debug
-//             if (Input.GetKeyDown(KeyCode.T)) StartIntro();         // Tキー: 画面タップ（Title -> Intro）
-//             if (Input.GetKeyDown(KeyCode.L)) HandleEggLanded();
-//             if (Input.GetKeyDown(KeyCode.F)) HandleEggFall();       // Fキーで落下開始
-//             if (Input.GetKeyDown(KeyCode.G)) HandleGroundImpact();  // Gキーで地面衝突
-//             if (Input.GetKeyDown(KeyCode.R)) Retry();
-            
-
-//         }
-
-//         public void HandleEggFall()
-//         {
-//             if (_gameState != GameState.PLAYING) return;
-//             _gameState = GameState.FALLING;
-//             if (_timerManager != null)
-//             {
-//                 _timerManager.StopTimer();
-//             }
-//             // TODO: C担当への通知 (feedbackController.StartFallFeedback(egg))
-//             Debug.Log("[GameManager] 落下開始！ 状態: FALLING, タイマー停止");
-//         }
-        
-//         public void HandleGroundImpact()
-//         {
-//             if (_gameState != GameState.FALLING) return;
-//             // TODO: C担当への通知 (eggStateController.Break(), feedbackController.PlayFailureFeedback())
-
-//             _gameResult = GameResult.FAILURE;
-//             _gameState = GameState.RESULT;
-
-//             // TODO: C担当への通知 (uiController.ShowFailureResult())
-//             Debug.Log("[GameManager] 地面衝突！ 卵が割れた。 状態: RESULT, 結果: FAILURE");
-//         }
-
-//         public void Success()
-//         {
-//             if (_gameState != GameState.PLAYING) return;
-//             _gameState = GameState.HATCHING;
-//             Debug.Log("[GameManager] 120秒到達！ HATCHING状態へ移行し、孵化を待機します。");
-            
-//             if (_timerManager != null)
-//             {
-//                 _timerManager.StopTimer();
-//             }
-
-//             if (_eggStateController != null)
-//             {
-//                 _eggStateController.Hatch();
-//             }
-
-//             StartCoroutine(SuccessSequence());
-//         }
-
-//         public IEnumerator SuccessSequence()
-//         {
-//             yield return new WaitForSeconds(successResultDelay);
-            
-//             _gameResult = GameResult.SUCCESS;
-//             _gameState = GameState.RESULT;
-            
-//             // TODO: C担当へ通知 ( uiController.ShowSuccessResult() )
-//             Debug.Log("[GameManager] 孵化完了！ SUCCESS RESULT画面へ進みます。");
-//         }
-
-//         public void Retry()
-//         {
-//             if (_gameState != GameState.RESULT) return;
-//             gameProgress = 0f;
-//             dangerLevel = 0f;
-//             crackProgress = 0f;
-//             _gameResult = GameResult.NONE;
-
-//             if (_timerManager != null)
-//             {
-//                 _timerManager.ResetTimer();
-//             }
-//             // TODO: 他クラスの初期化 (EggStateController, FeedbackController, PanController)
-            
-//             if (_eggStateController != null)
-//             {
-//                 _eggStateController.ResetState();
-//             }
-
-//             // 状態をリセットして開始シーケンスへ戻る
-//             StartIntro();
-//             Debug.Log("[GameManager] リトライ！ 各種値をリセットし、Introへ戻ります。");
-//         }
-//     }
-// }
-
-// スクリプトの最上部に追加
 using UnityEngine.InputSystem;
 using System.Collections;
 using Proto.Core;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 namespace Gameplay
 {
-    
     public class GameManager : MonoBehaviour
     {
+        [FormerlySerializedAs("_gameState")]
         [Header("Game State")]
-        [SerializeField] private GameState _gameState = GameState.TITLE;
-        [SerializeField] private GameResult _gameResult = GameResult.NONE;
+        [SerializeField] private GameState gameState = GameState.TITLE;
+        [FormerlySerializedAs("_gameResult")]
+        [SerializeField] private GameResult gameResult = GameResult.NONE;
 
-        [Header("Game Values")] 
+        [Header("Game Values")]
         [SerializeField] private float gameProgress = 0f;
         [SerializeField] private float dangerLevel = 0f;
         [SerializeField] private float crackProgress = 0f;
         // フィードバック担当の演出完了を待つための疑似的な遅延時間
         [SerializeField] private float successResultDelay = 3f;
-        
+
         [Header("Debug")]
         [SerializeField, Range(0f,1f)] private float debugNormalizedDistance = 0f;
-        
+
         public float Progress => gameProgress;
         public float DangerLevel => dangerLevel;
         public float CrackProgress => crackProgress;
-        public GameState CurrentState => _gameState;
-        
-        [Header("Reference")]
+        public GameState CurrentState => gameState;
+
+        [Header("Reference B")]
         [SerializeField] private TimerManager _timerManager = null;
         [SerializeField] private DifficultyManager _difficultyManager = null;
         [SerializeField] private EggStateController _eggStateController = null;
+
+        [Header("References A")]
         // [SerializeField] private EggFallDetector _eggFallDetector = null;
-        // [SerializeField] private PanController  _panController = null;
+        [SerializeField] private PanController _panController = null;
+        [SerializeField] private EggController _eggController = null;
+
+        [Header("References C")]
         [SerializeField] private FeedbackController _feedbackController = null;
         [SerializeField] private UIController _uiController = null;
-        // 2025/08/29追加: HandleGroundImpact/Successで実際に殻の破壊・孵化アニメーションを
-        // 発火させるための参照。EggBreakControllerはautoTriggerOnCollision=trueなら物理衝突で
-        // 自動発火するため必須ではないが、EggHatchControllerは自動発火の仕組みがないため
-        // TriggerHatch()の呼び出し元が必要。ゲームループのテストのため暫定的に追加。要A/B担当確認。
+        // EggHatchControllerには自動発火の仕組みがないため、ここで明示的にTriggerHatch()を呼ぶ必要がある。
         [SerializeField] private EggHatchController _eggHatchController = null;
-        [SerializeField] private EggBreakController _eggBreakController = null; // 2025/08/29追加: autoTriggerOnCollisionをoffにしたため、明示的にTriggerBreak()を呼ぶ必要がある
+        // 2025/08/29追加: autoTriggerOnCollisionをoffにしたため、明示的にTriggerBreak()を呼ぶ必要がある
+        [SerializeField] private EggBreakController _eggBreakController = null;
+
+        [Header("卵の落下制御 (2025/08/29追加)")]
+        [Tooltip("卵本体のRigidbody。StartIntro()が呼ばれるまで卵をその場に固定(isKinematic=true)しておき、" +
+                 "意図しない自由落下を防ぐ。TriggerBreak/TriggerHatch側で再度isKinematicを操作するため、" +
+                 "Retry()時にもここへ戻す")]
+        [SerializeField] private Rigidbody _eggRigidbody = null;
+        [Tooltip("パンの縁を超えた瞬間・地面衝突の瞬間を自動検知し、HandleEggFall/HandleGroundImpactを自動呼び出しする")]
+        [SerializeField] private EggFallDetector _eggFallDetector = null;
+
+        private Vector3 _eggInitialPosition;
+        private Quaternion _eggInitialRotation;
+        private bool _eggInitialCaptured;
+
+        // private void OnEnable()
+        // {
+        //     if (eggController != null)
+        //     {
+        //         eggController.OnEggLanded += HandleEggLanded;
+        //         eggController.OnGroundImpact += HandleGroundImpact;
+        //     }
+        //     if (eggFallDetector != null)
+        //     {
+        //         eggFallDetector.OnEggFall += HandleEggFall;
+        //     }
+        // }
+        //
+        // private void OnDisable()
+        // {
+        //     if (eggController != null)
+        //     {
+        //         eggController.OnEggLanded -= HandleEggLanded;
+        //         eggController.OnGroundImpact -= HandleGroundImpact;
+        //     }
+        //     if (eggFallDetector != null)
+        //     {
+        //         eggFallDetector.OnEggFall -= HandleEggFall;
+        //     }
+        // }
+
+        private void Awake()
+        {
+            // 卵の初期位置・回転を記憶しておき、Retry()で物理的にも元の位置へ戻せるようにする。
+            // また、StartIntro()が呼ばれるまでは重力で自由落下しないようKinematicで固定しておく。
+            if (_eggRigidbody != null)
+            {
+                _eggInitialPosition = _eggRigidbody.transform.position;
+                _eggInitialRotation = _eggRigidbody.transform.rotation;
+                _eggInitialCaptured = true;
+
+                _eggRigidbody.isKinematic = true;
+                _eggRigidbody.linearVelocity = Vector3.zero;
+                _eggRigidbody.angularVelocity = Vector3.zero;
+            }
+        }
 
         public void StartIntro()
         {
             // TODO: TITLEからINTROへの遷移処理（Phase B5）
-            if (_gameState != GameState.TITLE && _gameState != GameState.RESULT) return;
-            
-            _gameState = GameState.INTRO;
+            if (gameState != GameState.TITLE && gameState != GameState.RESULT) return;
+
+            gameState = GameState.INTRO;
             Debug.Log("[GameManager] Intro開始！ タイマーはまだ動かず、卵が落下します。");
+
             // TODO: A担当の eggController.DropEgg() を呼ぶ
+            // if (eggController != null) eggController.DropEgg();
+
+            // 2025/08/29追加: ここで初めて卵の物理演算を有効化し、実際に落下させる。
+            // (以前はRigidbodyが最初から非Kinematicだったため、Tキーを押す前から自由落下していた)
+            if (_eggRigidbody != null)
+            {
+                _eggRigidbody.isKinematic = false;
+            }
             // TODO: C担当のUIやフィードバックを呼ぶ
         }
-        
+
         public void HandleEggLanded()
         {
             // TODO: 卵着地時の処理（Phase B5）
-            if (_gameState != GameState.INTRO) return;
-            
+            if (gameState != GameState.INTRO) return;
+
             Debug.Log("[GameManager] フライパンに着地！ ゲームを開始します。");
             StartGame();
-            
         }
 
         public void StartGame()
         {
             // TODO: PLAYING移行とTimer開始処理（Phase B5）
-            _gameState = GameState.PLAYING;
+            gameState = GameState.PLAYING;
 
             // 着地してPLAYINGになった瞬間からタイマーを開始
             if (_timerManager != null)
@@ -281,30 +145,40 @@ namespace Gameplay
             {
                 _feedbackController.StartGameFeedback();
             }
-        
+            if (_uiController != null)
+            {
+                _uiController.ShowPlaying();
+            }
+
             Debug.Log("[GameManager] PLAYING開始！ 60秒タイマーが動き出します。");
         }
 
         public void Update()
         {
             // TODO: PLAYING状態での毎フレーム更新処理（Timer, progress, dangerLevelの更新など）
-            if (_gameState == GameState.PLAYING && _timerManager != null)
+            if (gameState == GameState.PLAYING && _timerManager != null)
             {
                 _timerManager.UpdateTimer();
                 gameProgress = _timerManager.GetProgress();
-                Debug.Log(gameProgress);
                 if (_difficultyManager != null)
                 {
                     Proto.Core.DifficultyParams currentDifficulty = _difficultyManager.GetDifficultyParams(gameProgress);
-                    // TODO: A担当のEggControllerへ currentDifficulty を渡す ( eggController.SetDifficulty(currentDifficulty) )
-                    float currentDistance = debugNormalizedDistance; 
-                
-                    /* 本実装時は以下のようにA担当から値を取得する
-                    if (eggController != null && panController != null)
+
+                    // 2025/08/29修正: EggController.csが Proto.Core.DifficultyParams を直接使うように
+                    // 統一されたため、以前の変換コード(global::DifficultyParamsへの詰め替え)は不要になった。
+                    if (_eggController != null)
                     {
-                        currentDistance = panController.GetNormalizedDistanceFromCenter(eggController.GetPosition());
+                        _eggController.SetDifficulty(currentDifficulty);
                     }
-                    */
+
+                                        float currentDistance = debugNormalizedDistance;
+
+                    // 2025/08/29有効化: パンと卵の実際の距離が取れる場合はそちらを優先する。
+                    // 未接続(テスト中等)は引き続きdebugNormalizedDistanceスライダーで確認できる。
+                    if (_eggController != null && _panController != null)
+                    {
+                        currentDistance = _panController.GetNormalizedDistanceFromCenter(_eggController.GetPosition());
+                                        }
 
                     dangerLevel = _difficultyManager.CalculateDanger(currentDistance);
 
@@ -313,7 +187,7 @@ namespace Gameplay
                         _feedbackController.UpdateDangerFeedback(dangerLevel);
                     }
                 }
-                
+
                 crackProgress = gameProgress;
 
                 if (_eggStateController != null)
@@ -324,19 +198,19 @@ namespace Gameplay
                 if (_feedbackController != null)
                 {
                     _feedbackController.UpdateCrackFeedback(crackProgress);
+
+                    if (_eggController != null)
+                    {
+                        _feedbackController.PlayEggMovementFeedback(_eggController.GetSpeed());
+                    }
                 }
-                
+
                 if (_timerManager.IsTimeUp())
                 {
                     Success();
                 }
             }
             // Debug
-            // if (Input.GetKeyDown(KeyCode.T)) StartIntro();         // Tキー: 画面タップ（Title -> Intro）
-            // if (Input.GetKeyDown(KeyCode.L)) HandleEggLanded();
-            // if (Input.GetKeyDown(KeyCode.F)) HandleEggFall();       // Fキーで落下開始
-            // if (Input.GetKeyDown(KeyCode.G)) HandleGroundImpact();  // Gキーで地面衝突
-            // if (Input.GetKeyDown(KeyCode.R)) Retry();
             if (Keyboard.current != null)
             {
                 if (Keyboard.current.tKey.wasPressedThisFrame) StartIntro();         // Tキー: 画面タップ（Title -> Intro）
@@ -345,29 +219,29 @@ namespace Gameplay
                 if (Keyboard.current.gKey.wasPressedThisFrame) HandleGroundImpact();  // Gキーで地面衝突
                 if (Keyboard.current.rKey.wasPressedThisFrame) Retry();
             }
-            
-
         }
 
         public void HandleEggFall()
         {
-            if (_gameState != GameState.PLAYING) return;
-            _gameState = GameState.FALLING;
+            if (gameState != GameState.PLAYING) return;
+
+            gameState = GameState.FALLING;
+
             if (_timerManager != null)
             {
                 _timerManager.StopTimer();
             }
-            // NOTE: feedbackController.StartFallFeedback(egg) を呼びたいが、GameManagerが
-            // 卵のTransformをまだ保持していない(EggFallDetector.OnEggFallの引数として
-            // 卵を渡す設計にするか、GameManagerにegg参照フィールドを追加するか要A担当確認)。
-            // 卵の参照が取得でき次第、以下を有効化してください:
-            // if (_feedbackController != null) _feedbackController.StartFallFeedback(eggTransform);
+
+            if (_feedbackController != null && _eggController != null)
+            {
+                _feedbackController.StartFallFeedback(_eggController.transform);
+            }
             Debug.Log("[GameManager] 落下開始！ 状態: FALLING, タイマー停止");
         }
-        
+
         public void HandleGroundImpact()
         {
-            if (_gameState != GameState.FALLING) return;
+            if (gameState != GameState.FALLING) return;
 
             if (_eggStateController != null)
             {
@@ -377,17 +251,16 @@ namespace Gameplay
             {
                 _feedbackController.PlayFailureFeedback();
             }
-            // NOTE: 視覚的な破壊(殻の破片化)自体はEggBreakController.autoTriggerOnCollision=true
-            // であれば地面(Groundタグ)との物理衝突で自動発火する想定。手動発火にしたい場合は
-            // EggBreakControllerの参照を追加しTriggerBreak()を呼ぶ運用に変更してください。
-            // 2025/08/29修正: 上記NOTEの通り autoTriggerOnCollisionをfalseにしたため、ここで明示的にTriggerBreak()を呼ぶ。
+            // 2025/08/29修正: EggBreakController.autoTriggerOnCollisionをfalseにしたため、
+            // (以前は卵が地面(Groundタグ)に接触した瞬間に自動で破壊してしまい、INTROの安全な着地でも
+            //  割れてしまっていた)、ここで明示的にTriggerBreak()を呼ぶ。
             if (_eggBreakController != null)
             {
                 _eggBreakController.TriggerBreak();
             }
 
-            _gameResult = GameResult.FAILURE;
-            _gameState = GameState.RESULT;
+            gameResult = GameResult.FAILURE;
+            gameState = GameState.RESULT;
 
             if (_uiController != null)
             {
@@ -398,10 +271,10 @@ namespace Gameplay
 
         public void Success()
         {
-            if (_gameState != GameState.PLAYING) return;
-            _gameState = GameState.HATCHING;
+            if (gameState != GameState.PLAYING) return;
+            gameState = GameState.HATCHING;
             Debug.Log("[GameManager] 120秒到達！ HATCHING状態へ移行し、孵化を待機します。");
-            
+
             if (_timerManager != null)
             {
                 _timerManager.StopTimer();
@@ -432,10 +305,10 @@ namespace Gameplay
             // successResultDelay = EggHatchControllerの予兆(anticipationDuration)+弾け演出が
             // ひと段落するまでの待ち時間。演出秒数が変わった場合はここも要調整。
             yield return new WaitForSeconds(successResultDelay);
-            
-            _gameResult = GameResult.SUCCESS;
-            _gameState = GameState.RESULT;
-            
+
+            gameResult = GameResult.SUCCESS;
+            gameState = GameState.RESULT;
+
             if (_uiController != null)
             {
                 _uiController.ShowSuccessResult();
@@ -445,18 +318,17 @@ namespace Gameplay
 
         public void Retry()
         {
-            if (_gameState != GameState.RESULT) return;
+            if (gameState != GameState.RESULT) return;
             gameProgress = 0f;
             dangerLevel = 0f;
             crackProgress = 0f;
-            _gameResult = GameResult.NONE;
+            gameResult = GameResult.NONE;
 
             if (_timerManager != null)
             {
                 _timerManager.ResetTimer();
             }
-            // TODO: 他クラスの初期化 (PanController)
-            
+
             if (_eggStateController != null)
             {
                 _eggStateController.ResetState();
@@ -467,9 +339,40 @@ namespace Gameplay
                 _feedbackController.ResetFeedback();
             }
 
-            // 状態をリセットして開始シーケンスへ戻る
-            StartIntro();
-            Debug.Log("[GameManager] リトライ！ 各種値をリセットし、Introへ戻ります。");
+            // 2025/08/29追加: 割れた殻・孵化した殻の見た目を元に戻す。
+            // (これが無かったため、Retry後も破片/孵化ビジュアルが表示されたままだった)
+            if (_eggBreakController != null)
+            {
+                _eggBreakController.ResetForTesting();
+            }
+            if (_eggHatchController != null)
+            {
+                _eggHatchController.ResetForTesting();
+            }
+
+            // 2025/08/29追加: 卵本体を初期位置・初期回転に戻し、再びStartIntro()まで
+            // 自由落下しないようKinematicへ戻す。
+            if (_eggRigidbody != null && _eggInitialCaptured)
+            {
+                _eggRigidbody.linearVelocity = Vector3.zero;
+                _eggRigidbody.angularVelocity = Vector3.zero;
+                _eggRigidbody.transform.position = _eggInitialPosition;
+                _eggRigidbody.transform.rotation = _eggInitialRotation;
+                _eggRigidbody.isKinematic = true;
+            }
+
+            // 状態をリセットして開始シーケンスへ
+            // 2025/08/29修正: EggFallDetectorも次ラウンドで再判定できるようリセットする。
+            if (_eggFallDetector != null)
+            {
+                _eggFallDetector.ResetForTesting();
+            }
+
+            // 2025/08/29仕様変更: 以前はRetry()から自動でStartIntro()を呼んで卵を落とし直していたが、
+            // 「リスタートで一度タイトル画面に戻り、「ゲーム開始」で初めて卵が落ちてくる」という
+            // 要望に合わせ、TITLE状態で停止して次のStartIntro()呼び出し(Tキー/タップ)を待つ。
+            gameState = GameState.TITLE;
+            Debug.Log("[GameManager] リトライ！ 各種値をリセットし、TITLEへ戻ります。");
         }
     }
 }
