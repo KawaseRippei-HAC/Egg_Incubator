@@ -40,7 +40,7 @@ namespace Gameplay
         // [SerializeField] private EggStateController _eggStateController = null;
         // [SerializeField] private FeedbackController _feedbackController = null;
         // [SerializeField] private UIController _uiController = null;
-        
+
         // private void OnEnable()
         // {
         //     if (eggController != null)
