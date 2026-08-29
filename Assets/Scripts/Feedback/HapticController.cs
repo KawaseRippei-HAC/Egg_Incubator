@@ -18,27 +18,39 @@ public class HapticController : MonoBehaviour
     public float minVibrateInterval = 0.3f;
     public float maxVibrateInterval = 1.2f;
 
+    [Tooltip("この危険度未満では振動させない")]
+    public float minDangerToVibrate = 0.05f;
+
+    private float _nextVibrateTime;
+
     /// <summary>危険度に応じた継続的な短い振動(心音と同じ間隔を想定)。FeedbackController.UpdateDangerFeedback()から毎回呼ばれる。</summary>
     public void PlayHeartbeat(float danger)
     {
-        // TODO(8/29午後実装): Handheld.Vibrate() またはネイティブAPI経由での強弱制御
+        if (danger < minDangerToVibrate) return;
+        if (Time.time < _nextVibrateTime) return;
+
+        // Handheld.Vibrateは強さを指定できないため、危険度が高いほど間隔を詰めることで
+        // 「強弱」を頻度の変化として近似する(仕様書3.3節・10章)。
+        float interval = Mathf.Lerp(maxVibrateInterval, minVibrateInterval, Mathf.Clamp01(danger));
+        Handheld.Vibrate();
+        _nextVibrateTime = Time.time + interval;
     }
 
     /// <summary>視覚的なヒビ(visualCrack)が閾値を跨いだ瞬間の短い振動。FeedbackController.CheckCrackThresholdCrossing()から呼ばれる。</summary>
     public void PlayCrack()
     {
-        // TODO(8/29午後実装)
+        Handheld.Vibrate();
     }
 
     /// <summary>孵化成功時の気持ちよい強めの短い振動。FeedbackController.PlaySuccessFeedback()から呼ばれる。</summary>
     public void PlaySuccess()
     {
-        // TODO(8/29午後実装)
+        Handheld.Vibrate();
     }
 
     /// <summary>落下・破損時の強い一発振動。FeedbackController.PlayFailureFeedback()から呼ばれる。</summary>
     public void PlayFailure()
     {
-        // TODO(8/29午後実装)
+        Handheld.Vibrate();
     }
 }

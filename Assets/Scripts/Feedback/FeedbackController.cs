@@ -216,6 +216,8 @@ public class FeedbackController : MonoBehaviour
         {
             Debug.LogWarning($"[{nameof(FeedbackController)}] eggCrackGlowController が未設定です。Inspectorで Egg_Test の EggCrackGlowController を割り当ててください。", this);
         }
+
+        audioController?.PlayBGM(AudioController.BGMType.Title);
     }
 
     /// <summary>
@@ -224,6 +226,8 @@ public class FeedbackController : MonoBehaviour
     public void StartGameFeedback()
     {
         heartbeatController?.StartHeartbeat();
+        audioController?.PlayBGM(AudioController.BGMType.Playing);
+        audioController?.PlaySE(AudioController.SEType.Start);
     }
 
     /// <summary>
@@ -236,6 +240,7 @@ public class FeedbackController : MonoBehaviour
 
         heartbeatController?.UpdateHeartbeat(_currentDanger);
         hapticController?.PlayHeartbeat(_currentDanger);
+        cameraController?.PlayDangerShake(_currentDanger);
 
         RecomputeVisualCrack();
     }
@@ -295,6 +300,7 @@ public class FeedbackController : MonoBehaviour
         hapticController?.PlaySuccess();
         cameraController?.PlaySuccessCamera();
         audioController?.PlaySuccess(); // 任意。破片音を既存スクリプト側(hatchAudioSource)で鳴らす場合は空実装のままでよい(3.5節)
+        audioController?.PlayBGM(AudioController.BGMType.ResultSuccess);
         // uiController.ShowSuccessResult()はここでは呼ばない。GameManager.SuccessSequence()が
         // successResultDelay分の演出待ちをした後に個別に呼ぶ設計(GameManager.cs実装より判明)。
     }
@@ -316,7 +322,9 @@ public class FeedbackController : MonoBehaviour
     {
         heartbeatController?.StopHeartbeat();
         hapticController?.PlayFailure();
+        cameraController?.ImpactShake();
         audioController?.PlayFailure(); // 任意。既存スクリプト側(breakAudioSource)運用でも可(3.5節)
+        audioController?.PlayBGM(AudioController.BGMType.ResultFailure);
         // uiController.ShowFailureResult()はここでは呼ばない。GameManager.HandleGroundImpact()が
         // 直後に個別に呼ぶ設計(GameManager.cs実装より判明)。
     }
@@ -346,5 +354,6 @@ public class FeedbackController : MonoBehaviour
         }
 
         cameraController?.ResetCamera();
+        audioController?.PlayBGM(AudioController.BGMType.Title);
     }
 }

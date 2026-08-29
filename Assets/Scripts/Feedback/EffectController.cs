@@ -13,11 +13,29 @@ using UnityEngine;
 public class EffectController : MonoBehaviour
 {
     [Header("補助エフェクト (タップ演出などプラスアルファのみ)")]
+    [Tooltip("卵の転がり中に再生する補助エフェクトのプレハブ。未設定の間は何もしない(後から素材を割り当てられる)")]
     public GameObject rollingEffectPrefab;
+    [Tooltip("rollingEffectPrefabの追従先(卵のTransform)。未設定の間は何もしない")]
+    public Transform followTarget;
+    [Tooltip("この速度(m/s)を超えている間だけ再生する")]
+    public float rollingSpeedThreshold = 0.15f;
+
+    private GameObject _rollingEffectInstance;
 
     /// <summary>卵が転がっている間の砂煙・軌跡等(あれば)。FeedbackController.PlayEggMovementFeedback()から呼ばれる</summary>
     public void PlayRolling(float speed)
     {
-        // TODO(必要になった場合のみ実装。仕様書3.6節: 主要VFXは既存アセット側が担当)
+        if (rollingEffectPrefab == null || followTarget == null) return;
+
+        if (_rollingEffectInstance == null)
+        {
+            _rollingEffectInstance = Instantiate(rollingEffectPrefab, followTarget.position, Quaternion.identity, followTarget);
+        }
+
+        bool shouldPlay = speed > rollingSpeedThreshold;
+        if (_rollingEffectInstance.activeSelf != shouldPlay)
+        {
+            _rollingEffectInstance.SetActive(shouldPlay);
+        }
     }
 }

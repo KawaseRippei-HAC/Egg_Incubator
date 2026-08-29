@@ -130,7 +130,7 @@ namespace Gameplay
             {
                 _eggRigidbody.isKinematic = false;
             }
-            // TODO: C担当のUIやフィードバックを呼ぶ
+            _uiController?.ShowPlaying();
         }
 
         public void HandleEggLanded()

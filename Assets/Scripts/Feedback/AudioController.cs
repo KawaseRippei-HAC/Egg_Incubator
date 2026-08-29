@@ -33,20 +33,64 @@ public class AudioController : MonoBehaviour
     public enum BGMType { Title, Playing, ResultSuccess, ResultFailure }
     public enum SEType { Tap, Start }
 
+    [Header("転がりSEの速度反応")]
+    [Tooltip("この速度(m/s)を超えている間だけ転がりSEをループ再生する")]
+    public float rollingSpeedThreshold = 0.15f;
+    [Tooltip("この速度でrollingSeの音量/ピッチが最大になる")]
+    public float rollingSpeedForMaxVolume = 5f;
+
     public void PlayBGM(BGMType type)
     {
-        // TODO(8/29午後〜実装)
+        if (bgmSource == null) return;
+
+        AudioClip clip = type switch
+        {
+            BGMType.Title => titleBgm,
+            BGMType.Playing => playingBgm,
+            BGMType.ResultSuccess => resultSuccessBgm,
+            BGMType.ResultFailure => resultFailureBgm,
+            _ => null
+        };
+        if (clip == null || bgmSource.clip == clip) return;
+
+        bgmSource.clip = clip;
+        bgmSource.loop = type == BGMType.Title || type == BGMType.Playing;
+        bgmSource.Play();
     }
 
     public void PlaySE(SEType type)
     {
-        // TODO(8/29午後〜実装)
+        if (seSource == null) return;
+
+        AudioClip clip = type == SEType.Tap ? tapSe : startSe;
+        if (clip != null)
+        {
+            seSource.PlayOneShot(clip);
+        }
     }
 
     /// <summary>卵の転がり・跳ねの速さに応じて音量/ピッチを変化させる。FeedbackController.PlayEggMovementFeedback()から呼ばれる</summary>
     public void PlayRolling(float speed)
     {
-        // TODO(8/29午後〜実装)
+        if (seSource == null || rollingSe == null) return;
+
+        if (speed > rollingSpeedThreshold)
+        {
+            if (seSource.clip != rollingSe || !seSource.isPlaying)
+            {
+                seSource.clip = rollingSe;
+                seSource.loop = true;
+                seSource.Play();
+            }
+
+            float t = Mathf.Clamp01(speed / rollingSpeedForMaxVolume);
+            seSource.volume = t;
+            seSource.pitch = Mathf.Lerp(0.8f, 1.3f, t);
+        }
+        else if (seSource.isPlaying && seSource.clip == rollingSe)
+        {
+            seSource.Stop();
+        }
     }
 
     /// <summary>基本的に呼ばなくてよい(3.5節)。既存hatchAudioSourceで足りない追加SEがある場合のみ実装する</summary>
