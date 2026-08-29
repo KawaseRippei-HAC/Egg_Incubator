@@ -4,8 +4,11 @@ using Proto.Core;
 [RequireComponent(typeof(Rigidbody))]
 public class EggController : MonoBehaviour
 {
+    public event System.Action OnEggLanded;
+    
     private Rigidbody rb;
     private float forceTimer;
+    private bool hasLanded = false;
 
     [Header("基本設定（タマゴの暴れ具合）")]
     [Tooltip("タマゴを水平に押し出す力の基本値。転がる『速さ』に直結します")]
@@ -111,7 +114,27 @@ public class EggController : MonoBehaviour
     {
         difficulty = newParams;
     }
+    public void DropEgg()
+    {
+        rb.isKinematic = false;
+        rb.linearVelocity = Vector3.zero;
+        rb.angularVelocity = Vector3.zero;
+
+        forceTimer = 0f;
+
+        Debug.Log("[EggController] DropEggが実行されました！落下を開始します。");
+    }
 
     public Vector3 GetPosition() { return transform.position; }
     public float GetSpeed() { return rb.linearVelocity.magnitude; }
+    private void OnCollisionEnter(Collision collision)
+    {
+        Debug.Log($"[EggController] 何かにぶつかった！ 相手の名前: {collision.gameObject.name}, タグ: {collision.gameObject.tag}"); //
+        if (!hasLanded && collision.gameObject.CompareTag("Pan"))
+        {
+            hasLanded = true;
+            OnEggLanded?.Invoke(); // GameManagerの HandleEggLanded() が呼ばれる
+            Debug.Log("[EggController] フライパンに着地したことを検知！");
+        }
+    }
 }

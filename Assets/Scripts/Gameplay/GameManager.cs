@@ -84,6 +84,35 @@ namespace Gameplay
         //         eggFallDetector.OnEggFall -= HandleEggFall;
         //     }
         // }
+        // [SerializeField] private EggStateController _eggStateController = null;
+        // [SerializeField] private FeedbackController _feedbackController = null;
+        // [SerializeField] private UIController _uiController = null;
+        
+        private void OnEnable()
+        {
+            if (_eggController != null)
+            {
+                _eggController.OnEggLanded += HandleEggLanded;
+                //eggController.OnGroundImpact += HandleGroundImpact;
+            }
+            // if (eggFallDetector != null)
+            // {
+            //     eggFallDetector.OnEggFall += HandleEggFall;
+            // }
+        }
+        
+        private void OnDisable()
+        {
+            if (_eggController != null)
+            {
+                _eggController.OnEggLanded -= HandleEggLanded;
+                //eggController.OnGroundImpact -= HandleGroundImpact;
+            }
+            // if (eggFallDetector != null)
+            // {
+            //     eggFallDetector.OnEggFall -= HandleEggFall;
+            // }
+        }
 
         private void Awake()
         {
@@ -110,6 +139,7 @@ namespace Gameplay
             Debug.Log("[GameManager] Intro開始！ タイマーはまだ動かず、卵が落下します。");
 
             // TODO: A担当の eggController.DropEgg() を呼ぶ
+<<<<<<< HEAD
             // if (eggController != null) eggController.DropEgg();
 
             // 2025/08/29追加: ここで初めて卵の物理演算を有効化し、実際に落下させる。
@@ -118,6 +148,9 @@ namespace Gameplay
             {
                 _eggRigidbody.isKinematic = false;
             }
+=======
+            if (_eggController != null) _eggController.DropEgg();
+>>>>>>> origin/main
             // TODO: C担当のUIやフィードバックを呼ぶ
         }
 
