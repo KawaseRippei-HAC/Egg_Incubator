@@ -30,10 +30,14 @@ public class EggController : MonoBehaviour
     [Header("現在の難易度状況")]
     [Tooltip("ゲーム進行度に応じて変化するパラメータ")]
     public DifficultyParams difficulty;
+    private Vector3 initialPosition;
+    private Quaternion initialRotation;
 
     void Start()
     {
         rb = GetComponent<Rigidbody>();
+        initialPosition = transform.position;
+        initialRotation = transform.rotation;
 
         //// テスト用の初期値（後でManagerからSetDifficultyで上書きされる想定）
         //difficulty = new DifficultyParams
@@ -136,5 +140,22 @@ public class EggController : MonoBehaviour
             OnEggLanded?.Invoke(); // GameManagerの HandleEggLanded() が呼ばれる
             Debug.Log("[EggController] フライパンに着地したことを検知！");
         }
+    }
+    public void ResetEgg()
+    {
+        // 物理演算を一時停止（DropEggが呼ばれるまで空中で待機させる）
+        rb.isKinematic = true;
+        rb.linearVelocity = Vector3.zero;
+        rb.angularVelocity = Vector3.zero;
+
+        // 初期位置と回転に戻す
+        transform.position = initialPosition;
+        transform.rotation = initialRotation;
+        
+        // 内部状態のリセット
+        hasLanded = false;
+        forceTimer = 0f;
+
+        Debug.Log("[EggController] タマゴの位置と状態をリセットしました。");
     }
 }
