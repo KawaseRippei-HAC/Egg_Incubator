@@ -16,6 +16,11 @@ namespace Gameplay
         [SerializeField] private float dangerLevel = 0f;
         [SerializeField] private float crackProgress = 0f;
         
+        public float Progress => gameProgress;
+        public float DangerLevel => dangerLevel;
+        public float CrackProgress => crackProgress;
+        public GameState CurrentState => _gameState;
+        
         [Header("Reference")]
         [SerializeField] private TimerManager _timerManager = null;
         // [SerializeField] private DifficultyMangaer _difficultyManger = null;
