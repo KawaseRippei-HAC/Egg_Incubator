@@ -301,6 +301,7 @@ public class FeedbackController : MonoBehaviour
         cameraController?.PlaySuccessCamera();
         audioController?.PlaySuccess(); // 任意。破片音を既存スクリプト側(hatchAudioSource)で鳴らす場合は空実装のままでよい(3.5節)
         audioController?.PlayBGM(AudioController.BGMType.ResultSuccess);
+        audioController?.StopRolling();
         // uiController.ShowSuccessResult()はここでは呼ばない。GameManager.SuccessSequence()が
         // successResultDelay分の演出待ちをした後に個別に呼ぶ設計(GameManager.cs実装より判明)。
     }
@@ -312,6 +313,7 @@ public class FeedbackController : MonoBehaviour
     public void StartFallFeedback(Transform egg)
     {
         cameraController?.FollowFallingEgg(egg);
+        audioController?.StopRolling();
     }
 
     /// <summary>
@@ -325,6 +327,7 @@ public class FeedbackController : MonoBehaviour
         cameraController?.ImpactShake();
         audioController?.PlayFailure(); // 任意。既存スクリプト側(breakAudioSource)運用でも可(3.5節)
         audioController?.PlayBGM(AudioController.BGMType.ResultFailure);
+        audioController?.StopRolling();
         // uiController.ShowFailureResult()はここでは呼ばない。GameManager.HandleGroundImpact()が
         // 直後に個別に呼ぶ設計(GameManager.cs実装より判明)。
     }
@@ -355,6 +358,7 @@ public class FeedbackController : MonoBehaviour
 
         cameraController?.ResetCamera();
         audioController?.PlayBGM(AudioController.BGMType.Title);
+        audioController?.StopRolling();
         uiController?.ShowTitle();
     }
 }

@@ -93,6 +93,15 @@ public class AudioController : MonoBehaviour
         }
     }
 
+    /// <summary>転がりSEを強制的に停止する。PLAYING状態を抜けるタイミングやリトライ時の安全策として呼ぶ</summary>
+    public void StopRolling()
+    {
+        if (seSource != null && seSource.isPlaying && seSource.clip == rollingSe)
+        {
+            seSource.Stop();
+        }
+    }
+
     /// <summary>基本的に呼ばなくてよい(3.5節)。既存hatchAudioSourceで足りない追加SEがある場合のみ実装する</summary>
     public void PlaySuccess()
     {
