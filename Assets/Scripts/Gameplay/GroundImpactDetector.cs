@@ -4,7 +4,7 @@ using UnityEngine.Events;
 public class GroundImpactDetector : MonoBehaviour
 {
     public string targetTag = "Player";
-    public System.Action OnGroundImpact;
+    public event System.Action OnGroundImpact;
 
     // �����I�ɏՓ˂����u�ԂɌĂ΂��i�n�ʂŃ^�}�S���o�E���h���������E�~�߂����ꍇ�j
     private void OnCollisionEnter(Collision collision)
@@ -12,7 +12,7 @@ public class GroundImpactDetector : MonoBehaviour
         if (collision.gameObject.CompareTag(targetTag))
         {
             Debug.Log("[GroundImpactDetector] �n�ʂɌ��˂����I");
-            OnGroundImpact.Invoke();
+            OnGroundImpact?.Invoke();
         }
     }
 }

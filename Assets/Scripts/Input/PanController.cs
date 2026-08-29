@@ -2,35 +2,58 @@ using UnityEngine;
 
 public class PanController : MonoBehaviour
 {
-    [Header("ƒtƒ‰ƒCƒpƒ“‚Ì‘€ìİ’è")]
-    [Tooltip("ƒtƒ‰ƒCƒpƒ“‚ªŒX‚­Å‘åŠp“x")]
+    [Header("ï¿½tï¿½ï¿½ï¿½Cï¿½pï¿½ï¿½ï¿½Ì‘ï¿½ï¿½ï¿½İ’ï¿½")]
+    [Tooltip("ï¿½tï¿½ï¿½ï¿½Cï¿½pï¿½ï¿½ï¿½ï¿½ï¿½Xï¿½ï¿½ï¿½Å‘ï¿½pï¿½x")]
     [SerializeField] private float maxAngle = 25.0f;
 
-    [Tooltip("ƒXƒ}ƒz‚ğŒX‚¯‚½‚Æ‚«‚ÌŠ´“x")]
+    [Tooltip("ï¿½Xï¿½}ï¿½zï¿½ï¿½ï¿½Xï¿½ï¿½ï¿½ï¿½ï¿½Æ‚ï¿½ï¿½ÌŠï¿½ï¿½x")]
     [SerializeField] private float sensitivity = 1.5f;
 
-    [Tooltip("ƒtƒ‰ƒCƒpƒ“‚Ì“®‚«‚ÌŠŠ‚ç‚©‚³B”’l‚ğ‰º‚°‚é‚Æ‚Ê‚é‚Á‚ÆAã‚°‚é‚ÆƒLƒrƒLƒr")]
+    [Tooltip("ï¿½tï¿½ï¿½ï¿½Cï¿½pï¿½ï¿½ï¿½Ì“ï¿½ï¿½ï¿½ï¿½ÌŠï¿½ï¿½ç‚©ï¿½ï¿½ï¿½Bï¿½ï¿½ï¿½lï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ‚Ê‚ï¿½ï¿½ï¿½ÆAï¿½ã‚°ï¿½ï¿½ÆƒLï¿½rï¿½Lï¿½r")]
     [SerializeField] private float smoothSpeed = 10.0f;
+    
+    [Header("ãƒ•ãƒ©ã‚¤ãƒ‘ãƒ³ã®è¨­å®š")]
+    [Tooltip("ãƒ•ãƒ©ã‚¤ãƒ‘ãƒ³ã®åŠå¾„ï¼ˆä¸­å¿ƒã‹ã‚‰ç«¯ã¾ã§ã®è·é›¢ï¼‰ã€‚ã“ã®å€¤ã§å±é™ºåº¦ã®æœ€å¤§ãƒ©ã‚¤ãƒ³ãŒæ±ºã¾ã‚Šã¾ã™")]
+    public float panRadius = 0.4f;
 
     void Start()
     {
-        // ’[––‚ÌƒWƒƒƒCƒƒZƒ“ƒT[‚ğ—LŒø‰»
+        // ï¿½[ï¿½ï¿½ï¿½ÌƒWï¿½ï¿½ï¿½Cï¿½ï¿½ï¿½Zï¿½ï¿½ï¿½Tï¿½[ï¿½ï¿½Lï¿½ï¿½ï¿½ï¿½
         Input.gyro.enabled = true;
     }
 
     void Update()
     {
-        // ƒXƒ}ƒz‚Ì‰Á‘¬“xƒZƒ“ƒT[‚ğæ“¾‚µ‚ÄAŒX‚«‚ğŒŸ’m
+        // ï¿½Xï¿½}ï¿½zï¿½Ì‰ï¿½ï¿½ï¿½ï¿½xï¿½Zï¿½ï¿½ï¿½Tï¿½[ï¿½ï¿½ï¿½æ“¾ï¿½ï¿½ï¿½ÄAï¿½Xï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½m
         Vector3 accel = Input.acceleration;
 
-        // ƒXƒ}ƒz‚Ìc‚ÌŒX‚«‚Æ‰¡‚ÌŒX‚«‚ğŒvZ‚µAÅ‘åŠp“x ‚Å§ŒÀ‚µ‚Ü‚·B
+        // ï¿½Xï¿½}ï¿½zï¿½Ìcï¿½ÌŒXï¿½ï¿½ï¿½Æ‰ï¿½ï¿½ÌŒXï¿½ï¿½ï¿½ï¿½ï¿½vï¿½Zï¿½ï¿½ï¿½Aï¿½Å‘ï¿½pï¿½x ï¿½Åï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ü‚ï¿½ï¿½B
         float pitch = Mathf.Clamp(accel.y * sensitivity * maxAngle, -maxAngle, maxAngle);
         float roll = Mathf.Clamp(-accel.x * sensitivity * maxAngle, -maxAngle, maxAngle);
 
-        // –Ú“I‚Æ‚È‚éƒtƒ‰ƒCƒpƒ“‚ÌŠp“x‚ğì¬
+        // ï¿½Ú“Iï¿½Æ‚È‚ï¿½tï¿½ï¿½ï¿½Cï¿½pï¿½ï¿½ï¿½ÌŠpï¿½xï¿½ï¿½ï¿½ì¬
         Quaternion targetRot = Quaternion.Euler(pitch, 0f, roll);
 
-        // Œ»İ‚ÌŠp“x‚©‚ç–Ú“I‚ÌŠp“x‚ÖAŠŠ‚ç‚©‚É‰ñ“]‚³‚¹‚é
+        // ï¿½ï¿½ï¿½İ‚ÌŠpï¿½xï¿½ï¿½ï¿½ï¿½Ú“Iï¿½ÌŠpï¿½xï¿½ÖAï¿½ï¿½ï¿½ç‚©ï¿½É‰ï¿½]ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
         transform.localRotation = Quaternion.Slerp(transform.localRotation, targetRot, Time.deltaTime * smoothSpeed);
+    }
+    public float GetNormalizedDistanceFromCenter(Vector3 eggPosition)
+    {
+        // Yè»¸ï¼ˆé«˜ã•ï¼‰ã®å·®ã‚’ç„¡è¦–ã—ã¦ã€å¹³é¢ä¸Šã®è·é›¢ã ã‘ã‚’æ¸¬ã‚‹ãŸã‚ã®ãƒ™ã‚¯ãƒˆãƒ«ã‚’ä½œæˆ
+        Vector3 offset = eggPosition - transform.position;
+        offset.y = 0f; 
+
+        // ä¸­å¿ƒã‹ã‚‰ã®æ°´å¹³è·é›¢ã‚’è¨ˆç®—
+        float distance = offset.magnitude;
+
+        // åŠå¾„ã§å‰²ã£ã¦ 0.0 ã€œ 1.0 ã®ç¯„å›²ã«ä¸¸ã‚ã‚‹ï¼ˆClamp01ã§1.0ã‚’è¶…ãˆãªã„ã‚ˆã†ã«ã™ã‚‹ï¼‰
+        float normalizedDistance = Mathf.Clamp01(distance / panRadius);
+
+        return normalizedDistance;
+    }
+    public void ResetPan()
+    {
+        // ãƒ•ãƒ©ã‚¤ãƒ‘ãƒ³ã®å‚¾ãã‚’ãƒªã‚»ãƒƒãƒˆã™ã‚‹å‡¦ç†
+        transform.rotation = Quaternion.identity;
     }
 }

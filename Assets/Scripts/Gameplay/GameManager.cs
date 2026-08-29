@@ -33,27 +33,31 @@ namespace Gameplay
         [SerializeField] private DifficultyManager _difficultyManager = null;
         [SerializeField] private EggStateController _eggStateController = null;
         
-        // [Header("References A")]
-        // [SerializeField] private EggFallDetector _eggFallDetector = null;
+        [Header("References A")]
+        [SerializeField] private EggFallDetector _eggFallDetector = null;
         [SerializeField] private PanController _panController = null;
         [SerializeField] private EggController _eggController = null;
         [SerializeField] private GroundImpactDetector  _groundImpactDetector = null;
-        // [SerializeField] private EggStateController _eggStateController = null;
+        
+        // [Header("References C")]
         // [SerializeField] private FeedbackController _feedbackController = null;
         // [SerializeField] private UIController _uiController = null;
         
         private void OnEnable()
-        {
-            if (_eggController != null)
+        {if (_eggController != null)
             {
                 _eggController.OnEggLanded += HandleEggLanded;
-                _groundImpactDetector.OnGroundImpact += HandleGroundImpact;
-                //eggController.OnGroundImpact += HandleGroundImpact;
             }
-            // if (eggFallDetector != null)
-            // {
-            //     eggFallDetector.OnEggFall += HandleEggFall;
-            // }
+            
+            if (_groundImpactDetector != null)
+            {
+                _groundImpactDetector.OnGroundImpact += HandleGroundImpact;
+            }
+            
+            if (_eggFallDetector != null)
+            {
+                _eggFallDetector.OnEggFall += HandleEggFall;
+            }
         }
         
         private void OnDisable()
@@ -61,12 +65,17 @@ namespace Gameplay
             if (_eggController != null)
             {
                 _eggController.OnEggLanded -= HandleEggLanded;
+            }
+            
+            if (_groundImpactDetector != null)
+            {
                 _groundImpactDetector.OnGroundImpact -= HandleGroundImpact;
             }
-            // if (eggFallDetector != null)
-            // {
-            //     eggFallDetector.OnEggFall -= HandleEggFall;
-            // }
+            
+            if (_eggFallDetector != null)
+            {
+                _eggFallDetector.OnEggFall -= HandleEggFall;
+            }
         }
 
         public void StartIntro()
@@ -137,14 +146,11 @@ namespace Gameplay
                     }
                     //Debug.Log($"[難易度変化] 進行度:{gameProgress:F2} | 力の倍率:{currentDifficulty.forceMultiplier:F2} | 発生間隔:{currentDifficulty.forceInterval:F2}秒 | 速度上限:{currentDifficulty.maxLinearSpeed:F1}");
 
-                    float currentDistance = debugNormalizedDistance; 
-                
-                    /* 本実装時は以下のようにA担当から値を取得する
-                    if (eggController != null && panController != null)
+                    float currentDistance = 0f;
+                    if (_eggController != null && _panController != null)
                     {
-                        currentDistance = panController.GetNormalizedDistanceFromCenter(eggController.GetPosition());
+                        currentDistance = _panController.GetNormalizedDistanceFromCenter(_eggController.GetPosition());
                     }
-                    */
 
                     dangerLevel = _difficultyManager.CalculateDanger(currentDistance);
                 }
@@ -201,9 +207,9 @@ namespace Gameplay
         
         public void HandleGroundImpact()
         {
+            Debug.Log(gameState);
             if (gameState != GameState.FALLING) return;
             // TODO: C担当への通知 (eggStateController.Break(), feedbackController.PlayFailureFeedback())
-
             gameResult = GameResult.FAILURE;
             gameState = GameState.RESULT;
 
@@ -264,7 +270,7 @@ namespace Gameplay
                 _eggStateController.ResetState();
             }
             // if (_feedbackController != null) _feedbackController.ResetFeedback();
-            // if (_panController != null) _panController.ResetPan();
+            if (_panController != null) _panController.ResetPan();
             //
             // if (_uiController != null) _uiController.ShowTitle();
             if (_eggController != null) _eggController.ResetEgg();
