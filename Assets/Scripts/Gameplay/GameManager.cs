@@ -53,23 +53,40 @@ namespace Gameplay
             {
                 _timerManager.UpdateTimer();
                 gameProgress = _timerManager.GetProgress();
-                Debug.Log("gameProgress" + gameProgress);
                 if (_timerManager.IsTimeUp())
                 {
                     Success();
                 }
             }
+            // Debug
+            if (Input.GetKeyDown(KeyCode.F)) HandleEggFall();       // Fキーで落下開始
+            if (Input.GetKeyDown(KeyCode.G)) HandleGroundImpact();  // Gキーで地面衝突
+            if (Input.GetKeyDown(KeyCode.R)) Retry();
             
         }
 
         public void HandleEggFall()
         {
-            // TODO: 落下開始時の処理（Phase B4）
+            if (_gameState != GameState.PLAYING) return;
+            _gameState = GameState.FALLING;
+            if (_timerManager != null)
+            {
+                _timerManager.StopTimer();
+            }
+            // TODO: C担当への通知 (feedbackController.StartFallFeedback(egg))
+            Debug.Log("[GameManager] 落下開始！ 状態: FALLING, タイマー停止");
         }
         
         public void HandleGroundImpact()
         {
-            // TODO: 地面衝突時（割れる）の処理（Phase B4）
+            if (_gameState != GameState.FALLING) return;
+            // TODO: C担当への通知 (eggStateController.Break(), feedbackController.PlayFailureFeedback())
+
+            _gameResult = GameResult.FAILURE;
+            _gameState = GameState.RESULT;
+
+            // TODO: C担当への通知 (uiController.ShowFailureResult())
+            Debug.Log("[GameManager] 地面衝突！ 卵が割れた。 状態: RESULT, 結果: FAILURE");
         }
 
         public void Success()
@@ -86,7 +103,21 @@ namespace Gameplay
 
         public void Retry()
         {
-            // TODO: 各種状態のリセットと再開処理（Phase B4以降）
+            if (_gameState != GameState.RESULT) return;
+            gameProgress = 0f;
+            dangerLevel = 0f;
+            crackProgress = 0f;
+            _gameResult = GameResult.NONE;
+
+            if (_timerManager != null)
+            {
+                _timerManager.StopTimer();
+            }
+            // TODO: 他クラスの初期化 (EggStateController, FeedbackController, PanController)
+
+            // 状態をリセットして開始シーケンスへ戻る
+            StartIntro();
+            Debug.Log("[GameManager] リトライ！ 各種値をリセットし、Introへ戻ります。");
         }
     }
 }
