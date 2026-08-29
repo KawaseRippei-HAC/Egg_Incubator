@@ -12,10 +12,9 @@ public class PanController : MonoBehaviour
     [Tooltip("フライパンの動きの滑らかさ。数値が大きいと素早く、小さいとゆったり")]
     [SerializeField] private float smoothSpeed = 10.0f;
 
-    [Header("危険度判定 (2025/08/29追加)")]
-    [Tooltip("卵がこの半径(ワールド単位)だけパン中心から離れると危険度1.0(=パンの外)とみなす。" +
-             "パンの実寸に合わせて調整してください")]
-    [SerializeField] private float effectiveRadius = 1.0f;
+    [Header("フライパンの設定")]
+    [Tooltip("フライパンの半径(中心から端までの距離)。この値で危険度の最大ラインが決まります")]
+    public float panRadius = 0.4f;
 
     void Start()
     {
@@ -38,17 +37,23 @@ public class PanController : MonoBehaviour
         // 現在の角度から目的の角度へ、滑らかに回転させる
         transform.localRotation = Quaternion.Slerp(transform.localRotation, targetRot, Time.deltaTime * smoothSpeed);
     }
-
-    /// <summary>
-    /// 卵の水平位置(XZ平面)がパン中心からどれだけ離れているかを0〜1(以上)で返す。
-    /// 1.0以上でパンの縁の外に出たとみなす。GameManager.Update()からdangerLevel算出に使う。
-    /// EggFallDetectorから「パンを外れたか」の判定にも使う。
-    /// </summary>
-    public float GetNormalizedDistanceFromCenter(Vector3 worldPosition)
+    public float GetNormalizedDistanceFromCenter(Vector3 eggPosition)
     {
-        Vector3 toEgg = worldPosition - transform.position;
-        toEgg.y = 0f; // 高さは無視し、水平距離だけで判定する
-        if (effectiveRadius <= 0f) return 0f;
-        return toEgg.magnitude / effectiveRadius;
+        // Y軸(高さ)の差を無視して、平面上の距離だけを測るためのベクトルを作成
+        Vector3 offset = eggPosition - transform.position;
+        offset.y = 0f;
+
+        // 中心からの水平距離を計算
+        float distance = offset.magnitude;
+
+        // 半径で割って 0.0 〜 1.0 の範囲に丸める(Clamp01で1.0を超えないようにする)
+        float normalizedDistance = Mathf.Clamp01(distance / panRadius);
+
+        return normalizedDistance;
+    }
+    public void ResetPan()
+    {
+        // フライパンの傾きをリセットする処理
+        transform.rotation = Quaternion.identity;
     }
 }
