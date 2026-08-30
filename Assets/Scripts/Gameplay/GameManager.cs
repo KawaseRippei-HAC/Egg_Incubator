@@ -1,6 +1,6 @@
 using UnityEngine.InputSystem;
 using System.Collections;
-using Feedback.Gameplay;
+using Feedback;
 using Proto.Core;
 using UnityEngine;
 using UnityEngine.Serialization;
