@@ -38,6 +38,8 @@ namespace Gameplay
         [SerializeField] private PanController _panController = null;
         [SerializeField] private EggController _eggController = null;
         [SerializeField] private GroundImpactDetector _groundImpactDetector = null;
+        [SerializeField] private SweetSpotController _sweetSpotController = null;
+
 
         [Header("References C")]
         [SerializeField] private FeedbackController _feedbackController = null;
@@ -47,6 +49,7 @@ namespace Gameplay
         // 2025/08/29追加: autoTriggerOnCollisionをoffにしたため、明示的にTriggerBreak()を呼ぶ必要がある
         [SerializeField] private EggBreakController _eggBreakController = null;
 
+        
         [Header("卵の落下制御 (2025/08/29追加)")]
         [Tooltip("卵本体のRigidbody。StartIntro()が呼ばれるまで卵をその場に固定(isKinematic=true)しておき、" +
                  "意図しない自由落下を防ぐ。TriggerBreak/TriggerHatch側で再度isKinematicを操作するため、" +
@@ -54,6 +57,11 @@ namespace Gameplay
         [SerializeField] private Rigidbody _eggRigidbody = null;
         [Tooltip("パンの縁を超えた瞬間・地面衝突の瞬間を自動検知し、HandleEggFall/HandleGroundImpactを自動呼び出しする")]
         [SerializeField] private EggFallDetector _eggFallDetector = null;
+        
+        [Header("Tap Feedback")]
+        [SerializeField] private ParticleSystem _tapEffectParticle = null;
+        [SerializeField] private AudioSource _tapAudioSource = null;
+        [SerializeField] private AudioClip _tapSE = null;
 
         private Vector3 _eggInitialPosition;
         private Quaternion _eggInitialRotation;
@@ -97,6 +105,7 @@ namespace Gameplay
 
         private void Awake()
         {
+            if (_sweetSpotController != null) _sweetSpotController.DeactivateSpot();
             // 卵の初期位置・回転を記憶しておき、Retry()で物理的にも元の位置へ戻せるようにする。
             // また、StartIntro()が呼ばれるまでは重力で自由落下しないようKinematicで固定しておく。
             if (_eggRigidbody != null)
@@ -162,6 +171,7 @@ namespace Gameplay
                 _uiController.ShowPlaying();
             }
 
+            if (_sweetSpotController != null) _sweetSpotController.ActivateSpot();
             Debug.Log("[GameManager] PLAYING開始！ 60秒タイマーが動き出します。");
         }
 
@@ -170,6 +180,7 @@ namespace Gameplay
             // タップでの進行操作: TITLE中のタップでStartIntro()、RESULT中のタップでRetry()
             if (Input.GetMouseButtonDown(0))
             {
+                PlayTapFeedback();
                 if (gameState == GameState.TITLE)
                 {
                     StartIntro();
@@ -182,7 +193,15 @@ namespace Gameplay
             // TODO: PLAYING状態での毎フレーム更新処理（Timer, progress, dangerLevelの更新など）
             if (gameState == GameState.PLAYING && _timerManager != null)
             {
-                _timerManager.UpdateTimer();
+                float speedMultiplier = 1.0f;
+
+                if (_sweetSpotController != null && _sweetSpotController.IsEggInside)
+                {
+                    speedMultiplier = 3.0f;
+                }
+                
+                _timerManager.UpdateTimer(speedMultiplier);
+                
                 gameProgress = _timerManager.GetProgress();
                 if (_difficultyManager != null)
                 {
@@ -195,14 +214,14 @@ namespace Gameplay
                         _eggController.SetDifficulty(currentDifficulty);
                     }
 
-                                        float currentDistance = debugNormalizedDistance;
+                    float currentDistance = debugNormalizedDistance;
 
                     // 2025/08/29有効化: パンと卵の実際の距離が取れる場合はそちらを優先する。
                     // 未接続(テスト中等)は引き続きdebugNormalizedDistanceスライダーで確認できる。
                     if (_eggController != null && _panController != null)
                     {
                         currentDistance = _panController.GetNormalizedDistanceFromCenter(_eggController.GetPosition());
-                                        }
+                    }
 
                     dangerLevel = _difficultyManager.CalculateDanger(currentDistance);
 
@@ -244,12 +263,33 @@ namespace Gameplay
                 if (Keyboard.current.rKey.wasPressedThisFrame) Retry();
             }
         }
+        private void PlayTapFeedback()
+        {
+            if (_tapAudioSource != null && _tapSE != null)
+            {
+                _tapAudioSource.PlayOneShot(_tapSE);
+            }
+
+            if (_tapEffectParticle != null && Camera.main != null)
+            {
+                Vector3 mousePos = Input.mousePosition;
+                // カメラからどれくらい奥にエフェクトを出すか（シーンに合わせて調整してください）
+                mousePos.z = 5f; 
+                
+                Vector3 worldPos = Camera.main.ScreenToWorldPoint(mousePos);
+                
+                _tapEffectParticle.transform.position = worldPos;
+                _tapEffectParticle.Play();
+            }
+        }
 
         public void HandleEggFall()
         {
             if (gameState != GameState.PLAYING) return;
 
             gameState = GameState.FALLING;
+            
+            if (_sweetSpotController != null) _sweetSpotController.DeactivateSpot();
 
             if (_timerManager != null)
             {
@@ -295,9 +335,17 @@ namespace Gameplay
 
         public void Success()
         {
-            if (gameState != GameState.PLAYING) return;
+            if (gameState != GameState.PLAYING ) return;
             gameState = GameState.HATCHING;
-            Debug.Log("[GameManager] 120秒到達！ HATCHING状態へ移行し、孵化を待機します。");
+            Debug.Log("[GameManager] 成功！ HATCHING状態へ移行し、孵化を待機します。");
+            if (_sweetSpotController != null) _sweetSpotController.DeactivateSpot();
+            
+            if (_eggRigidbody != null)
+            {
+                _eggRigidbody.isKinematic = true;
+                _eggRigidbody.linearVelocity = Vector3.zero;
+                _eggRigidbody.angularVelocity = Vector3.zero;
+            }
 
             if (_timerManager != null)
             {
@@ -343,6 +391,9 @@ namespace Gameplay
         public void Retry()
         {
             if (gameState != GameState.RESULT) return;
+            
+            if (_sweetSpotController != null) _sweetSpotController.DeactivateSpot();
+            
             gameProgress = 0f;
             dangerLevel = 0f;
             crackProgress = 0f;
