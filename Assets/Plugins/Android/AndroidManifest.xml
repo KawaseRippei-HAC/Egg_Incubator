@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Handheld.Vibrate() (HapticController.cs) requires android.permission.VIBRATE.
+  Unity does not add this permission automatically, so without this manifest
+  vibration silently does nothing on an Android device build (works fine in
+  the Editor, which is why it can look "implemented" but not work on-device).
+  This file is merged into Unity's generated manifest by Gradle at build time.
+-->
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <uses-permission android:name="android.permission.VIBRATE" />
+</manifest>
