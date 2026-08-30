@@ -1,5 +1,6 @@
 using UnityEngine.InputSystem;
 using System.Collections;
+using Feedback.Gameplay;
 using Proto.Core;
 using UnityEngine;
 using UnityEngine.Serialization;
@@ -62,6 +63,7 @@ namespace Gameplay
         [SerializeField] private ParticleSystem _tapEffectParticle = null;
         [SerializeField] private AudioSource _tapAudioSource = null;
         [SerializeField] private AudioClip _tapSE = null;
+        [SerializeField] private ScreenEffectController _screenEffectController = null;
 
         private Vector3 _eggInitialPosition;
         private Quaternion _eggInitialRotation;
@@ -228,6 +230,11 @@ namespace Gameplay
                     if (_feedbackController != null)
                     {
                         _feedbackController.UpdateDangerFeedback(dangerLevel);
+                    }
+                    if (_screenEffectController != null)
+                    {
+                        bool isInside = (_sweetSpotController != null && _sweetSpotController.IsEggInside);
+                        _screenEffectController.UpdateEffectState(dangerLevel, isInside);
                     }
                 }
 

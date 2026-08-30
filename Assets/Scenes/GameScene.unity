@@ -566,6 +566,7 @@ MonoBehaviour:
   changeInterval: 4
   spawnRadius: 0.32
   moveSpeed: 1.5
+  healAudioSource: {fileID: 0}
 --- !u!136 &589189207
 CapsuleCollider:
   m_ObjectHideFlags: 0
@@ -1039,6 +1040,55 @@ Mesh:
       - serializedVersion: 1
         m_IndexStart: 0
         m_IndexCount: 0
+--- !u!1 &846574473
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 846574475}
+  - component: {fileID: 846574474}
+  m_Layer: 0
+  m_Name: Global Volume
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &846574474
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 846574473}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 172515602e62fb746b5d573b38a5fe58, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Unity.RenderPipelines.Core.Runtime::UnityEngine.Rendering.Volume
+  m_IsGlobal: 1
+  priority: 0
+  blendDistance: 0
+  weight: 1
+  sharedProfile: {fileID: 11400000, guid: a0fcdd8c7af004dfca4fa35346c50f97, type: 2}
+--- !u!4 &846574475
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 846574473}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 13.628313, y: 3.76691, z: -0.53551745}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &846954037
 GameObject:
   m_ObjectHideFlags: 0
@@ -1485,6 +1535,7 @@ GameObject:
   - component: {fileID: 1057775480}
   - component: {fileID: 1057775479}
   - component: {fileID: 1057775481}
+  - component: {fileID: 1057775482}
   m_Layer: 0
   m_Name: GameManager
   m_TagString: Untagged
@@ -1527,6 +1578,7 @@ MonoBehaviour:
   _tapEffectParticle: {fileID: 0}
   _tapAudioSource: {fileID: 1057775481}
   _tapSE: {fileID: 8300000, guid: 8f89bf9613c614c8bb4451f419ef4ea6, type: 3}
+  _screenEffectController: {fileID: 1057775482}
 --- !u!4 &1057775480
 Transform:
   m_ObjectHideFlags: 0
@@ -1554,7 +1606,7 @@ AudioSource:
   OutputAudioMixerGroup: {fileID: 0}
   m_audioClip: {fileID: 0}
   m_Resource: {fileID: 0}
-  m_PlayOnAwake: 1
+  m_PlayOnAwake: 0
   m_Volume: 1
   m_Pitch: 1
   Loop: 0
@@ -1639,6 +1691,22 @@ AudioSource:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
+--- !u!114 &1057775482
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1057775478}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7f169ae34b374c0fbd0e23d84033a8a3, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Feedback.Gameplay.ScreenEffectController
+  _globalVolume: {fileID: 846574474}
+  _dangerColor: {r: 1, g: 0, b: 0, a: 1}
+  _sweetSpotColor: {r: 0, g: 1, b: 0, a: 1}
+  _maxIntensity: 0.5
 --- !u!1 &1195235183
 GameObject:
   m_ObjectHideFlags: 0
@@ -1831,7 +1899,7 @@ MonoBehaviour:
     m_Bits: 1
   m_VolumeTrigger: {fileID: 0}
   m_VolumeFrameworkUpdateModeOption: 2
-  m_RenderPostProcessing: 0
+  m_RenderPostProcessing: 1
   m_Antialiasing: 0
   m_AntialiasingQuality: 2
   m_StopNaN: 0
@@ -3119,3 +3187,4 @@ SceneRoots:
   - {fileID: 1419076907}
   - {fileID: 1968507832}
   - {fileID: 2068553534}
+  - {fileID: 846574475}

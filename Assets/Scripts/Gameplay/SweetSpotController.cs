@@ -9,6 +9,10 @@ namespace Gameplay
         
         [Tooltip("サークルが移動するスピード（数値が高いほど速い）")]
         public float moveSpeed = 1.5f;
+        
+        [Header("Audio")]
+        [Tooltip("回復中になり続けるSEを再生するAudioSource")]
+        public AudioSource healAudioSource;
 
         public bool IsEggInside { get; private set; }
 
@@ -56,6 +60,12 @@ namespace Gameplay
         public void DeactivateSpot()
         {
             IsEggInside = false;
+            
+            if (healAudioSource != null)
+            {
+                healAudioSource.Stop();
+            }
+            
             gameObject.SetActive(false); // オブジェクトを非表示
         }
     }
