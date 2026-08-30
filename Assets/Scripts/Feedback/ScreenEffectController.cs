@@ -1,10 +1,8 @@
-namespace Feedback
-{
-    using UnityEngine;
+using UnityEngine;
 using UnityEngine.Rendering;
-using UnityEngine.Rendering.Universal; // ★URP用の参照
+using UnityEngine.Rendering.Universal;
 
-namespace Gameplay
+namespace Feedback
 {
     public class ScreenEffectController : MonoBehaviour
     {
@@ -25,14 +23,12 @@ namespace Gameplay
 
         void Start()
         {
-            // ★変更: TryGet を使用して Vignette を取得
             if (_globalVolume != null && _globalVolume.profile.TryGet(out _vignette))
             {
                 _vignette.intensity.value = 0f;
             }
         }
 
-        // GameManagerから毎フレーム呼ばれる
         public void UpdateEffectState(float dangerLevel, bool isSweetSpot)
         {
             _targetDangerLevel = dangerLevel;
@@ -46,17 +42,17 @@ namespace Gameplay
             Color targetColor = _vignette.color.value;
             float targetIntensity = 0f;
 
-            // 1. 【赤優先】フライパンの端にいて少しでも危険度がある場合
-            if (_targetDangerLevel > 0.05f) 
+            // 1. 【緑優先】サークル内にいる場合（危険度に関わらず緑にする）
+            if (_isSweetSpotInside)
+            {
+                targetColor = _sweetSpotColor;
+                targetIntensity = _maxIntensity * 0.8f;
+            }
+            // 2. サークル外であり、かつフライパンの端（危険度がある）場合
+            else if (_targetDangerLevel > 0.05f) 
             {
                 targetColor = _dangerColor;
                 targetIntensity = _targetDangerLevel * _maxIntensity;
-            }
-            // 2. 危険ではない（安全圏にいる）かつ、サークル内にいる場合
-            else if (_isSweetSpotInside)
-            {
-                targetColor = _sweetSpotColor;
-                targetIntensity = _maxIntensity * 0.8f; // 緑色の濃さを指定
             }
 
             // 3. 滑らかに色と強さを変化させる
@@ -64,5 +60,4 @@ namespace Gameplay
             _vignette.intensity.value = Mathf.Lerp(_vignette.intensity.value, targetIntensity, Time.deltaTime * 5f);
         }
     }
-}
 }

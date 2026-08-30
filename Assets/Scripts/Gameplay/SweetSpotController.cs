@@ -4,27 +4,39 @@ namespace Gameplay
 
     public class SweetSpotController : MonoBehaviour
     {
-        public float changeInterval = 4f; // 移動する間隔
-        public float spawnRadius = 0.3f;    // フライパン上の出現範囲
+        public float changeInterval = 4f;
+        public float spawnRadius = 0.3f;    
         
         [Tooltip("サークルが移動するスピード（数値が高いほど速い）")]
         public float moveSpeed = 1.5f;
-        
+
+        // ▼ 変更：AudioSourceではなく、直接音源ファイル（AudioClip）をセットできるようにしました
         [Header("Audio")]
-        [Tooltip("回復中になり続けるSEを再生するAudioSource")]
-        public AudioSource healAudioSource;
+        [Tooltip("回復中になり続けるSEをセットしてください")]
+        public AudioClip healSE;
 
         public bool IsEggInside { get; private set; }
 
         private float timer;
-        private Vector3 targetLocalPosition; // ★追加：移動先の目標座標
+        private Vector3 targetLocalPosition;
+        
+        // 裏で自動生成するAudioSource用
+        private AudioSource _audioSource;
+
+        private void Awake()
+        {
+            // ゲーム開始時に、自分自身にAudioSourceを自動追加して初期設定を行う
+            _audioSource = gameObject.AddComponent<AudioSource>();
+            _audioSource.clip = healSE;
+            _audioSource.playOnAwake = false; // 勝手に鳴らないようにする
+            _audioSource.loop = true;         // ループ再生をオンにする
+        }
 
         void Update()
         {
             timer += Time.deltaTime;
             if (timer >= changeInterval)
             {
-                // ▼ 修正: 古いメソッドではなく、新しい目的地を設定するメソッドを呼ぶ
                 SetNewTargetPosition();
                 timer = 0;
             }
@@ -38,35 +50,52 @@ namespace Gameplay
             targetLocalPosition = new Vector3(randomCircle.x, -0.1f, randomCircle.y);
         }
 
-        private void OnTriggerStay(Collider other)
+        private void OnTriggerEnter(Collider other)
         {
-            if (other.CompareTag("Player")) IsEggInside = true;
+            if (other.CompareTag("Player"))
+            {
+                IsEggInside = true;
+                
+                // SEがセットされていて、まだ鳴っていなければ再生
+                if (_audioSource != null && _audioSource.clip != null && !_audioSource.isPlaying)
+                {
+                    _audioSource.Play();
+                }
+            }
         }
 
         private void OnTriggerExit(Collider other)
         {
-            if (other.CompareTag("Player")) IsEggInside = false;
+            if (other.CompareTag("Player"))
+            {
+                IsEggInside = false;
+                
+                if (_audioSource != null)
+                {
+                    _audioSource.Stop();
+                }
+            }
         }
+
         public void ActivateSpot()
         {
-            gameObject.SetActive(true); // オブジェクトを表示
+            gameObject.SetActive(true);
             SetNewTargetPosition();
             transform.localPosition = targetLocalPosition;
             timer = 0f;
             IsEggInside = false;
         }
 
-        // --- 追加：PLAYING終了時に呼ばれる ---
         public void DeactivateSpot()
         {
             IsEggInside = false;
-            
-            if (healAudioSource != null)
+
+            if (_audioSource != null)
             {
-                healAudioSource.Stop();
+                _audioSource.Stop();
             }
-            
-            gameObject.SetActive(false); // オブジェクトを非表示
+
+            gameObject.SetActive(false);
         }
     }
 }
