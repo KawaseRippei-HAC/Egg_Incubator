@@ -504,7 +504,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: cf37986fc0ef4eea8a71f01cf956492b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Gameplay.TimerManager
-  timeLimit: 120
+  timeLimit: 5
 --- !u!4 &236180038
 Transform:
   m_ObjectHideFlags: 0
@@ -1185,10 +1185,15 @@ MonoBehaviour:
   _timerManager: {fileID: 236180037}
   _difficultyManager: {fileID: 336254473}
   _eggStateController: {fileID: 1368307371}
-  _eggFallDetector: {fileID: 1324795623}
   _panController: {fileID: 1702614853}
   _eggController: {fileID: 1514611619}
   _groundImpactDetector: {fileID: 2133046147}
+  _feedbackController: {fileID: 0}
+  _uiController: {fileID: 0}
+  _eggHatchController: {fileID: 0}
+  _eggBreakController: {fileID: 0}
+  _eggRigidbody: {fileID: 0}
+  _eggFallDetector: {fileID: 1324795623}
 --- !u!4 &1057775480
 Transform:
   m_ObjectHideFlags: 0
@@ -1793,6 +1798,11 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &1412969436 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 229791252089253863, guid: f865321086457468b81d4d39c04d0741, type: 3}
+  m_PrefabInstance: {fileID: 1606553167}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1001 &1514611616
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -2063,7 +2073,10 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 611277070323283293, guid: f865321086457468b81d4d39c04d0741, type: 3}
       insertIndex: -1
       addedObject: {fileID: 1620897314}
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 229791252089253863, guid: f865321086457468b81d4d39c04d0741, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1702614857}
   m_SourcePrefab: {fileID: 100100000, guid: f865321086457468b81d4d39c04d0741, type: 3}
 --- !u!1 &1620897313
 GameObject:
@@ -2228,12 +2241,39 @@ MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 2105076881805096727, guid: f865321086457468b81d4d39c04d0741, type: 3}
   m_PrefabInstance: {fileID: 1606553167}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
+  m_GameObject: {fileID: 1412969436}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 8b260f65d441fbd42b55aae209ba6076, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PanController
+--- !u!54 &1702614857
+Rigidbody:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1412969436}
+  serializedVersion: 5
+  m_Mass: 1
+  m_LinearDamping: 0
+  m_AngularDamping: 0.05
+  m_CenterOfMass: {x: 0, y: 0, z: 0}
+  m_InertiaTensor: {x: 1, y: 1, z: 1}
+  m_InertiaRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ImplicitCom: 1
+  m_ImplicitTensor: 1
+  m_UseGravity: 1
+  m_IsKinematic: 1
+  m_Interpolate: 0
+  m_Constraints: 0
+  m_CollisionDetection: 0
 --- !u!1 &1763051107
 GameObject:
   m_ObjectHideFlags: 0
