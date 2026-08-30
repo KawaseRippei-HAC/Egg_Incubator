@@ -239,9 +239,10 @@ public class FeedbackController : MonoBehaviour
         _currentDanger = Mathf.Clamp01(danger);
 
         heartbeatController?.UpdateHeartbeat(_currentDanger);
-        hapticController?.PlayHeartbeat(_currentDanger);
         cameraController?.PlayDangerShake(_currentDanger);
 
+        // hapticController.PlayHeartbeat()はRecomputeVisualCrack()内で
+        // visualCrack(=Max(danger, progress))を渡すよう変更済み(下記参照)。
         RecomputeVisualCrack();
     }
 
@@ -258,6 +259,10 @@ public class FeedbackController : MonoBehaviour
     /// <summary>
     /// danger(位置)とprogress(時間)を合成し、殻の発光(eggCrackGlowController)へ渡す。
     /// 仕様書5章: どちらか高い方を採用(Max)することで、2つの意味を1チャンネルに矛盾なく載せる。
+    ///
+    /// ★2026/08/30追加: バイブレーション(HapticController.PlayHeartbeat)もこのvisualCrack値を
+    /// 使うよう変更した。「時間経過、卵が中心から離れるほど振動が強くなる」という要望に対応するため、
+    /// 位置だけのdangerではなく、時間経過(progress)も反映した合成値を渡す。
     /// </summary>
     private void RecomputeVisualCrack()
     {
@@ -267,6 +272,8 @@ public class FeedbackController : MonoBehaviour
         {
             eggCrackGlowController.SetDangerLevel(visualCrack);
         }
+
+        hapticController?.PlayHeartbeat(visualCrack);
 
         CheckCrackThresholdCrossing(visualCrack);
         _lastVisualCrack = visualCrack;
@@ -325,6 +332,9 @@ public class FeedbackController : MonoBehaviour
         heartbeatController?.StopHeartbeat();
         hapticController?.PlayFailure();
         cameraController?.ImpactShake();
+        // 卵は割れた後もコライダー無効化状態のまま物理的に落下し続け、床を貫通してしまうため、
+        // 追従(Following)を止めてその場でカメラを静止させる(6章の未決事項・要望対応)。
+        cameraController?.StopFollowing();
         audioController?.PlayFailure(); // 任意。既存スクリプト側(breakAudioSource)運用でも可(3.5節)
         audioController?.PlayBGM(AudioController.BGMType.ResultFailure);
         audioController?.StopRolling();

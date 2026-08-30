@@ -12,12 +12,21 @@ using UnityEngine;
 /// - クラス図(タマゴインキュベーター_クラス図.drawio.png)にはheartbeatSourceフィールドが
 ///   このクラスに描かれているが、C担当_実装仕様書.md 3.2節の記述を優先し、
 ///   heartbeatSourceはHeartbeatController側に持たせている(要B/全員合意の確認事項)。
+///
+/// ★不具合修正メモ(2026/08/30): 開始SE(startSe)がタイトル→着地の1回目は鳴るのに
+/// 2回目以降は鳴らないことがある不具合を確認。原因は PlayRolling() が seSource.Play() を
+/// 呼んでいたため、着地直後に PlaySE(Start) で流した PlayOneShot 再生を、卵が転がり始めた
+/// 瞬間に上書き停止していたこと(AudioSource.Play()は同じAudioSource上の全ての再生を止める)。
+/// 転がりSEをseSourceから分離し、専用のrollingSourceに逃がすことで解決した。
 /// </summary>
 public class AudioController : MonoBehaviour
 {
     [Header("再生元")]
     public AudioSource bgmSource;
+    [Tooltip("タップ音・開始音などの単発SE(PlayOneShot)専用。ループ再生する転がり音とは分離すること")]
     public AudioSource seSource;
+    [Tooltip("転がり音(ループ)専用。seSourceと共用すると、AudioSource.Play()がPlayOneShot中の単発SEを停止させてしまう")]
+    public AudioSource rollingSource;
 
     [Header("BGMクリップ")]
     public AudioClip titleBgm;
@@ -72,33 +81,35 @@ public class AudioController : MonoBehaviour
     /// <summary>卵の転がり・跳ねの速さに応じて音量/ピッチを変化させる。FeedbackController.PlayEggMovementFeedback()から呼ばれる</summary>
     public void PlayRolling(float speed)
     {
-        if (seSource == null || rollingSe == null) return;
+        var source = rollingSource != null ? rollingSource : seSource; // rollingSource未設定時はseSourceにフォールバック(旧挙動)
+        if (source == null || rollingSe == null) return;
 
         if (speed > rollingSpeedThreshold)
         {
-            if (seSource.clip != rollingSe || !seSource.isPlaying)
+            if (source.clip != rollingSe || !source.isPlaying)
             {
-                seSource.clip = rollingSe;
-                seSource.loop = true;
-                seSource.Play();
+                source.clip = rollingSe;
+                source.loop = true;
+                source.Play();
             }
 
             float t = Mathf.Clamp01(speed / rollingSpeedForMaxVolume);
-            seSource.volume = t;
-            seSource.pitch = Mathf.Lerp(0.8f, 1.3f, t);
+            source.volume = t;
+            source.pitch = Mathf.Lerp(0.8f, 1.3f, t);
         }
-        else if (seSource.isPlaying && seSource.clip == rollingSe)
+        else if (source.isPlaying && source.clip == rollingSe)
         {
-            seSource.Stop();
+            source.Stop();
         }
     }
 
     /// <summary>転がりSEを強制的に停止する。PLAYING状態を抜けるタイミングやリトライ時の安全策として呼ぶ</summary>
     public void StopRolling()
     {
-        if (seSource != null && seSource.isPlaying && seSource.clip == rollingSe)
+        var source = rollingSource != null ? rollingSource : seSource;
+        if (source != null && source.isPlaying && source.clip == rollingSe)
         {
-            seSource.Stop();
+            source.Stop();
         }
     }
 

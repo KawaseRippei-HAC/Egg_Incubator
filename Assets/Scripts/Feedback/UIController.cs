@@ -16,12 +16,20 @@ public class UIController : MonoBehaviour
 
     [Header("リザルト背景 (成功/失敗で色を変える仮実装)")]
     public Image resultBackground;
-    public Color successColor = new Color(0.2f, 0.8f, 0.4f, 0.6f);
-    public Color failureColor = new Color(0.8f, 0.15f, 0.15f, 0.6f);
+    [Tooltip("以前は0.6と濃かったため薄く調整(要望対応)")]
+    public Color successColor = new Color(0.2f, 0.8f, 0.4f, 0.22f);
+    [Tooltip("以前は0.6と濃かったため薄く調整(要望対応)")]
+    public Color failureColor = new Color(0.8f, 0.15f, 0.15f, 0.22f);
 
-    [Header("失敗時の赤フラッシュ (画面全体、常時最前面)")]
+    [Header("成功/失敗時のフラッシュ (画面全体、常時最前面)")]
     public CanvasGroup flashImage;
+    [Tooltip("flashImageと同じオブジェクトのImage。以前はflashColorのRGBが未使用でアルファしか反映されて" +
+             "いなかった(常に固定色)ため、成功/失敗で色を変えられるよう追加(要望対応)")]
+    public Image flashGraphic;
+    [Tooltip("失敗時のフラッシュ色")]
     public Color flashColor = new Color(1f, 0f, 0f, 0.5f);
+    [Tooltip("成功時のフラッシュ色(テキストを使わない成功演出、要望対応)")]
+    public Color successFlashColor = new Color(1f, 0.9f, 0.4f, 0.5f);
     public float flashDuration = 0.4f;
 
     private Coroutine _flashRoutine;
@@ -46,6 +54,7 @@ public class UIController : MonoBehaviour
         SetActiveSafe(titleUI, false);
         SetActiveSafe(resultUI, true);
         if (resultBackground != null) resultBackground.color = successColor;
+        FlashSuccess();
         ShowRetry();
     }
 
@@ -67,19 +76,34 @@ public class UIController : MonoBehaviour
     /// <summary>画面全体を一瞬赤くフェードさせる(テキストを使わない失敗演出)</summary>
     public void FlashDanger()
     {
-        if (flashImage == null) return;
-        if (_flashRoutine != null) StopCoroutine(_flashRoutine);
-        _flashRoutine = StartCoroutine(FlashRoutine());
+        Flash(flashColor);
     }
 
-    private IEnumerator FlashRoutine()
+    /// <summary>画面全体を一瞬暖色にフェードさせる(テキストを使わない成功演出、要望対応)</summary>
+    public void FlashSuccess()
     {
-        flashImage.alpha = flashColor.a;
+        Flash(successFlashColor);
+    }
+
+    private void Flash(Color color)
+    {
+        if (flashImage == null) return;
+        if (flashGraphic != null)
+        {
+            flashGraphic.color = new Color(color.r, color.g, color.b, 1f);
+        }
+        if (_flashRoutine != null) StopCoroutine(_flashRoutine);
+        _flashRoutine = StartCoroutine(FlashRoutine(color));
+    }
+
+    private IEnumerator FlashRoutine(Color color)
+    {
+        flashImage.alpha = color.a;
         float t = 0f;
         while (t < flashDuration)
         {
             t += Time.deltaTime;
-            flashImage.alpha = Mathf.Lerp(flashColor.a, 0f, t / flashDuration);
+            flashImage.alpha = Mathf.Lerp(color.a, 0f, t / flashDuration);
             yield return null;
         }
         flashImage.alpha = 0f;
