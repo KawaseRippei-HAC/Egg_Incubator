@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using Proto.Core;
+using Unity.VisualScripting;
 
 [RequireComponent(typeof(Rigidbody))]
 public class EggController : MonoBehaviour
@@ -26,6 +27,12 @@ public class EggController : MonoBehaviour
 
     [Tooltip("1回のアクションで加わる力の最大値。一気に吹っ飛ぶのを防ぎます")]
     public float maxForceMagnitude = 8.0f;
+
+    [Header("中央アシスト設定")]
+    [Tooltip("中央へ引き寄せる方向の割合（0.0で完全ランダム、1.0で完全に中央へ向かう）")]
+    [Range(0f, 1f)] public float centerAssistWeight = 0.3f;
+    [Tooltip("基準となるフライパンのオブジェクト（未指定ならワールドの原点 X=0, Z=0 を使用）")]
+    public Transform panCenter;
 
     [Header("現在の難易度状況")]
     [Tooltip("ゲーム進行度に応じて変化するパラメータ")]
@@ -72,10 +79,18 @@ public class EggController : MonoBehaviour
         // 1. 方向の決定
         // ランダムな円（X, Z軸のみ）の方向を取得して、水平方向に力を加えるようにします
         Vector2 randomCircle = Random.insideUnitCircle.normalized;
-        Vector3 forceDir = new Vector3(randomCircle.x, 0f, randomCircle.y);
+        Vector3 randomDir = new Vector3(randomCircle.x, 0f, randomCircle.y);
+
+        // 中央アシストベクトルの計算
+        Vector3 targetCenter = panCenter != null ? panCenter.position : Vector3.zero;
+        // たまごの現在地から中央へ向かう方向
+        Vector3 toCenterDir = new Vector3(targetCenter.x - transform.position.x, 0.0f, targetCenter.z - transform.position.z).normalized;
+
+        // Lerpを使って、ランダム方向と中央方向を centerAssistWeight の割合で混ぜ合わせる
+        Vector3 forceDir = Vector3.Lerp(randomDir, toCenterDir, centerAssistWeight).normalized;
 
         // 2. 急激な方向転換の抑制
-        // 現在タマゴが転がっている方向(linearVelocity)と、これから力を加える方向(forceDir)を比較します
+        // 現在タマゴが転がっている方向(linearVelocity)と、これから力を加える方向(randomDir)を比較します
         float dot = Vector3.Dot(rb.linearVelocity.normalized, forceDir);
         float safeMultiplier = 1.0f;
 
