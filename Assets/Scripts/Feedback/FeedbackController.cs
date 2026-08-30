@@ -202,7 +202,7 @@ public class FeedbackController : MonoBehaviour
 
     private float _currentDanger;
     private float _currentProgress;
-    private float _lastVisualCrack = -1f;
+    private float _lastCrackProgress = -1f;
 
     private void Awake()
     {
@@ -231,65 +231,49 @@ public class FeedbackController : MonoBehaviour
     }
 
     /// <summary>
-    /// B担当から危険度(位置ベース, 0〜1)が更新されるたびに呼ぶ。
-    /// HeartbeatController/HapticControllerは危険度のみを見る(仕様書5章の役割分担)。
+    /// B担当から危険度(位置ベース, 卵が中心からどれだけ離れているか, 0〜1)が更新されるたびに呼ぶ。
+    /// ★2026/08/30修正: dangerLevelが影響するのは心音(Heartbeat/Haptic)とカメラシェイクのみ。
+    /// 殻のひび割れ演出(eggCrackGlowController)は下のUpdateCrackFeedback(crackProgress)側の担当に
+    /// 一本化した(以前はMax(danger, progress)の合成値を使っていたが、要望により役割を明確に分離)。
     /// </summary>
     public void UpdateDangerFeedback(float danger)
     {
         _currentDanger = Mathf.Clamp01(danger);
 
         heartbeatController?.UpdateHeartbeat(_currentDanger);
+        hapticController?.PlayHeartbeat(_currentDanger);
         cameraController?.PlayDangerShake(_currentDanger);
-
-        // hapticController.PlayHeartbeat()はRecomputeVisualCrack()内で
-        // visualCrack(=Max(danger, progress))を渡すよう変更済み(下記参照)。
-        RecomputeVisualCrack();
     }
 
     /// <summary>
-    /// B担当から孵化の進行度(時間経過ベース, 0〜1、あるいはcrackProgress)が更新されるたびに呼ぶ。
-    /// progressとcrackProgressが同一のものを指すかは要確認(仕様書5章の未決事項)。
+    /// B担当からゲーム進行度(crackProgress, 時間経過ベース, 0〜1)が更新されるたびに呼ぶ。
+    /// ★2026/08/30修正: 卵のひび割れ演出(eggCrackGlowController.SetDangerLevel)はこの値のみで
+    /// 駆動する(=「どれだけ孵化に近づいているか」)。dangerLevel(位置ベース)はここには一切影響しない。
     /// </summary>
     public void UpdateCrackFeedback(float crackProgress)
     {
         _currentProgress = Mathf.Clamp01(crackProgress);
-        RecomputeVisualCrack();
-    }
-
-    /// <summary>
-    /// danger(位置)とprogress(時間)を合成し、殻の発光(eggCrackGlowController)へ渡す。
-    /// 仕様書5章: どちらか高い方を採用(Max)することで、2つの意味を1チャンネルに矛盾なく載せる。
-    ///
-    /// ★2026/08/30追加: バイブレーション(HapticController.PlayHeartbeat)もこのvisualCrack値を
-    /// 使うよう変更した。「時間経過、卵が中心から離れるほど振動が強くなる」という要望に対応するため、
-    /// 位置だけのdangerではなく、時間経過(progress)も反映した合成値を渡す。
-    /// </summary>
-    private void RecomputeVisualCrack()
-    {
-        float visualCrack = Mathf.Max(_currentDanger, _currentProgress);
 
         if (eggCrackGlowController != null)
         {
-            eggCrackGlowController.SetDangerLevel(visualCrack);
+            eggCrackGlowController.SetDangerLevel(_currentProgress);
         }
 
-        hapticController?.PlayHeartbeat(visualCrack);
-
-        CheckCrackThresholdCrossing(visualCrack);
-        _lastVisualCrack = visualCrack;
+        CheckCrackThresholdCrossing(_currentProgress);
+        _lastCrackProgress = _currentProgress;
     }
 
     /// <summary>
-    /// crackThresholds(既定0.33 / 0.66)を上向きに跨いだ瞬間、1回だけPlayCrack()を呼ぶ。
+    /// crackThresholdsを上向きに跨いだ瞬間、1回だけPlayCrack()を呼ぶ。
     /// 既存アセットには「ヒビが1段階増えた」というイベントが無いための近似実装(仕様書5章)。
     /// </summary>
-    private void CheckCrackThresholdCrossing(float visualCrack)
+    private void CheckCrackThresholdCrossing(float crackProgress)
     {
-        if (_lastVisualCrack < 0f || hapticController == null) return;
+        if (_lastCrackProgress < 0f || hapticController == null) return;
 
         foreach (var threshold in crackThresholds)
         {
-            if (_lastVisualCrack < threshold && visualCrack >= threshold)
+            if (_lastCrackProgress < threshold && crackProgress >= threshold)
             {
                 hapticController.PlayCrack();
                 break; // 1フレームで複数閾値を跨いでも発火は1回のみ
@@ -359,7 +343,7 @@ public class FeedbackController : MonoBehaviour
         heartbeatController?.StopHeartbeat();
         _currentDanger = 0f;
         _currentProgress = 0f;
-        _lastVisualCrack = -1f;
+        _lastCrackProgress = -1f;
 
         if (eggCrackGlowController != null)
         {

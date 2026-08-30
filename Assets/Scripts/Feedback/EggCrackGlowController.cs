@@ -73,14 +73,31 @@ public class EggCrackGlowController : MonoBehaviour
             finalAmount = Mathf.Clamp01(dangerLevel * (1f + pulse * heartbeatPulseStrength));
         }
 
-        SetDangerLevel(finalAmount);
+        // ★不具合修正(2026/08/30): 以前はここでSetDangerLevel(finalAmount)を呼んでいたため、
+        // 心拍パルスでブーストされた値がdangerLevelフィールドへ毎フレーム書き戻され、
+        // 「ゲーム進行に応じて基準値(dangerLevel)が変化するはずなのに変わらない/暴走する」
+        // 不具合の温床になっていた。Update()内の毎フレーム反映は材質だけを更新する
+        // ApplyToMaterial()を直接呼び、dangerLevelフィールドを書き換えないようにする。
+        ApplyToMaterial(finalAmount);
     }
 
     /// <summary>
     /// 外部(ゲームロジック)から危険度を設定する。亀裂発光と放射光条の両方に反映される。
-    /// 例: eggCrackGlowController.SetDangerLevel(riskManager.currentDanger);
+    /// 例: eggCrackGlowController.SetDangerLevel(gameManager.CrackProgress);
+    ///
+    /// ★不具合修正(2026/08/30): 以前はシェーダーへ値を渡すだけでdangerLevelフィールド自体を
+    /// 更新していなかったため、実際には亀裂発光は正しく進行していても、Inspector上の
+    /// Danger Levelの表示が常に0のまま変化して見えないという不具合があった。
+    /// 外部からの呼び出しはこのフィールドにも反映する。
     /// </summary>
     public void SetDangerLevel(float amount)
+    {
+        amount = Mathf.Clamp01(amount);
+        dangerLevel = amount;
+        ApplyToMaterial(amount);
+    }
+
+    private void ApplyToMaterial(float amount)
     {
         amount = Mathf.Clamp01(amount);
         if (_crackMaterialInstance != null)
