@@ -20,7 +20,15 @@ public class EffectController : MonoBehaviour
     [Tooltip("この速度(m/s)を超えている間だけ再生する")]
     public float rollingSpeedThreshold = 0.15f;
 
+    [Header("スイートスポット演出 (追加要望: 触れると孵化が早まることを視覚的に示す)")]
+    [Tooltip("卵がスイートスポット内にいるかどうかを持つコンポーネント(A/B担当のSweetSpotController)。" +
+             "参照のみ行い、このスクリプト側からは一切変更しない")]
+    public Gameplay.SweetSpotController sweetSpotController;
+    [Tooltip("スイートスポットに触れている間再生するパーティクル(未設定の間は何もしない)")]
+    public ParticleSystem sweetSpotBoostEffect;
+
     private GameObject _rollingEffectInstance;
+    private bool _wasEggInSweetSpot;
 
     /// <summary>卵が転がっている間の砂煙・軌跡等(あれば)。FeedbackController.PlayEggMovementFeedback()から呼ばれる</summary>
     public void PlayRolling(float speed)
@@ -37,5 +45,30 @@ public class EffectController : MonoBehaviour
         {
             _rollingEffectInstance.SetActive(shouldPlay);
         }
+    }
+
+    /// <summary>
+    /// SweetSpotController.IsEggInside(卵がスイートスポットに触れている間trueになる、A/B担当実装)を
+    /// 毎フレーム監視し、入った瞬間/出た瞬間だけPlay/Stopを呼ぶ。GameManager/SweetSpotController側の
+    /// 改変は不要(C担当側だけで完結させる)。
+    /// </summary>
+    private void Update()
+    {
+        if (sweetSpotController == null || sweetSpotBoostEffect == null) return;
+
+        bool isInside = sweetSpotController.IsEggInside;
+        if (isInside == _wasEggInSweetSpot) return;
+
+        if (isInside)
+        {
+            sweetSpotBoostEffect.transform.position = sweetSpotController.transform.position;
+            sweetSpotBoostEffect.Play();
+        }
+        else
+        {
+            sweetSpotBoostEffect.Stop();
+        }
+
+        _wasEggInSweetSpot = isInside;
     }
 }

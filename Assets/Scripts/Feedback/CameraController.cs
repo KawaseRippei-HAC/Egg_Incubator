@@ -14,7 +14,7 @@ using UnityEngine;
 /// </summary>
 public class CameraController : MonoBehaviour
 {
-    private enum Mode { Normal, Shake, Following, Success }
+    private enum Mode { Normal, Shake, Following, Success, Frozen }
 
     [Header("参照")]
     public Camera mainCamera;
@@ -95,6 +95,10 @@ public class CameraController : MonoBehaviour
                     t.rotation = Quaternion.Slerp(t.rotation, look, Time.deltaTime * successTransitionSpeed);
                 }
                 break;
+
+            case Mode.Frozen:
+                // 何もしない: 割れた瞬間の位置で完全に静止させる(卵が床を貫通して落下し続けても追従しない)
+                break;
         }
 
         if (_impactShakeTimer > 0f)
@@ -145,6 +149,19 @@ public class CameraController : MonoBehaviour
     public void ImpactShake()
     {
         _impactShakeTimer = impactShakeDuration;
+    }
+
+    /// <summary>
+    /// 卵が割れて(失敗確定して)、追従対象がもう存在しない体で扱ってよくなった瞬間に呼ぶ。
+    /// 卵は割れた後もコライダーが無効化された状態で物理的に落下し続け、床を貫通して
+    /// 落ち続けるため、Followingモードのままだとカメラが際限なく追いかけてしまう。
+    /// その場でカメラを静止させ(Frozen)、以後は追従しない。
+    /// FeedbackController.PlayFailureFeedback()から呼ばれる
+    /// </summary>
+    public void StopFollowing()
+    {
+        _fallTarget = null;
+        _mode = Mode.Frozen;
     }
 
     /// <summary>リトライ時にPlayNormal()へ戻す</summary>
