@@ -18,12 +18,12 @@ namespace Gameplay
             isRunning = false;
         }
 
-        public void UpdateTimer()
+        public void UpdateTimer(float multiplier = 1.0f)
         {
             if (isRunning)
             {
-                elapsedTime += Time.deltaTime;
-                // Debug.Log("elapsedTime" + elapsedTime);
+                // 経過時間に倍率を掛けて足す
+                elapsedTime += Time.deltaTime * multiplier;
             }
         }
 
