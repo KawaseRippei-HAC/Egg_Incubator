@@ -25,11 +25,15 @@ namespace Gameplay
         [SerializeField] private float minMaxAngularSpeed = 5f;
         [SerializeField] private float maxMaxAngularSpeed = 20f;
 
-        public DifficultyParams GetDifficultyParams(float progress)
+        // NOTE(2025/08/29): Assets/Scripts/Input/EggController.cs にも同名の
+        // グローバル(名前空間なし)な DifficultyParams 構造体が存在し、こちらの方が
+        // 名前解決で優先されてしまうため、Proto.Core.DifficultyParams を明示的に
+        // 完全修飾する。EggController.cs 側は変更していません。
+        public Proto.Core.DifficultyParams GetDifficultyParams(float progress)
         {
             progress = Mathf.Clamp01(progress);
 
-            DifficultyParams parameters = new DifficultyParams();
+            Proto.Core.DifficultyParams parameters = new Proto.Core.DifficultyParams();
             
             parameters.forceMultiplier = Mathf.Lerp(minForceMultiplier, maxForceMultiplier, progress);
             parameters.forceInterval = Mathf.Lerp(maxForceInterval, minForceInterval, progress); 

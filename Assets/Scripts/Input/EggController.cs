@@ -125,6 +125,12 @@ public class EggController : MonoBehaviour
     public void SetDifficulty(DifficultyParams newParams)
     {
         difficulty = newParams;
+
+        // LimitVelocity()はAddForce/AddTorqueの次のFixedUpdateで速度を制限するため、
+        // 転がり摩擦によって同フレーム内で瞬間的に上限を超える速度が生じることがある。
+        // Rigidbody.maxLinearVelocityで物理エンジン自体に同じ上限をかけ、その1フレームの
+        // 速度超過(急発進に見える現象)自体を起きなくする。数値・挙動の意図は変えない。
+        rb.maxLinearVelocity = newParams.maxLinearSpeed;
     }
     public void DropEgg()
     {
