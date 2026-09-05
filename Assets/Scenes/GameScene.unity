@@ -326,6 +326,11 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &260831126 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 7224032849488191865, guid: 3f8ef555b749a4546a7330604be02994, type: 3}
+  m_PrefabInstance: {fileID: 1419076907}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &336254472
 GameObject:
   m_ObjectHideFlags: 0
@@ -16914,11 +16919,11 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 504909007164385081, guid: 3f8ef555b749a4546a7330604be02994, type: 3}
       propertyPath: m_LocalRotation.w
-      value: 0.7071068
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 504909007164385081, guid: 3f8ef555b749a4546a7330604be02994, type: 3}
       propertyPath: m_LocalRotation.x
-      value: 0.7071068
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 504909007164385081, guid: 3f8ef555b749a4546a7330604be02994, type: 3}
       propertyPath: m_LocalRotation.y
@@ -16930,7 +16935,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 504909007164385081, guid: 3f8ef555b749a4546a7330604be02994, type: 3}
       propertyPath: m_LocalEulerAnglesHint.x
-      value: 90
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 697970799834698693, guid: 3f8ef555b749a4546a7330604be02994, type: 3}
       propertyPath: m_IsActive
@@ -17007,6 +17012,18 @@ PrefabInstance:
     - target: {fileID: 7329029351248133144, guid: 3f8ef555b749a4546a7330604be02994, type: 3}
       propertyPath: m_IsActive
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8652542529541771963, guid: 3f8ef555b749a4546a7330604be02994, type: 3}
+      propertyPath: character
+      value: 
+      objectReference: {fileID: 260831126}
+    - target: {fileID: 8652542529541771963, guid: 3f8ef555b749a4546a7330604be02994, type: 3}
+      propertyPath: hatchFragments
+      value: 
+      objectReference: {fileID: 1940566086}
+    - target: {fileID: 8652542529541771963, guid: 3f8ef555b749a4546a7330604be02994, type: 3}
+      propertyPath: anticipationDuration
+      value: 0.25
       objectReference: {fileID: 0}
     - target: {fileID: 8652542529541771963, guid: 3f8ef555b749a4546a7330604be02994, type: 3}
       propertyPath: onHatch.m_PersistentCalls.m_Calls.Array.size
@@ -17652,6 +17669,11 @@ Mesh:
       - serializedVersion: 1
         m_IndexStart: 0
         m_IndexCount: 0
+--- !u!1 &1940566086 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 697970799834698693, guid: 3f8ef555b749a4546a7330604be02994, type: 3}
+  m_PrefabInstance: {fileID: 1419076907}
+  m_PrefabAsset: {fileID: 0}
 --- !u!21 &1955524789
 Material:
   serializedVersion: 8
@@ -18206,14 +18228,16 @@ MonoBehaviour:
   cameraController: {fileID: 2083153125}
   eggHatchController: {fileID: 1419076911}
   burst: {fileID: 1112251881}
-  burstDistanceBehind: 0.15
-  burstTargetScale: 0.5
+  burstDistanceBehind: 0.010960001
+  burstTargetScale: 0.01632011
   burstGrowDuration: 0.45
   burstSpinSpeed: 20
   burstIntensity: 1
   uprightCorrectionEuler: {x: 0, y: 180, z: 0}
   uprightCorrectionDuration: 0.4
   uprightTarget: {fileID: 744132212}
+  hideFragmentsDuringShowcase: 1
+  fragmentsHideDuration: 0.35
   showcaseNearClip: 0.01
   delayBeforeShowcase: 0.2
   fillRatioOverride: 0

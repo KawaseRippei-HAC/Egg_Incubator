@@ -30,11 +30,17 @@ public class HatchShowcaseController : MonoBehaviour
              "Egg_RadialGlowと同じ LightBurst_Mesh + Egg_RadialBurst3D マテリアルを想定")]
     public Transform burst;
 
-    [Tooltip("キャラから見てカメラの反対側(奥)へ、この距離だけ離して配置する")]
-    public float burstDistanceBehind = 0.15f;
+    // NOTE: 孵化キャラはワールド幅0.0137しかないため、この2つは非常に小さい値になる。
+    // 既定値0.5 / 0.15のときは光輪がキャラ幅の107倍・奥行きもカメラ距離(0.052)の2.9倍あり、
+    // 画面が光で埋まってキャラが見えなくなっていた。
+    [Tooltip("キャラから見てカメラの反対側(奥)へ、この距離だけ離して配置する。\n" +
+             "見せ場でのカメラ距離は約0.05なので、それより十分小さくすること")]
+    public float burstDistanceBehind = 0.011f;
 
-    [Tooltip("最終的な放射エフェクトのワールドスケール")]
-    public float burstTargetScale = 0.5f;
+    [Tooltip("最終的な放射エフェクトのワールドスケール。\n" +
+             "LightBurst_Meshのローカル幅は約2.94なので、0.0163でワールド幅0.048" +
+             "(キャラ幅の約3.5倍の光輪)になる")]
+    public float burstTargetScale = 0.0163f;
 
     [Tooltip("0から上のスケールまで大きくなるのにかける秒数")]
     public float burstGrowDuration = 0.45f;
@@ -63,6 +69,15 @@ public class HatchShowcaseController : MonoBehaviour
     [Tooltip("向き補正をかける対象。未設定ならeggHatchController.hatchVisual(EggHatch)を使う")]
     public Transform uprightTarget;
 
+    [Header("殻の破片の退場")]
+    [Tooltip("見せ場に入るとき、殻の破片(HatchFragments)を縮めて消す。\n" +
+             "破片1個のワールドサイズは約0.13で、キャラ全体(約0.014)の10倍近くある。" +
+             "寄ったカメラでは破片が画面を覆ってキャラが見えなくなるため、既定で有効")]
+    public bool hideFragmentsDuringShowcase = true;
+
+    [Tooltip("破片が縮んで消えるまでの秒数。0で即座に消す")]
+    public float fragmentsHideDuration = 0.35f;
+
     [Header("カメラのニアクリップ")]
     [Tooltip("見せ場の間だけカメラのニアクリップをこの値に下げる。\n" +
              "孵化キャラはワールド半径が約0.007しかなく、画面に大きく写すには0.05程度まで" +
@@ -88,6 +103,7 @@ public class HatchShowcaseController : MonoBehaviour
     private bool _uprightApplied;
     private float _originalNearClip = -1f;
     private Camera _nearClipCamera;
+    private bool _fragmentsHidden;
 
     private void Awake()
     {
@@ -142,6 +158,12 @@ public class HatchShowcaseController : MonoBehaviour
 
         // 向き補正を開始する(EggHatchを回す。Characterはアニメーションが持っているので触らない)
         StartCoroutine(ApplyUprightCorrection());
+
+        // 殻の破片を退場させる(キャラより10倍大きく、寄った画面を覆ってしまうため)
+        if (hideFragmentsDuringShowcase)
+        {
+            StartCoroutine(HideFragments());
+        }
 
         if (cameraController != null)
         {
@@ -222,6 +244,45 @@ public class HatchShowcaseController : MonoBehaviour
         t.localRotation = to;
     }
 
+    /// <summary>
+    /// 殻の破片を縮めて消す。破片は物理で動いているため、先にRigidbodyを止めてから
+    /// 親(HatchFragments)のスケールを落とす。個々の破片ではなく親だけを縮めるのは、
+    /// EggHatchController.ResetForTesting()が親のlocalScaleをVector3.oneへ戻すため、
+    /// リトライ時の復元がそれだけで済むから。
+    /// </summary>
+    private IEnumerator HideFragments()
+    {
+        GameObject fragments = eggHatchController != null ? eggHatchController.hatchFragments : null;
+        if (fragments == null) yield break;
+
+        // 物理を止める。止めずに親を縮めるとRigidbodyと取り合いになる
+        foreach (var rb in fragments.GetComponentsInChildren<Rigidbody>(true))
+        {
+            rb.linearVelocity = Vector3.zero;
+            rb.angularVelocity = Vector3.zero;
+            rb.isKinematic = true;
+        }
+
+        Transform ft = fragments.transform;
+        Vector3 from = ft.localScale;
+
+        if (fragmentsHideDuration > 0f)
+        {
+            float elapsed = 0f;
+            while (elapsed < fragmentsHideDuration)
+            {
+                elapsed += Time.deltaTime;
+                float p = Mathf.Clamp01(elapsed / fragmentsHideDuration);
+                ft.localScale = Vector3.Lerp(from, Vector3.zero, p);
+                yield return null;
+            }
+        }
+
+        ft.localScale = Vector3.zero;
+        fragments.SetActive(false);
+        _fragmentsHidden = true;
+    }
+
     private Transform ResolveUprightTarget()
     {
         if (uprightTarget != null) return uprightTarget;
@@ -284,6 +345,15 @@ public class HatchShowcaseController : MonoBehaviour
             up.localRotation = _uprightOriginalLocalRotation;
         }
         _uprightApplied = false;
+
+        // 破片を表示状態へ戻す。スケールと親子関係と物理は
+        // EggHatchController.ResetForTesting()が戻すので、ここではSetActiveだけ。
+        // (GameManager.Retry()がResetForTesting()も呼ぶ)
+        if (_fragmentsHidden && eggHatchController != null && eggHatchController.hatchFragments != null)
+        {
+            eggHatchController.hatchFragments.SetActive(true);
+        }
+        _fragmentsHidden = false;
 
         if (burst != null)
         {
