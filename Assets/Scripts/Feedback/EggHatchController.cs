@@ -84,6 +84,9 @@ public class EggHatchController : MonoBehaviour
     public UnityEvent onHatch;
 
     [Header("テスト用")]
+    [Tooltip("エディタ再生中に画面へテスト用パネル(TriggerHatchボタン等)を表示する。" +
+             "実機ビルドには元から含まれない(#if UNITY_EDITOR)ため、これはエディタの見た目の問題のみ")]
+    public bool showTestGui = false;
     [Tooltip("エディタ再生中に指定キーで手動テストできるようにする(新Input Systemプロジェクトのため既定では無効。EggBreakControllerと同じ方針でUpdateはコメントアウトし、OnGUIボタンのみ有効にしている)")]
     public bool enableTestKey = true;
     public KeyCode testKey = KeyCode.H;
@@ -309,6 +312,8 @@ public class EggHatchController : MonoBehaviour
 #if UNITY_EDITOR
     private void OnGUI()
     {
+        if (!showTestGui) return;
+
         GUI.Box(new Rect(10, 210, 300, 90), "Egg Hatch Test");
         GUI.Label(new Rect(20, 235, 280, 20), _hasHatched ? "状態: 孵化済み" : "状態: 待機中");
         if (!_hasHatched)

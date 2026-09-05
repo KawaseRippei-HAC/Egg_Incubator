@@ -79,6 +79,9 @@ public class EggBreakController : MonoBehaviour
     public UnityEvent onBreak;
 
     [Header("テスト用")]
+    [Tooltip("エディタ再生中に画面へテスト用パネル(TriggerBreakボタン等)を表示する。" +
+             "実機ビルドには元から含まれない(#if UNITY_EDITOR)ため、これはエディタの見た目の問題のみ")]
+    public bool showTestGui = false;
     [Tooltip("エディタ再生中に指定キーで手動テストできるようにする")]
     public bool enableTestKey = true;
     public KeyCode testKey = KeyCode.Space;
@@ -341,6 +344,8 @@ public class EggBreakController : MonoBehaviour
 #if UNITY_EDITOR
     private void OnGUI()
     {
+        if (!showTestGui) return;
+
         GUI.Box(new Rect(10, 110, 300, 90), "Egg Break Test");
         GUI.Label(new Rect(20, 135, 280, 20), _hasBroken ? "状態: 破壊済み" : "状態: 待機中");
         if (!_hasBroken)

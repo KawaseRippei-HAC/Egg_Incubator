@@ -18,6 +18,9 @@ public class EggCrackGlowController : MonoBehaviour
     public Renderer radialBurstRenderer;
 
     [Header("テスト再生設定")]
+    [Tooltip("エディタ再生中に画面左上のテスト用パネル(スライダー等)を表示する。" +
+             "実機ビルドには元から含まれない(#if UNITY_EDITOR)ため、これはエディタの見た目の問題のみ")]
+    public bool showTestGui = false;
     [Tooltip("有効にすると自動的に0→1→0で危険度を往復させ、発光の見え方を確認できる")]
     public bool testAutoPlay = false;
     [Tooltip("往復にかかる秒数")]
@@ -135,6 +138,8 @@ public class EggCrackGlowController : MonoBehaviour
 #if UNITY_EDITOR
     private void OnGUI()
     {
+        if (!showTestGui) return;
+
         GUI.Box(new Rect(10, 10, 260, 90), "Egg Crack Glow Test");
         GUI.Label(new Rect(20, 35, 240, 20), $"Danger Level: {dangerLevel:F2}");
         dangerLevel = GUI.HorizontalSlider(new Rect(20, 55, 220, 20), dangerLevel, 0f, 1f);
