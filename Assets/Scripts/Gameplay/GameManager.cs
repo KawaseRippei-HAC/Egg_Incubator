@@ -61,13 +61,15 @@ namespace Gameplay
         
         [Header("Tap Feedback")]
         [SerializeField] private ParticleSystem _tapEffectParticle = null;
-        [SerializeField] private AudioSource _tapAudioSource = null;
+        [Tooltip("タップ時に鳴らすSEをセットしてください")]
         [SerializeField] private AudioClip _tapSE = null;
         [SerializeField] private ScreenEffectController _screenEffectController = null;
-
+        
         private Vector3 _eggInitialPosition;
         private Quaternion _eggInitialRotation;
         private bool _eggInitialCaptured;
+        
+        private AudioSource _tapAudioSource;
 
         private void OnEnable()
         {
@@ -119,6 +121,12 @@ namespace Gameplay
                 _eggRigidbody.isKinematic = true;
                 _eggRigidbody.linearVelocity = Vector3.zero;
                 _eggRigidbody.angularVelocity = Vector3.zero;
+            }
+            if (_tapSE != null)
+            {
+                _tapAudioSource = gameObject.AddComponent<AudioSource>();
+                _tapAudioSource.playOnAwake = false;
+                _tapAudioSource.spatialBlend = 0f; // 2Dサウンド（どこで鳴らしても一定の音量）にする
             }
         }
 
