@@ -11,22 +11,25 @@ public class EggController : MonoBehaviour
     private float forceTimer;
     private bool hasLanded = false;
 
+    // NOTE: 以前はAddForce/AddTorqueをForceMode.Impulseで呼んでいたため、
+    // 加わる速度が卵の質量(0.06kg)に反比例していた。baseForce=2.0は
+    // Δv = 2.0 / 0.06 = 33m/s に相当し、一番簡単な設定(forceMultiplier=1)でも
+    // 速度上限(2m/s)を毎回一瞬で振り切っていた。その結果、難易度カーブの
+    // forceMultiplier(1→5)が全域で飽和して意味を成していなかった。
+    // ForceMode.VelocityChangeに変えて、以下の値がそのまま「1回で加わる速度」を
+    // 表すようにしてある(質量を変えても壊れない)。
     [Header("基本設定（タマゴの暴れ具合）")]
-    [Tooltip("タマゴを水平に押し出す力の基本値。転がる『速さ』に直結します")]
-    public float baseForce = 2.0f;
+    [Tooltip("1回の衝撃でタマゴに加わる水平方向の速度(m/s)。difficulty.forceMultiplier(1〜5)倍される。\n" +
+             "フライパンの半径は0.4mなので、0.15なら中心から縁まで約2.7秒かかる勢い")]
+    public float baseForce = 0.15f;
 
-    [Tooltip("タマゴを回転させる力の基本値。転がる『勢い（ゴロゴロ感）』に直結します")]
-    public float baseTorque = 1.0f;
+    [Tooltip("1回の衝撃でタマゴに加わる角速度(rad/s)。difficulty.forceMultiplier(1〜5)倍される。\n" +
+             "転がる『勢い（ゴロゴロ感）』に直結します")]
+    public float baseTorque = 1.5f;
 
     [Header("安全制御（理不尽な動きを防ぐリミッター）")]
-    [Tooltip("タマゴの最大移動速度。これ以上速く転がりません")]
-    public float maxLinearSpeed = 5.0f;
-
-    [Tooltip("タマゴの最大回転速度。これ以上高速でスピンしません")]
-    public float maxAngularSpeed = 10.0f;
-
-    [Tooltip("1回のアクションで加わる力の最大値。一気に吹っ飛ぶのを防ぎます")]
-    public float maxForceMagnitude = 8.0f;
+    [Tooltip("1回の衝撃で加わる速度の上限(m/s)。一気に吹っ飛ぶのを防ぎます")]
+    public float maxForceMagnitude = 1.0f;
 
     [Header("中央アシスト設定")]
     [Tooltip("フライパン中心付近にいるときの、中央へ引き寄せる方向の割合（0.0で完全ランダム、1.0で完全に中央へ向かう）")]
@@ -155,17 +158,18 @@ public class EggController : MonoBehaviour
             safeMultiplier = Mathf.Lerp(0.5f, 1.0f, assistWeight);
         }
 
-        // 3. 最終的な力の算出と上限の適用
-        // 押し出す力
+        // 3. 最終的な速度変化の算出と上限の適用
+        // 押し出す分の速度
         Vector3 appliedForce = forceDir * (baseForce * difficulty.forceMultiplier * safeMultiplier);
-        appliedForce = Vector3.ClampMagnitude(appliedForce, maxForceMagnitude); // 一定以上の力にならないよう制限
+        appliedForce = Vector3.ClampMagnitude(appliedForce, maxForceMagnitude); // 一気に吹っ飛ばないよう制限
 
-        // 回転させる力
+        // 回転させる分の角速度
         Vector3 appliedTorque = Random.onUnitSphere * (baseTorque * difficulty.forceMultiplier);
 
-        // 4. 力の適用
-        rb.AddForce(appliedForce, ForceMode.Impulse);
-        rb.AddTorque(appliedTorque, ForceMode.Impulse);
+        // 4. 適用。ForceMode.VelocityChangeなので質量・慣性モーメントに依存せず、
+        //    上で計算した値がそのまま速度・角速度の増分になる。
+        rb.AddForce(appliedForce, ForceMode.VelocityChange);
+        rb.AddTorque(appliedTorque, ForceMode.VelocityChange);
     }
 
     private void LimitVelocity()
