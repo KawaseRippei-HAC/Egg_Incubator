@@ -5838,6 +5838,11 @@ Material:
     - _SoftParticleFadeParams: {r: 0, g: 0, b: 0, a: 0}
   m_BuildTextureStacks: []
   m_AllowLocking: 1
+--- !u!4 &744132212 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 4185799771028703977, guid: 3f8ef555b749a4546a7330604be02994, type: 3}
+  m_PrefabInstance: {fileID: 1419076907}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &777948743
 GameObject:
   m_ObjectHideFlags: 0
@@ -18206,6 +18211,10 @@ MonoBehaviour:
   burstGrowDuration: 0.45
   burstSpinSpeed: 20
   burstIntensity: 1
+  uprightCorrectionEuler: {x: 0, y: 180, z: 0}
+  uprightCorrectionDuration: 0.4
+  uprightTarget: {fileID: 744132212}
+  showcaseNearClip: 0.01
   delayBeforeShowcase: 0.2
   fillRatioOverride: 0
 --- !u!4 &2011930932

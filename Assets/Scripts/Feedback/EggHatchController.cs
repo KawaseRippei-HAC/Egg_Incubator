@@ -95,6 +95,9 @@ public class EggHatchController : MonoBehaviour
     private bool _hasHatched;
     private bool _crackGlowAutoPlayOriginal;
 
+    // 孵化時にhatchFragmentsをワールド空間へ切り離すため、元の親を覚えておく
+    private Transform _hatchFragmentsOriginalParent;
+
     private void SetShellVisible(bool visible)
     {
         if (shellWhole == null) return;
@@ -243,6 +246,17 @@ public class EggHatchController : MonoBehaviour
             rb.angularVelocity = Random.insideUnitSphere * maxSpinSpeed;
         }
 
+        // 破片を親から切り離してワールド空間の物理オブジェクトにする。
+        // 親(EggHatch)が動くと、各破片のTransformが「自身の物理」と「親の移動」の
+        // 両方から引っ張られて震える(EggBreakControllerで直したのと同じ問題)。
+        // 加えて、孵化キャラの向き補正でEggHatchを回転させても破片が引きずられなくなる。
+        // ResetForTesting()で元の親へ戻す。
+        if (_hatchFragmentsOriginalParent == null)
+        {
+            _hatchFragmentsOriginalParent = hatchFragments.transform.parent;
+        }
+        hatchFragments.transform.SetParent(null, worldPositionStays: true);
+
         // 4. キャラクターのアニメーションを再生する(こちらはキーフレームアニメーションのまま)
         if (hatchAnimator != null)
         {
@@ -295,6 +309,13 @@ public class EggHatchController : MonoBehaviour
                 rb.isKinematic = true;
                 rb.linearVelocity = Vector3.zero;
                 rb.angularVelocity = Vector3.zero;
+            }
+
+            // 孵化時にワールドへ切り離しているので、元の親(EggHatch)へ戻してから
+            // ローカル変換をリセットする
+            if (_hatchFragmentsOriginalParent != null)
+            {
+                hatchFragments.transform.SetParent(_hatchFragmentsOriginalParent, worldPositionStays: false);
             }
             hatchFragments.transform.localPosition = Vector3.zero;
             hatchFragments.transform.localRotation = Quaternion.identity;

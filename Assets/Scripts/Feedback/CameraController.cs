@@ -131,6 +131,12 @@ public class CameraController : MonoBehaviour
                     float denom = Mathf.Max(showcaseFillRatio * 0.5f * Mathf.Tan(halfFov), 0.0001f);
                     float dist = _showcaseRadius / denom;
 
+                    // 孵化キャラはワールド半径が約0.007しかないため、必要距離は0.05程度になる。
+                    // ニアクリップ(既定0.3)より手前だとモデルが丸ごとクリップされて消えるので、
+                    // ニアクリップの外側に必ず収まるようクランプする。
+                    // (HatchShowcaseController側で見せ場中のニアクリップ自体も下げている)
+                    dist = Mathf.Max(dist, mainCamera.nearClipPlane * 1.5f + _showcaseRadius);
+
                     // 今カメラがいる側の水平方向を保ったまま、showcasePitch分だけ見下ろす位置へ回り込む
                     Vector3 flatDir = t.position - _showcaseTarget.position;
                     flatDir.y = 0f;
