@@ -327,6 +327,15 @@ public class FeedbackController : MonoBehaviour
     }
 
     /// <summary>
+    /// 画面がタップされたときにGameManagerから呼ぶ。ゲーム状態を問わず毎回鳴らす。
+    /// SEクリップはAudioController.tapSe(Feedback.prefabで設定済み)を使う。
+    /// </summary>
+    public void PlayTapFeedback()
+    {
+        audioController?.PlaySE(AudioController.SEType.Tap);
+    }
+
+    /// <summary>
     /// 卵の転がり・跳ねの速さに応じた演出(A担当 EggController.GetSpeed()等から呼ぶ)。
     /// </summary>
     public void PlayEggMovementFeedback(float speed)

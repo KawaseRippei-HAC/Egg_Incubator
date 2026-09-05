@@ -61,15 +61,16 @@ namespace Gameplay
         
         [Header("Tap Feedback")]
         [SerializeField] private ParticleSystem _tapEffectParticle = null;
-        [Tooltip("タップ時に鳴らすSEをセットしてください")]
-        [SerializeField] private AudioClip _tapSE = null;
+        // タップSEはFeedbackController経由でAudioControllerに任せる(AudioController.tapSeを使う)。
+        // 以前はここに_tapSE(AudioClip)を持ち、Awake()でAddComponent<AudioSource>()した
+        // 専用のAudioSourceで鳴らしていたが、AudioController側にも未使用のまま
+        // PlaySE(SEType.Tap)という同じ役割の経路が存在していて二重管理になっていた。
+        // BGM・開始SEを問題なく鳴らせているseSourceに一本化する。
         [SerializeField] private ScreenEffectController _screenEffectController = null;
-        
+
         private Vector3 _eggInitialPosition;
         private Quaternion _eggInitialRotation;
         private bool _eggInitialCaptured;
-        
-        private AudioSource _tapAudioSource;
 
         private void OnEnable()
         {
@@ -121,12 +122,6 @@ namespace Gameplay
                 _eggRigidbody.isKinematic = true;
                 _eggRigidbody.linearVelocity = Vector3.zero;
                 _eggRigidbody.angularVelocity = Vector3.zero;
-            }
-            if (_tapSE != null)
-            {
-                _tapAudioSource = gameObject.AddComponent<AudioSource>();
-                _tapAudioSource.playOnAwake = false;
-                _tapAudioSource.spatialBlend = 0f; // 2Dサウンド（どこで鳴らしても一定の音量）にする
             }
         }
 
@@ -280,9 +275,11 @@ namespace Gameplay
         }
         private void PlayTapFeedback()
         {
-            if (_tapAudioSource != null && _tapSE != null)
+            // タップSEはAudioController.tapSe(Feedback.prefabで設定済み)をseSourceで鳴らす。
+            // seSourceはBGM・開始SEを実際に鳴らせている経路なので、ここに一本化する。
+            if (_feedbackController != null)
             {
-                _tapAudioSource.PlayOneShot(_tapSE);
+                _feedbackController.PlayTapFeedback();
             }
 
             if (_tapEffectParticle != null && Camera.main != null)
