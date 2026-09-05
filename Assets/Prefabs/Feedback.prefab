@@ -255,6 +255,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::EffectController
   rollingEffectPrefab: {fileID: 0}
+  followTarget: {fileID: 0}
+  rollingSpeedThreshold: 0.15
+  sweetSpotController: {fileID: 0}
+  sweetSpotBoostEffect: {fileID: 0}
 --- !u!1 &3817310237529990292
 GameObject:
   m_ObjectHideFlags: 0
@@ -301,6 +305,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::HapticController
   minVibrateInterval: 0.3
   maxVibrateInterval: 1.2
+  minDangerToVibrate: 0.05
 --- !u!1 &4929792927218053864
 GameObject:
   m_ObjectHideFlags: 0
@@ -346,7 +351,15 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::CameraController
   mainCamera: {fileID: 0}
+  eggTransform: {fileID: 0}
   shakeMagnitude: 0.15
+  dangerShakeThreshold: 0.6
+  followSpeed: 4
+  followOffset: {x: 0, y: 1.5, z: -2.5}
+  successZoomDistance: 1.2
+  successTransitionSpeed: 2.5
+  impactShakeMagnitude: 0.35
+  impactShakeDuration: 0.3
 --- !u!1 &5214535083640170451
 GameObject:
   m_ObjectHideFlags: 0
@@ -394,6 +407,14 @@ MonoBehaviour:
   titleUI: {fileID: 0}
   resultUI: {fileID: 0}
   retryUI: {fileID: 0}
+  resultBackground: {fileID: 0}
+  successColor: {r: 0.2, g: 0.8, b: 0.4, a: 0.22}
+  failureColor: {r: 0.8, g: 0.15, b: 0.15, a: 0.22}
+  flashImage: {fileID: 0}
+  flashGraphic: {fileID: 0}
+  flashColor: {r: 1, g: 0, b: 0, a: 0.5}
+  successFlashColor: {r: 1, g: 0.9, b: 0.4, a: 0.5}
+  flashDuration: 0.4
 --- !u!1 &5947544358899267932
 GameObject:
   m_ObjectHideFlags: 0
@@ -440,10 +461,15 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::AudioController
   bgmSource: {fileID: 0}
   seSource: {fileID: 0}
+  rollingSource: {fileID: 0}
   titleBgm: {fileID: 8300000, guid: 92bddf36bd264467182bf8c5bb52c063, type: 3}
   playingBgm: {fileID: 8300000, guid: 24b293f280a1141a49fd2bb74cb997ac, type: 3}
   resultSuccessBgm: {fileID: 8300000, guid: 63517be8462e54f158578ea9a44f7939, type: 3}
   resultFailureBgm: {fileID: 8300000, guid: 33fc84fa6160e4883bbe5dbb2bca068f, type: 3}
-  tapSe: {fileID: 8300000, guid: 8f89bf9613c614c8bb4451f419ef4ea6, type: 3}
+  tapSe: {fileID: 8300000, guid: dc33a7e3d866a439b86de1151c318be7, type: 3}
   startSe: {fileID: 8300000, guid: ffacb5e774540443780c0b4b8574c74e, type: 3}
   rollingSe: {fileID: 8300000, guid: a299943fff89e41eb8ae22705465d06f, type: 3}
+  successSe: {fileID: 8300000, guid: d38816689037749e5ac162b590fd9b36, type: 3}
+  failureSe: {fileID: 8300000, guid: 55a89b40b8f384d678b78d42483f8a23, type: 3}
+  rollingSpeedThreshold: 0.15
+  rollingSpeedForMaxVolume: 5

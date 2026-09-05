@@ -39,6 +39,11 @@ public class AudioController : MonoBehaviour
     public AudioClip startSe;
     public AudioClip rollingSe;
 
+    [Tooltip("孵化した瞬間に鳴らすSE。GameManager.Success()と同じタイミングで発火する")]
+    public AudioClip successSe;
+    [Tooltip("卵が地面で割れた瞬間に鳴らすSE。GameManager.HandleGroundImpact()と同じタイミングで発火する")]
+    public AudioClip failureSe;
+
     public enum BGMType { Title, Playing, ResultSuccess, ResultFailure }
     public enum SEType { Tap, Start }
 
@@ -113,15 +118,29 @@ public class AudioController : MonoBehaviour
         }
     }
 
-    /// <summary>基本的に呼ばなくてよい(3.5節)。既存hatchAudioSourceで足りない追加SEがある場合のみ実装する</summary>
+    /// <summary>
+    /// 孵化した瞬間のSE。FeedbackController.PlaySuccessFeedback()から呼ばれる。
+    /// ★以前は「EggHatchController.hatchAudioSource/hatchSfxに割り当てれば鳴るので不要」として
+    /// 空実装だったが、そのスロットが両方とも未設定のまま運用されており、成功の瞬間にSEが
+    /// 一切鳴っていなかった。タップSEと同様にseSourceへ一本化する。
+    /// </summary>
     public void PlaySuccess()
     {
-        // 意図的に空実装。既存EggHatchController.hatchAudioSource/hatchSfxで代替可能。
+        if (seSource != null && successSe != null)
+        {
+            seSource.PlayOneShot(successSe);
+        }
     }
 
-    /// <summary>基本的に呼ばなくてよい(3.5節)。既存breakAudioSourceで足りない追加SEがある場合のみ実装する</summary>
+    /// <summary>
+    /// 卵が割れた瞬間のSE。FeedbackController.PlayFailureFeedback()から呼ばれる。
+    /// PlaySuccess()と同じ理由で、空実装からseSource再生に変更した。
+    /// </summary>
     public void PlayFailure()
     {
-        // 意図的に空実装。既存EggBreakController.breakAudioSource/breakSfxで代替可能。
+        if (seSource != null && failureSe != null)
+        {
+            seSource.PlayOneShot(failureSe);
+        }
     }
 }

@@ -184,6 +184,10 @@ public class FeedbackController : MonoBehaviour
     public AudioController audioController;
     public UIController uiController;
 
+    [Tooltip("孵化の見せ場演出。発火はEggHatchController.onHatchから直接行うため、" +
+             "ここではリトライ時のリセットのためだけに参照する")]
+    public HatchShowcaseController hatchShowcaseController;
+
     [Header("既存の卵演出スクリプト (実装済み・改変しない)")]
     [Tooltip("危険度(dangerLevel)の入力先。SetDangerLevel()のみを呼ぶ。TriggerBreak/TriggerHatchはB担当側の責任")]
     public EggCrackGlowController eggCrackGlowController;
@@ -360,6 +364,7 @@ public class FeedbackController : MonoBehaviour
         }
 
         cameraController?.ResetCamera();
+        hatchShowcaseController?.ResetShowcase();
         audioController?.PlayBGM(AudioController.BGMType.Title);
         audioController?.StopRolling();
         uiController?.ShowTitle();

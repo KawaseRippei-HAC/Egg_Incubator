@@ -14,7 +14,7 @@ using UnityEngine;
 /// </summary>
 public class CameraController : MonoBehaviour
 {
-    private enum Mode { Normal, Shake, Following, Success, Frozen }
+    private enum Mode { Normal, Shake, Following, Success, Frozen, Showcase }
 
     [Header("参照")]
     public Camera mainCamera;
@@ -34,6 +34,14 @@ public class CameraController : MonoBehaviour
     public float successZoomDistance = 1.2f;
     public float successTransitionSpeed = 2.5f;
 
+    [Header("孵化の見せ場カメラ (HatchShowcaseControllerから使う)")]
+    [Tooltip("見せ場でキャラクターが画面の縦方向に占める割合。0.45なら画面の高さの45%")]
+    [Range(0.05f, 1f)] public float showcaseFillRatio = 0.45f;
+    [Tooltip("見せ場カメラへ移行する速さ")]
+    public float showcaseTransitionSpeed = 2.0f;
+    [Tooltip("キャラを見下ろす角度(度)。0で真横から、大きいほど上から見下ろす")]
+    [Range(0f, 60f)] public float showcasePitch = 12f;
+
     [Header("失敗着地の単発シェイク")]
     public float impactShakeMagnitude = 0.35f;
     public float impactShakeDuration = 0.3f;
@@ -49,6 +57,10 @@ public class CameraController : MonoBehaviour
     // これを毎フレーム打ち消さずに t.position += ... を繰り返すとランダムウォークになり、
     // 特にFrozenモード(失敗時)は戻すLerpが無いためカメラが元の位置から漂流したまま固定される。
     private Vector3 _appliedImpactOffset = Vector3.zero;
+
+    // 見せ場モードの注視対象と、その見かけの大きさ(ワールド半径)
+    private Transform _showcaseTarget;
+    private float _showcaseRadius = 0.05f;
 
     private void Awake()
     {
@@ -110,6 +122,32 @@ public class CameraController : MonoBehaviour
                 }
                 break;
 
+            case Mode.Showcase:
+                if (_showcaseTarget != null)
+                {
+                    // キャラが画面の縦方向にshowcaseFillRatio分だけ占める距離を計算する。
+                    // 半径rの対象を画面比fで写すのに必要な距離 d = r / (f/2 * tan(fov/2))
+                    float halfFov = mainCamera.fieldOfView * 0.5f * Mathf.Deg2Rad;
+                    float denom = Mathf.Max(showcaseFillRatio * 0.5f * Mathf.Tan(halfFov), 0.0001f);
+                    float dist = _showcaseRadius / denom;
+
+                    // 今カメラがいる側の水平方向を保ったまま、showcasePitch分だけ見下ろす位置へ回り込む
+                    Vector3 flatDir = t.position - _showcaseTarget.position;
+                    flatDir.y = 0f;
+                    if (flatDir.sqrMagnitude < 0.0001f) flatDir = Vector3.back;
+                    flatDir.Normalize();
+
+                    float pitch = showcasePitch * Mathf.Deg2Rad;
+                    Vector3 dir = (flatDir * Mathf.Cos(pitch) + Vector3.up * Mathf.Sin(pitch)).normalized;
+                    Vector3 desired = _showcaseTarget.position + dir * dist;
+
+                    t.position = Vector3.Lerp(t.position, desired, Time.deltaTime * showcaseTransitionSpeed);
+                    // 注視点を画面中央に置く。LookRotationなので対象は必ず画面中央に来る
+                    Quaternion look = Quaternion.LookRotation(_showcaseTarget.position - t.position);
+                    t.rotation = Quaternion.Slerp(t.rotation, look, Time.deltaTime * showcaseTransitionSpeed);
+                }
+                break;
+
             case Mode.Frozen:
                 // 何もしない: 割れた瞬間の位置で完全に静止させる(卵が床を貫通して落下し続けても追従しない)
                 break;
@@ -131,6 +169,7 @@ public class CameraController : MonoBehaviour
         _mode = Mode.Normal;
         _currentDanger = 0f;
         _fallTarget = null;
+        _showcaseTarget = null;
     }
 
     /// <summary>危険度が閾値(dangerShakeThreshold)を超えている間だけ、微小な揺れを加える。
@@ -159,6 +198,22 @@ public class CameraController : MonoBehaviour
     public void PlaySuccessCamera()
     {
         _mode = Mode.Success;
+    }
+
+    /// <summary>
+    /// 孵化の見せ場カメラ。対象を画面中央に置き、showcaseFillRatio分の大きさで写るまで寄る。
+    /// HatchShowcaseControllerがEggHatchController.onHatchのタイミングで呼ぶ。
+    /// PlaySuccessCamera()(卵に寄るだけ)を上書きして、孵化キャラを主役に切り替える役割。
+    /// </summary>
+    /// <param name="target">画面中央に置く対象(孵化キャラ)</param>
+    /// <param name="worldRadius">対象の見かけの大きさ(ワールド半径)。Rendererのboundsから渡す想定</param>
+    public void PlayShowcaseCamera(Transform target, float worldRadius)
+    {
+        if (target == null) return;
+
+        _showcaseTarget = target;
+        _showcaseRadius = Mathf.Max(worldRadius, 0.001f);
+        _mode = Mode.Showcase;
     }
 
     /// <summary>落下失敗が着地した瞬間の単発の強いシェイク。FeedbackController.PlayFailureFeedback()から呼ばれる</summary>
