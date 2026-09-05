@@ -29,10 +29,19 @@ public class EggController : MonoBehaviour
     public float maxForceMagnitude = 8.0f;
 
     [Header("中央アシスト設定")]
-    [Tooltip("中央へ引き寄せる方向の割合（0.0で完全ランダム、1.0で完全に中央へ向かう）")]
+    [Tooltip("フライパン中心付近にいるときの、中央へ引き寄せる方向の割合（0.0で完全ランダム、1.0で完全に中央へ向かう）")]
     [Range(0f, 1f)] public float centerAssistWeight = 0.3f;
-    [Tooltip("基準となるフライパンのオブジェクト（未指定ならワールドの原点 X=0, Z=0 を使用）")]
+
+    [Tooltip("フライパンの縁付近にいるときの引き寄せ割合。中心付近より強くしておくことで、" +
+             "『落ちそうなときだけ強く引き戻される』挙動になる")]
+    [Range(0f, 1f)] public float edgeCenterAssistWeight = 0.85f;
+
+    [Tooltip("基準となるフライパンのTransform。未指定ならAwake()でシーン内のPanControllerを自動で探す")]
     public Transform panCenter;
+
+    // 縁からの距離に応じてアシスト強度を変えるために、位置だけでなくPanController本体も持つ。
+    // panCenterがInspectorで指定されていればそちらのTransformを優先する。
+    private PanController _panController;
 
     // DifficultyManagerのprogress=0のときの値に合わせた初期難易度。
     // PLAYING中はGameManagerが毎フレームSetDifficulty()で上書きするため、
@@ -65,6 +74,21 @@ public class EggController : MonoBehaviour
         if (difficulty.maxLinearSpeed <= 0f || difficulty.forceInterval <= 0f)
         {
             difficulty = DefaultDifficulty;
+        }
+
+        // 中央アシストの基準点を解決する。
+        // panCenterが未設定だとVector3.zero(ワールド原点)へ引き寄せる実装だったが、
+        // GameSceneのフライパンは原点ではなく(13.7, 3.8, -0.5)にあるため、
+        // 「中央へ寄せる」どころか常に一方向へ押し続ける力になっていた。
+        _panController = FindFirstObjectByType<PanController>();
+        if (panCenter == null && _panController != null)
+        {
+            panCenter = _panController.transform;
+        }
+        if (panCenter == null)
+        {
+            Debug.LogWarning($"[{nameof(EggController)}] panCenterが未設定で、シーンにPanControllerも見つかりません。" +
+                             "中央アシストはワールド原点を基準にしてしまいます。", this);
         }
     }
 
@@ -105,8 +129,16 @@ public class EggController : MonoBehaviour
         // たまごの現在地から中央へ向かう方向
         Vector3 toCenterDir = new Vector3(targetCenter.x - transform.position.x, 0.0f, targetCenter.z - transform.position.z).normalized;
 
-        // Lerpを使って、ランダム方向と中央方向を centerAssistWeight の割合で混ぜ合わせる
-        Vector3 forceDir = Vector3.Lerp(randomDir, toCenterDir, centerAssistWeight).normalized;
+        // 中心にいるときは centerAssistWeight、縁にいるときは edgeCenterAssistWeight を使う。
+        // 一定の割合で混ぜるだけだと、縁に寄って落ちそうなときも中心にいるときと同じ弱さしか
+        // 働かず「吸いつき」を感じられないため、距離に応じて強度を上げる。
+        float normalizedDistance = _panController != null
+            ? _panController.GetNormalizedDistanceFromCenter(transform.position)
+            : 0f;
+        float assistWeight = Mathf.Lerp(centerAssistWeight, edgeCenterAssistWeight, normalizedDistance);
+
+        // Lerpを使って、ランダム方向と中央方向を assistWeight の割合で混ぜ合わせる
+        Vector3 forceDir = Vector3.Lerp(randomDir, toCenterDir, assistWeight).normalized;
 
         // 2. 急激な方向転換の抑制
         // 現在タマゴが転がっている方向(linearVelocity)と、これから力を加える方向(randomDir)を比較します
@@ -116,8 +148,11 @@ public class EggController : MonoBehaviour
         // 現在と逆方向に力が働こうとしている場合
         if (dot < -0.3f)
         {
-            // 急ブレーキや急なUターンを防ぐため、加える力を半分に減らします
-            safeMultiplier = 0.5f;
+            // 急ブレーキや急なUターンを防ぐため、加える力を半分に減らします。
+            // ただし縁へ転がり出ている最中は forceDir がほぼ中央向き = 現在の進行方向と真逆になり、
+            // 「一番引き戻したい瞬間に限って力が半減する」ことになる。
+            // アシストが強い場面ほどこの減衰を効かせないようにする。
+            safeMultiplier = Mathf.Lerp(0.5f, 1.0f, assistWeight);
         }
 
         // 3. 最終的な力の算出と上限の適用
