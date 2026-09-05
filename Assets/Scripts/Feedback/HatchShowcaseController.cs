@@ -30,17 +30,15 @@ public class HatchShowcaseController : MonoBehaviour
              "Egg_RadialGlowと同じ LightBurst_Mesh + Egg_RadialBurst3D マテリアルを想定")]
     public Transform burst;
 
-    // NOTE: 孵化キャラはワールド幅0.0137しかないため、この2つは非常に小さい値になる。
-    // 既定値0.5 / 0.15のときは光輪がキャラ幅の107倍・奥行きもカメラ距離(0.052)の2.9倍あり、
-    // 画面が光で埋まってキャラが見えなくなっていた。
-    [Tooltip("キャラから見てカメラの反対側(奥)へ、この距離だけ離して配置する。\n" +
-             "見せ場でのカメラ距離は約0.05なので、それより十分小さくすること")]
-    public float burstDistanceBehind = 0.011f;
+    // NOTE: 孵化アニメーションはキャラを8.3倍(ワールド幅0.055→0.455)まで拡大する。
+    // そのため光輪のサイズを絶対値で決めると必ずどこかで破綻する
+    // (当初は固定値だったため、拡大後のキャラに対して光輪が1/10の点になっていた)。
+    // キャラの実サイズに対する倍率で指定し、毎フレーム追従させる。
+    [Tooltip("光輪の大きさを、キャラの幅の何倍にするか。2.5ならキャラの2.5倍の光輪")]
+    public float burstScaleRelative = 2.5f;
 
-    [Tooltip("最終的な放射エフェクトのワールドスケール。\n" +
-             "LightBurst_Meshのローカル幅は約2.94なので、0.0163でワールド幅0.048" +
-             "(キャラ幅の約3.5倍の光輪)になる")]
-    public float burstTargetScale = 0.0163f;
+    [Tooltip("キャラから見てカメラの反対側(奥)へ、キャラ半径の何倍だけ離すか")]
+    public float burstDistanceRelative = 1.2f;
 
     [Tooltip("0から上のスケールまで大きくなるのにかける秒数")]
     public float burstGrowDuration = 0.45f;
@@ -105,6 +103,11 @@ public class HatchShowcaseController : MonoBehaviour
     private Camera _nearClipCamera;
     private bool _fragmentsHidden;
 
+    // 光輪の立ち上がり(0→1)。実際のスケールはキャラのサイズ追従でLateUpdateが決める
+    private float _burstGrow;
+    // 光輪メッシュ(LightBurst_Mesh)のローカル幅。ワールド幅からlocalScaleを逆算するのに使う
+    private float _burstMeshWidth = 1f;
+
     private void Awake()
     {
         if (cameraController == null) cameraController = FindFirstObjectByType<CameraController>();
@@ -113,6 +116,12 @@ public class HatchShowcaseController : MonoBehaviour
         // 待機状態: 起動時は必ず消しておく
         if (burst != null)
         {
+            var mf = burst.GetComponent<MeshFilter>();
+            if (mf != null && mf.sharedMesh != null)
+            {
+                _burstMeshWidth = Mathf.Max(mf.sharedMesh.bounds.size.x, 0.0001f);
+            }
+
             burst.localScale = Vector3.zero;
             burst.gameObject.SetActive(false);
         }
@@ -142,10 +151,6 @@ public class HatchShowcaseController : MonoBehaviour
             yield break;
         }
 
-        // キャラの見かけの大きさ(ワールド半径)をRendererのboundsから求める。
-        // スケールが小さい(現状0.0156倍)ため決め打ちの距離では画角が合わない。
-        float radius = CalculateWorldRadius(target);
-
         // キャラが極小なため、寄るとニアクリップ(既定0.3)に飲まれてモデルが消える。
         // 見せ場の間だけニアクリップを下げ、ResetShowcase()で元に戻す。
         Camera cam = cameraController != null ? cameraController.mainCamera : Camera.main;
@@ -171,7 +176,8 @@ public class HatchShowcaseController : MonoBehaviour
             {
                 cameraController.showcaseFillRatio = fillRatioOverride;
             }
-            cameraController.PlayShowcaseCamera(target, radius);
+            // 大きさの計測はCameraController側が毎フレーム行う(キャラが拡大し続けるため)
+            cameraController.PlayShowcaseCamera(target);
         }
 
         if (burst != null)
@@ -193,16 +199,18 @@ public class HatchShowcaseController : MonoBehaviour
                 _burstMaterialInstance.SetFloat(CrackAmountId, burstIntensity);
             }
 
+            // 立ち上がりの0→1だけをここで作る。実際の大きさはキャラのサイズ追従なので
+            // LateUpdate側でburstScaleRelativeを掛けて毎フレーム決める。
             float t = 0f;
             while (t < burstGrowDuration)
             {
                 t += Time.deltaTime;
-                float p = burstGrowDuration <= 0f ? 1f : Mathf.Clamp01(t / burstGrowDuration);
                 // 最後にゆっくり収束する形(SmoothStep)で、ポンと出て落ち着く感じにする
-                burst.localScale = Vector3.one * (burstTargetScale * Mathf.SmoothStep(0f, 1f, p));
+                _burstGrow = Mathf.SmoothStep(0f, 1f,
+                    burstGrowDuration <= 0f ? 1f : Mathf.Clamp01(t / burstGrowDuration));
                 yield return null;
             }
-            burst.localScale = Vector3.one * burstTargetScale;
+            _burstGrow = 1f;
         }
 
         _routine = null;
@@ -307,9 +315,22 @@ public class HatchShowcaseController : MonoBehaviour
         Camera cam = cameraController != null ? cameraController.mainCamera : Camera.main;
         if (cam == null) return;
 
+        // キャラは孵化アニメーションで8.3倍まで拡大し続けるため、
+        // 光輪の大きさ・奥行きもその実サイズに毎フレーム追従させる。
+        // (絶対値で決めていたときは、拡大後のキャラに対して光輪が1/10の点になっていた)
+        float radius = cameraController != null
+            ? cameraController.CurrentShowcaseRadius
+            : Mathf.Max(target.lossyScale.x, 0.001f) * 0.5f;
+
         Vector3 camForward = cam.transform.forward;
         // キャラから見てカメラの奥側へずらす = キャラの「後ろ」に回る
-        burst.position = target.position + camForward * burstDistanceBehind;
+        burst.position = target.position + camForward * (radius * burstDistanceRelative);
+
+        // ワールド幅が「キャラ幅 × burstScaleRelative」になるlocalScaleを求める
+        float targetWorldWidth = radius * 2f * burstScaleRelative;
+        float scale = _burstMeshWidth > 0.0001f ? targetWorldWidth / _burstMeshWidth : targetWorldWidth;
+        burst.localScale = Vector3.one * (scale * _burstGrow);
+
         // ビルボード: カメラと同じ向きにすることで常に正面から見える
         Quaternion facing = Quaternion.LookRotation(camForward, cam.transform.up);
 
@@ -329,6 +350,7 @@ public class HatchShowcaseController : MonoBehaviour
 
         _burstActive = false;
         _burstSpin = 0f;
+        _burstGrow = 0f;
 
         // ニアクリップを元に戻す
         if (_nearClipCamera != null && _originalNearClip > 0f)

@@ -58,9 +58,15 @@ public class CameraController : MonoBehaviour
     // 特にFrozenモード(失敗時)は戻すLerpが無いためカメラが元の位置から漂流したまま固定される。
     private Vector3 _appliedImpactOffset = Vector3.zero;
 
-    // 見せ場モードの注視対象と、その見かけの大きさ(ワールド半径)
+    // 見せ場モードの注視対象と、その見かけの大きさ(ワールド半径)。
+    // 孵化アニメーションはキャラを8.3倍(ワールド幅0.055→0.455)まで拡大するため、
+    // 開始時に一度測るだけでは画角が全く合わない。毎フレーム測り直す。
     private Transform _showcaseTarget;
+    private Renderer[] _showcaseRenderers;
     private float _showcaseRadius = 0.05f;
+
+    /// <summary>見せ場で計測中の対象のワールド半径。背後エフェクトのサイズ合わせに使う</summary>
+    public float CurrentShowcaseRadius => _showcaseRadius;
 
     private void Awake()
     {
@@ -125,6 +131,9 @@ public class CameraController : MonoBehaviour
             case Mode.Showcase:
                 if (_showcaseTarget != null)
                 {
+                    // 対象は孵化アニメーションで拡大し続けるので、毎フレーム測り直す
+                    _showcaseRadius = CalculateWorldRadius(_showcaseRenderers, _showcaseTarget);
+
                     // キャラが画面の縦方向にshowcaseFillRatio分だけ占める距離を計算する。
                     // 半径rの対象を画面比fで写すのに必要な距離 d = r / (f/2 * tan(fov/2))
                     float halfFov = mainCamera.fieldOfView * 0.5f * Mathf.Deg2Rad;
@@ -176,6 +185,7 @@ public class CameraController : MonoBehaviour
         _currentDanger = 0f;
         _fallTarget = null;
         _showcaseTarget = null;
+        _showcaseRenderers = null;
     }
 
     /// <summary>危険度が閾値(dangerShakeThreshold)を超えている間だけ、微小な揺れを加える。
@@ -212,14 +222,42 @@ public class CameraController : MonoBehaviour
     /// PlaySuccessCamera()(卵に寄るだけ)を上書きして、孵化キャラを主役に切り替える役割。
     /// </summary>
     /// <param name="target">画面中央に置く対象(孵化キャラ)</param>
-    /// <param name="worldRadius">対象の見かけの大きさ(ワールド半径)。Rendererのboundsから渡す想定</param>
-    public void PlayShowcaseCamera(Transform target, float worldRadius)
+    public void PlayShowcaseCamera(Transform target)
     {
         if (target == null) return;
 
         _showcaseTarget = target;
-        _showcaseRadius = Mathf.Max(worldRadius, 0.001f);
+        // 対象の大きさはアニメーションで変わるため、Rendererを控えて毎フレーム測り直す
+        _showcaseRenderers = target.GetComponentsInChildren<Renderer>(true);
+        _showcaseRadius = CalculateWorldRadius(_showcaseRenderers, target);
         _mode = Mode.Showcase;
+    }
+
+    /// <summary>
+    /// Rendererのboundsを合成して、対象の見かけの大きさ(ワールド半径)を求める。
+    /// Rendererが無い場合はlossyScaleから概算する。
+    /// </summary>
+    private static float CalculateWorldRadius(Renderer[] renderers, Transform fallback)
+    {
+        if (renderers != null && renderers.Length > 0)
+        {
+            bool started = false;
+            Bounds b = default;
+            foreach (var r in renderers)
+            {
+                if (r == null || !r.enabled) continue;
+                if (!started) { b = r.bounds; started = true; }
+                else b.Encapsulate(r.bounds);
+            }
+            if (started)
+            {
+                return Mathf.Max(0.001f, Mathf.Max(b.extents.x, Mathf.Max(b.extents.y, b.extents.z)));
+            }
+        }
+
+        if (fallback == null) return 0.05f;
+        Vector3 s = fallback.lossyScale;
+        return Mathf.Max(0.001f, Mathf.Max(s.x, Mathf.Max(s.y, s.z)) * 0.5f);
     }
 
     /// <summary>落下失敗が着地した瞬間の単発の強いシェイク。FeedbackController.PlayFailureFeedback()から呼ばれる</summary>
