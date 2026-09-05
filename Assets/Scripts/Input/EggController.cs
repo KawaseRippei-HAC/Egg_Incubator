@@ -34,25 +34,44 @@ public class EggController : MonoBehaviour
     [Tooltip("基準となるフライパンのオブジェクト（未指定ならワールドの原点 X=0, Z=0 を使用）")]
     public Transform panCenter;
 
+    // DifficultyManagerのprogress=0のときの値に合わせた初期難易度。
+    // PLAYING中はGameManagerが毎フレームSetDifficulty()で上書きするため、
+    // 実際に使われるのは着地直後〜最初のSetDifficulty()が走るまでの数フレームだけ。
+    private static readonly DifficultyParams DefaultDifficulty = new DifficultyParams
+    {
+        forceMultiplier = 1.0f,
+        forceInterval = 2.0f,
+        directionVariance = 0.1f,
+        maxLinearSpeed = 2.0f,
+        maxAngularSpeed = 5.0f,
+    };
+
     [Header("現在の難易度状況")]
-    [Tooltip("ゲーム進行度に応じて変化するパラメータ")]
-    public DifficultyParams difficulty;
+    [Tooltip("ゲーム進行度に応じて変化するパラメータ。PLAYING中はGameManagerが毎フレーム上書きするため、" +
+             "ここの値は着地直後の数フレームだけ使われる")]
+    public DifficultyParams difficulty = DefaultDifficulty;
     private Vector3 initialPosition;
     private Quaternion initialRotation;
 
+    void Awake()
+    {
+        // GameManagerがSetDifficulty()をStart()より前に呼ぶ可能性があるため、
+        // Rigidbodyの取得はAwake()で済ませておく
+        rb = GetComponent<Rigidbody>();
+
+        // シーン/プレハブ側に0が焼き付いていた場合の保険。
+        // maxLinearSpeedが0のままだとLimitVelocity()が卵の水平速度を
+        // 毎FixedUpdateゼロにクランプし、着地の瞬間に卵が固まってしまう。
+        if (difficulty.maxLinearSpeed <= 0f || difficulty.forceInterval <= 0f)
+        {
+            difficulty = DefaultDifficulty;
+        }
+    }
+
     void Start()
     {
-        rb = GetComponent<Rigidbody>();
         initialPosition = transform.position;
         initialRotation = transform.rotation;
-
-        //// テスト用の初期値（後でManagerからSetDifficultyで上書きされる想定）
-        //difficulty = new DifficultyParams
-        //{
-        //    forceMultiplier = 1.0f,
-        //    forceInterval = 0.5f,
-        //    directionVariance = 0.3f
-        //};
     }
 
     void FixedUpdate()
@@ -145,7 +164,10 @@ public class EggController : MonoBehaviour
         // 転がり摩擦によって同フレーム内で瞬間的に上限を超える速度が生じることがある。
         // Rigidbody.maxLinearVelocityで物理エンジン自体に同じ上限をかけ、その1フレームの
         // 速度超過(急発進に見える現象)自体を起きなくする。数値・挙動の意図は変えない。
-        rb.maxLinearVelocity = newParams.maxLinearSpeed;
+        if (rb != null)
+        {
+            rb.maxLinearVelocity = newParams.maxLinearSpeed;
+        }
     }
     public void DropEgg()
     {
@@ -184,6 +206,8 @@ public class EggController : MonoBehaviour
         // 内部状態のリセット
         hasLanded = false;
         forceTimer = 0f;
+        // 前のラウンド終盤の高い難易度が残らないよう、progress=0相当に戻す
+        difficulty = DefaultDifficulty;
 
         Debug.Log("[EggController] タマゴの位置と状態をリセットしました。");
     }

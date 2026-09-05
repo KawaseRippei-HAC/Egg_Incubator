@@ -45,6 +45,11 @@ public class CameraController : MonoBehaviour
     private float _currentDanger;
     private float _impactShakeTimer;
 
+    // 前フレームで着弾シェイクとして加算したオフセット。
+    // これを毎フレーム打ち消さずに t.position += ... を繰り返すとランダムウォークになり、
+    // 特にFrozenモード(失敗時)は戻すLerpが無いためカメラが元の位置から漂流したまま固定される。
+    private Vector3 _appliedImpactOffset = Vector3.zero;
+
     private void Awake()
     {
         if (mainCamera != null)
@@ -59,6 +64,15 @@ public class CameraController : MonoBehaviour
         if (mainCamera == null) return;
 
         var t = mainCamera.transform;
+
+        // 各モードの位置計算に入る前に、前フレームの着弾シェイク分を打ち消して素の位置に戻す。
+        // Following/Success/Frozenは現在位置を起点に動くため、これをやらないとオフセットが
+        // 積み上がってカメラが漂流する。
+        if (_appliedImpactOffset != Vector3.zero)
+        {
+            t.position -= _appliedImpactOffset;
+            _appliedImpactOffset = Vector3.zero;
+        }
 
         switch (_mode)
         {
@@ -105,7 +119,9 @@ public class CameraController : MonoBehaviour
         {
             _impactShakeTimer -= Time.deltaTime;
             float damper = Mathf.Clamp01(_impactShakeTimer / impactShakeDuration);
-            t.position += Random.insideUnitSphere * (impactShakeMagnitude * damper);
+            // 次フレーム冒頭で打ち消せるよう、加えたオフセットを覚えておく
+            _appliedImpactOffset = Random.insideUnitSphere * (impactShakeMagnitude * damper);
+            t.position += _appliedImpactOffset;
         }
     }
 
@@ -168,6 +184,12 @@ public class CameraController : MonoBehaviour
     public void ResetCamera()
     {
         PlayNormal();
+
+        // 進行中の着弾シェイクを打ち切る。オフセットも捨てるので、
+        // 次フレーム冒頭の打ち消し処理が定位置をずらすことはない。
+        _impactShakeTimer = 0f;
+        _appliedImpactOffset = Vector3.zero;
+
         if (mainCamera != null)
         {
             // リトライは即座に定位置へ戻す(Lerpで戻る途中の見た目を残さない)
