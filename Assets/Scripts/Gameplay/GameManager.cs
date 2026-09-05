@@ -303,8 +303,11 @@ namespace Gameplay
             if (gameState != GameState.PLAYING) return;
 
             gameState = GameState.FALLING;
-            
+
             if (_sweetSpotController != null) _sweetSpotController.DeactivateSpot();
+            // PLAYINGを抜けたのでビネットを消す。UpdateEffectState()はPLAYING中しか
+            // 呼ばれないため、ここで明示的に切らないと直前の危険度が残り続ける。
+            if (_screenEffectController != null) _screenEffectController.ClearEffect();
 
             if (_timerManager != null)
             {
@@ -354,6 +357,8 @@ namespace Gameplay
             gameState = GameState.HATCHING;
             Debug.Log("[GameManager] 成功！ HATCHING状態へ移行し、孵化を待機します。");
             if (_sweetSpotController != null) _sweetSpotController.DeactivateSpot();
+            // 孵化演出をビネット越しに見せないよう、PLAYINGを抜けた時点で消す
+            if (_screenEffectController != null) _screenEffectController.ClearEffect();
             
             if (_eggRigidbody != null)
             {
@@ -406,9 +411,11 @@ namespace Gameplay
         public void Retry()
         {
             if (gameState != GameState.RESULT) return;
-            
+
             if (_sweetSpotController != null) _sweetSpotController.DeactivateSpot();
-            
+            // タイトルへ戻るので、フェードを待たずに即座にビネットを消す
+            if (_screenEffectController != null) _screenEffectController.ClearEffect(immediate: true);
+
             gameProgress = 0f;
             dangerLevel = 0f;
             crackProgress = 0f;
