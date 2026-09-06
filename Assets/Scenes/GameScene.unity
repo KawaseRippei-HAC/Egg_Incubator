@@ -16919,11 +16919,11 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 504909007164385081, guid: 3f8ef555b749a4546a7330604be02994, type: 3}
       propertyPath: m_LocalRotation.w
-      value: 1
+      value: 0.7071068
       objectReference: {fileID: 0}
     - target: {fileID: 504909007164385081, guid: 3f8ef555b749a4546a7330604be02994, type: 3}
       propertyPath: m_LocalRotation.x
-      value: 0
+      value: -0.7071068
       objectReference: {fileID: 0}
     - target: {fileID: 504909007164385081, guid: 3f8ef555b749a4546a7330604be02994, type: 3}
       propertyPath: m_LocalRotation.y
@@ -16935,7 +16935,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 504909007164385081, guid: 3f8ef555b749a4546a7330604be02994, type: 3}
       propertyPath: m_LocalEulerAnglesHint.x
-      value: 0
+      value: -90
       objectReference: {fileID: 0}
     - target: {fileID: 697970799834698693, guid: 3f8ef555b749a4546a7330604be02994, type: 3}
       propertyPath: m_IsActive
@@ -18228,8 +18228,8 @@ MonoBehaviour:
   cameraController: {fileID: 2083153125}
   eggHatchController: {fileID: 1419076911}
   burst: {fileID: 1112251881}
-  burstDistanceBehind: 0.010960001
-  burstTargetScale: 0.01632011
+  burstScaleRelative: 2.5
+  burstDistanceRelative: 1.2
   burstGrowDuration: 0.45
   burstSpinSpeed: 20
   burstIntensity: 1

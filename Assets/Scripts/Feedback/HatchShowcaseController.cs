@@ -61,7 +61,19 @@ public class HatchShowcaseController : MonoBehaviour
              "これでキャラのワールド回転が(0,180,0)=直立してカメラを向く状態になる")]
     public Vector3 uprightCorrectionEuler = new Vector3(0f, 180f, 0f);
 
-    [Tooltip("向き補正にかける秒数。0で即座に適用する")]
+    [Tooltip("キャラの姿勢を毎フレーム「直立してカメラを向く」状態に固定する。\n" +
+             "★これがOFFだと卵の転がった向きがそのまま残る。卵は60秒転がった末に孵化するため" +
+             "Egg_Testの最終回転はランダムで、固定のオフセット補正では傾きが取り切れない。\n" +
+             "ONのときはEggHatchのワールド回転を毎フレーム逆算するので、卵がどの向きで" +
+             "止まっていてもキャラは必ず正面を向いて直立する")]
+    public bool stabilizeCharacterRotation = true;
+
+    [Tooltip("stabilizeCharacterRotationがONのとき、直立姿勢からさらに加える見た目の調整(度)。\n" +
+             "少し斜に構えさせたい場合などに使う")]
+    public Vector3 stabilizedExtraEuler = Vector3.zero;
+
+    [Tooltip("向き補正にかける秒数。0で即座に適用する。stabilizeCharacterRotationがONのときは" +
+             "この秒数をかけて現在の姿勢から直立姿勢へ寄せていく")]
     public float uprightCorrectionDuration = 0.4f;
 
     [Tooltip("向き補正をかける対象。未設定ならeggHatchController.hatchVisual(EggHatch)を使う")]
@@ -102,6 +114,9 @@ public class HatchShowcaseController : MonoBehaviour
     private float _originalNearClip = -1f;
     private Camera _nearClipCamera;
     private bool _fragmentsHidden;
+
+    // 姿勢固定の立ち上がり(0→1)
+    private float _uprightBlend;
 
     // 光輪の立ち上がり(0→1)。実際のスケールはキャラのサイズ追従でLateUpdateが決める
     private float _burstGrow;
@@ -224,7 +239,32 @@ public class HatchShowcaseController : MonoBehaviour
     private IEnumerator ApplyUprightCorrection()
     {
         Transform t = ResolveUprightTarget();
-        if (t == null || uprightCorrectionEuler == Vector3.zero) yield break;
+        if (t == null) yield break;
+
+        // 毎フレーム姿勢を作り直すモードでは、静的なオフセット補正は使わない。
+        // 立ち上がりの重み(_uprightBlend)だけをここで0→1にして、
+        // LateUpdate側が現在の姿勢から直立姿勢へ滑らかに寄せる。
+        if (stabilizeCharacterRotation)
+        {
+            if (!_uprightApplied)
+            {
+                _uprightOriginalLocalRotation = t.localRotation;
+                _uprightApplied = true;
+            }
+
+            float e = 0f;
+            while (e < uprightCorrectionDuration)
+            {
+                e += Time.deltaTime;
+                _uprightBlend = Mathf.SmoothStep(0f, 1f,
+                    uprightCorrectionDuration <= 0f ? 1f : Mathf.Clamp01(e / uprightCorrectionDuration));
+                yield return null;
+            }
+            _uprightBlend = 1f;
+            yield break;
+        }
+
+        if (uprightCorrectionEuler == Vector3.zero) yield break;
 
         if (!_uprightApplied)
         {
@@ -291,6 +331,41 @@ public class HatchShowcaseController : MonoBehaviour
         _fragmentsHidden = true;
     }
 
+    /// <summary>
+    /// キャラの姿勢を「直立してカメラを向く」状態に固定する。
+    ///
+    /// 卵は60秒間フライパンの上を転がった末に孵化するため、Egg_Testの最終回転は
+    /// ランダムになる。EggHatchに固定のオフセットを掛けるだけでは、その土台の傾きが
+    /// そのまま残ってキャラが傾いてしまう(実際にそうなっていた)。
+    /// ここでは望ましいキャラのワールド回転から逆算してEggHatchのワールド回転を毎フレーム決める。
+    ///
+    /// Characterのローカル回転はAnimatorが書き込むため、その後(LateUpdate)に実行すること。
+    /// </summary>
+    private void StabilizeRotation(Camera cam)
+    {
+        if (!stabilizeCharacterRotation || !_uprightApplied) return;
+        if (cam == null) return;
+
+        Transform hatchRoot = ResolveUprightTarget();
+        Transform ch = character;
+        if (hatchRoot == null || ch == null) return;
+
+        // 望ましい姿勢: 直立(up=+Y)で、水平方向にカメラを向く
+        Vector3 toCam = cam.transform.position - ch.position;
+        toCam.y = 0f;
+        if (toCam.sqrMagnitude < 0.000001f) toCam = -cam.transform.forward;
+        Quaternion desiredChar = Quaternion.LookRotation(toCam.normalized, Vector3.up)
+                                 * Quaternion.Euler(stabilizedExtraEuler);
+
+        // desiredChar = hatchRoot.rotation * ch.localRotation を満たす hatchRoot.rotation を解く
+        Quaternion needed = desiredChar * Quaternion.Inverse(ch.localRotation);
+
+        // 立ち上がり中は現在の姿勢から滑らかに寄せる
+        hatchRoot.rotation = _uprightBlend >= 1f
+            ? needed
+            : Quaternion.Slerp(hatchRoot.rotation, needed, _uprightBlend);
+    }
+
     private Transform ResolveUprightTarget()
     {
         if (uprightTarget != null) return uprightTarget;
@@ -307,12 +382,15 @@ public class HatchShowcaseController : MonoBehaviour
     /// </summary>
     private void LateUpdate()
     {
+        Camera cam = cameraController != null ? cameraController.mainCamera : Camera.main;
+
+        // 姿勢の固定はAnimatorが書き込んだ後(=LateUpdate)に行う必要がある
+        StabilizeRotation(cam);
+
         if (!_burstActive || burst == null) return;
 
         Transform target = character;
         if (target == null) return;
-
-        Camera cam = cameraController != null ? cameraController.mainCamera : Camera.main;
         if (cam == null) return;
 
         // キャラは孵化アニメーションで8.3倍まで拡大し続けるため、
@@ -367,6 +445,7 @@ public class HatchShowcaseController : MonoBehaviour
             up.localRotation = _uprightOriginalLocalRotation;
         }
         _uprightApplied = false;
+        _uprightBlend = 0f;
 
         // 破片を表示状態へ戻す。スケールと親子関係と物理は
         // EggHatchController.ResetForTesting()が戻すので、ここではSetActiveだけ。

@@ -35,8 +35,10 @@ public class CameraController : MonoBehaviour
     public float successTransitionSpeed = 2.5f;
 
     [Header("孵化の見せ場カメラ (HatchShowcaseControllerから使う)")]
-    [Tooltip("見せ場でキャラクターが画面の縦方向に占める割合。0.45なら画面の高さの45%")]
-    [Range(0.05f, 1f)] public float showcaseFillRatio = 0.45f;
+    [Tooltip("見せ場でキャラクターが画面に占める割合。0.7なら画面の高さ(または幅)の70%。\n" +
+             "縦横それぞれで収まる距離を計算し、はみ出さない方を採るため、この値まで寄り切らない" +
+             "こともある(横に広いモデルを縦持ち画面で写す場合など)")]
+    [Range(0.05f, 1f)] public float showcaseFillRatio = 0.7f;
     [Tooltip("見せ場カメラへ移行する速さ")]
     public float showcaseTransitionSpeed = 2.0f;
     [Tooltip("キャラを見下ろす角度(度)。0で真横から、大きいほど上から見下ろす")]
@@ -132,33 +134,47 @@ public class CameraController : MonoBehaviour
                 if (_showcaseTarget != null)
                 {
                     // 対象は孵化アニメーションで拡大し続けるので、毎フレーム測り直す
-                    _showcaseRadius = CalculateWorldRadius(_showcaseRenderers, _showcaseTarget);
+                    Bounds b = CalculateWorldBounds(_showcaseRenderers, _showcaseTarget);
+                    _showcaseRadius = Mathf.Max(b.extents.x, Mathf.Max(b.extents.y, b.extents.z));
 
-                    // キャラが画面の縦方向にshowcaseFillRatio分だけ占める距離を計算する。
-                    // 半径rの対象を画面比fで写すのに必要な距離 d = r / (f/2 * tan(fov/2))
+                    // 縦・横それぞれで画面のshowcaseFillRatio分に収まる距離を求め、大きい方を採る。
+                    // ★以前は「最大辺」だけを縦方向の基準にしていたため、脚を広げた横長の
+                    //   バウンディングボックスだとカメラが必要以上に引き、キャラが小さく写っていた。
+                    //   また縦持ち画面(アスペクト約0.55)では水平画角が狭く、横がはみ出しやすい。
                     float halfFov = mainCamera.fieldOfView * 0.5f * Mathf.Deg2Rad;
-                    float denom = Mathf.Max(showcaseFillRatio * 0.5f * Mathf.Tan(halfFov), 0.0001f);
-                    float dist = _showcaseRadius / denom;
+                    float tanV = Mathf.Max(Mathf.Tan(halfFov), 0.0001f);
+                    float fill = Mathf.Max(showcaseFillRatio * 0.5f, 0.0001f);
 
-                    // 孵化キャラはワールド半径が約0.007しかないため、必要距離は0.05程度になる。
-                    // ニアクリップ(既定0.3)より手前だとモデルが丸ごとクリップされて消えるので、
-                    // ニアクリップの外側に必ず収まるようクランプする。
+                    // カメラは対象の周りを回るので、水平方向の見かけの大きさはx/zの大きい方で見る
+                    float horizontalHalf = Mathf.Max(b.extents.x, b.extents.z);
+                    float aspect = Mathf.Max(mainCamera.aspect, 0.0001f);
+
+                    float distV = b.extents.y / (fill * tanV);
+                    float distH = horizontalHalf / (fill * tanV * aspect);
+                    float dist = Mathf.Max(distV, distH);
+
+                    // ニアクリップより手前だとモデルが丸ごとクリップされて消えるのでクランプする。
                     // (HatchShowcaseController側で見せ場中のニアクリップ自体も下げている)
                     dist = Mathf.Max(dist, mainCamera.nearClipPlane * 1.5f + _showcaseRadius);
 
+                    // 注視点はTransformの原点ではなくバウンディングボックスの中心にする。
+                    // モデルのピボットが足元にあると、原点を中央に置いた結果
+                    // 体が画面の上半分へ寄ってしまうため。
+                    Vector3 center = b.center;
+
                     // 今カメラがいる側の水平方向を保ったまま、showcasePitch分だけ見下ろす位置へ回り込む
-                    Vector3 flatDir = t.position - _showcaseTarget.position;
+                    Vector3 flatDir = t.position - center;
                     flatDir.y = 0f;
                     if (flatDir.sqrMagnitude < 0.0001f) flatDir = Vector3.back;
                     flatDir.Normalize();
 
                     float pitch = showcasePitch * Mathf.Deg2Rad;
                     Vector3 dir = (flatDir * Mathf.Cos(pitch) + Vector3.up * Mathf.Sin(pitch)).normalized;
-                    Vector3 desired = _showcaseTarget.position + dir * dist;
+                    Vector3 desired = center + dir * dist;
 
                     t.position = Vector3.Lerp(t.position, desired, Time.deltaTime * showcaseTransitionSpeed);
                     // 注視点を画面中央に置く。LookRotationなので対象は必ず画面中央に来る
-                    Quaternion look = Quaternion.LookRotation(_showcaseTarget.position - t.position);
+                    Quaternion look = Quaternion.LookRotation(center - t.position);
                     t.rotation = Quaternion.Slerp(t.rotation, look, Time.deltaTime * showcaseTransitionSpeed);
                 }
                 break;
@@ -229,15 +245,16 @@ public class CameraController : MonoBehaviour
         _showcaseTarget = target;
         // 対象の大きさはアニメーションで変わるため、Rendererを控えて毎フレーム測り直す
         _showcaseRenderers = target.GetComponentsInChildren<Renderer>(true);
-        _showcaseRadius = CalculateWorldRadius(_showcaseRenderers, target);
+        Bounds b = CalculateWorldBounds(_showcaseRenderers, target);
+        _showcaseRadius = Mathf.Max(b.extents.x, Mathf.Max(b.extents.y, b.extents.z));
         _mode = Mode.Showcase;
     }
 
     /// <summary>
-    /// Rendererのboundsを合成して、対象の見かけの大きさ(ワールド半径)を求める。
+    /// Rendererのboundsを合成して、対象のワールド空間での大きさと中心を求める。
     /// Rendererが無い場合はlossyScaleから概算する。
     /// </summary>
-    private static float CalculateWorldRadius(Renderer[] renderers, Transform fallback)
+    private static Bounds CalculateWorldBounds(Renderer[] renderers, Transform fallback)
     {
         if (renderers != null && renderers.Length > 0)
         {
@@ -249,15 +266,12 @@ public class CameraController : MonoBehaviour
                 if (!started) { b = r.bounds; started = true; }
                 else b.Encapsulate(r.bounds);
             }
-            if (started)
-            {
-                return Mathf.Max(0.001f, Mathf.Max(b.extents.x, Mathf.Max(b.extents.y, b.extents.z)));
-            }
+            if (started && b.extents.sqrMagnitude > 0.0000001f) return b;
         }
 
-        if (fallback == null) return 0.05f;
-        Vector3 s = fallback.lossyScale;
-        return Mathf.Max(0.001f, Mathf.Max(s.x, Mathf.Max(s.y, s.z)) * 0.5f);
+        Vector3 center = fallback != null ? fallback.position : Vector3.zero;
+        Vector3 s = fallback != null ? fallback.lossyScale : Vector3.one * 0.1f;
+        return new Bounds(center, s);
     }
 
     /// <summary>落下失敗が着地した瞬間の単発の強いシェイク。FeedbackController.PlayFailureFeedback()から呼ばれる</summary>
