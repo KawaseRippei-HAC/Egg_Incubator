@@ -5456,9 +5456,11 @@ MonoBehaviour:
   moveSpeed: 1.5
   healSE: {fileID: 8300000, guid: 4248d361742684f14bfdef1e7c37ec0d, type: 3}
   pulsePeriod: 1.2
-  pulseScale: 0.15
-  idleColor: {r: 0.35, g: 1, b: 0.45, a: 0.55}
-  activeColor: {r: 0.75, g: 1, b: 0.55, a: 0.95}
+  pulseScale: 0.06
+  idleColor: {r: 0.3, g: 1, b: 0.45, a: 0.35}
+  activeColor: {r: 0.65, g: 1, b: 0.55, a: 0.55}
+  idleIntensity: 1
+  activeIntensity: 2.2
   colorLerpSpeed: 10
 --- !u!136 &589189207
 CapsuleCollider:

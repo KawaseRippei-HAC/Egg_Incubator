@@ -21,7 +21,7 @@ Material:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_Name: M_SweetSpot
-  m_Shader: {fileID: 4800000, guid: 650dd9526735d5b46b79224bc6e94025, type: 3}
+  m_Shader: {fileID: 4800000, guid: ba8b755ea631e4a93a0d74d1b07ced84, type: 3}
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
   m_ValidKeywords:
@@ -32,8 +32,7 @@ Material:
   m_EnableInstancingVariants: 0
   m_DoubleSidedGI: 0
   m_CustomRenderQueue: 3000
-  stringTagMap:
-    RenderType: Transparent
+  stringTagMap: {}
   disabledShaderPasses:
   - MOTIONVECTORS
   - DepthOnly
@@ -115,16 +114,26 @@ Material:
     - _DetailNormalMapScale: 1
     - _DstBlend: 1
     - _DstBlendAlpha: 10
+    - _EdgeAlpha: 1.4
+    - _EdgeWidth: 0.12
     - _EnvironmentReflections: 1
+    - _FillAlpha: 0.35
+    - _FillPower: 1.6
     - _GlossMapScale: 0
     - _Glossiness: 0
     - _GlossyReflections: 0
+    - _Intensity: 1
     - _Metallic: 0
     - _OcclusionStrength: 1
     - _Parallax: 0.005
     - _QueueOffset: 0
     - _ReceiveShadows: 1
+    - _RippleAlpha: 1
+    - _RippleSpeed: 0.5
+    - _RippleWidth: 0.09
     - _SampleGI: 0
+    - _ScanAlpha: 0.35
+    - _ScanSpeed: 0.35
     - _Smoothness: 0.5
     - _SmoothnessTextureChannel: 0
     - _SpecularHighlights: 1
@@ -135,9 +144,10 @@ Material:
     - _XRMotionVectorsPass: 1
     - _ZWrite: 0
     m_Colors:
-    - _BaseColor: {r: 0.35, g: 1, b: 0.45, a: 0.55}
+    - _BaseColor: {r: 0.3, g: 1, b: 0.45, a: 0.35}
     - _Color: {r: 0.43739253, g: 1, b: 0, a: 0.7882353}
     - _EmissionColor: {r: 0, g: 0, b: 0, a: 1}
+    - _RingColor: {r: 0.65, g: 1, b: 0.75, a: 1}
     - _SpecColor: {r: 0.19999996, g: 0.19999996, b: 0.19999996, a: 1}
   m_BuildTextureStacks: []
   m_AllowLocking: 1

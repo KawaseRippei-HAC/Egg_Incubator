@@ -19,16 +19,23 @@ namespace Gameplay
         [Tooltip("拍動の周期(秒)。プレイヤーの目を引くためにゆっくり明滅・伸縮させる")]
         public float pulsePeriod = 1.2f;
 
-        [Tooltip("拍動でどれだけ大きくなるか。0.15なら最大15%大きくなる")]
-        [Range(0f, 0.5f)] public float pulseScale = 0.15f;
+        [Tooltip("拍動でどれだけ大きくなるか。0.06なら最大6%大きくなる。\n" +
+                 "シェーダー(Custom/SweetSpotArea)側に波紋があるので控えめでよい")]
+        [Range(0f, 0.5f)] public float pulseScale = 0.06f;
 
-        [Tooltip("通常時の色。M_SweetSpotのBaseColorを実行時に上書きする")]
-        public Color idleColor = new Color(0.35f, 1f, 0.45f, 0.55f);
+        [Tooltip("通常時の色。M_SweetSpotの_BaseColorを実行時に上書きする")]
+        public Color idleColor = new Color(0.30f, 1f, 0.45f, 0.35f);
 
-        [Tooltip("卵が入っている間の色。入った瞬間が分かるように強く光らせる")]
-        public Color activeColor = new Color(0.75f, 1f, 0.55f, 0.95f);
+        [Tooltip("卵が入っている間の色")]
+        public Color activeColor = new Color(0.65f, 1f, 0.55f, 0.55f);
 
-        [Tooltip("色が切り替わる速さ")]
+        [Tooltip("通常時の明るさ。シェーダーの_Intensityへ入る")]
+        public float idleIntensity = 1f;
+
+        [Tooltip("卵が入っている間の明るさ。入った瞬間がはっきり分かるよう強めにする")]
+        public float activeIntensity = 2.2f;
+
+        [Tooltip("色・明るさが切り替わる速さ")]
         public float colorLerpSpeed = 10f;
 
         public bool IsEggInside { get; private set; }
@@ -42,6 +49,7 @@ namespace Gameplay
         private Vector3 _baseScale;
         private float _pulseTime;
         private static readonly int BaseColorId = Shader.PropertyToID("_BaseColor");
+        private static readonly int IntensityId = Shader.PropertyToID("_Intensity");
 
         private void Awake()
         {
@@ -92,12 +100,23 @@ namespace Gameplay
                 transform.localScale = new Vector3(_baseScale.x * s, _baseScale.y, _baseScale.z * s);
             }
 
-            if (_materialInstance != null && _materialInstance.HasProperty(BaseColorId))
+            if (_materialInstance == null) return;
+
+            float k = Time.deltaTime * colorLerpSpeed;
+
+            if (_materialInstance.HasProperty(BaseColorId))
             {
                 Color target = IsEggInside ? activeColor : idleColor;
-                Color current = _materialInstance.GetColor(BaseColorId);
                 _materialInstance.SetColor(BaseColorId,
-                    Color.Lerp(current, target, Time.deltaTime * colorLerpSpeed));
+                    Color.Lerp(_materialInstance.GetColor(BaseColorId), target, k));
+            }
+
+            // Custom/SweetSpotArea の _Intensity。卵が入っている間だけ全体を強く光らせる
+            if (_materialInstance.HasProperty(IntensityId))
+            {
+                float target = IsEggInside ? activeIntensity : idleIntensity;
+                _materialInstance.SetFloat(IntensityId,
+                    Mathf.Lerp(_materialInstance.GetFloat(IntensityId), target, k));
             }
         }
         
@@ -146,9 +165,10 @@ namespace Gameplay
 
             // 前ラウンドの拍動・色が残らないよう初期状態へ戻す
             if (_baseScale != Vector3.zero) transform.localScale = _baseScale;
-            if (_materialInstance != null && _materialInstance.HasProperty(BaseColorId))
+            if (_materialInstance != null)
             {
-                _materialInstance.SetColor(BaseColorId, idleColor);
+                if (_materialInstance.HasProperty(BaseColorId)) _materialInstance.SetColor(BaseColorId, idleColor);
+                if (_materialInstance.HasProperty(IntensityId)) _materialInstance.SetFloat(IntensityId, idleIntensity);
             }
         }
 
