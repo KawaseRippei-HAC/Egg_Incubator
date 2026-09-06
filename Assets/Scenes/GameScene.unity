@@ -310,7 +310,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: cf37986fc0ef4eea8a71f01cf956492b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Gameplay.TimerManager
-  timeLimit: 5
+  timeLimit: 300
 --- !u!4 &236180038
 Transform:
   m_ObjectHideFlags: 0

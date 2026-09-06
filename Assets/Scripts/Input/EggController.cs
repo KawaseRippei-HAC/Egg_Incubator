@@ -31,6 +31,13 @@ public class EggController : MonoBehaviour
     [Tooltip("1回の衝撃で加わる速度の上限(m/s)。一気に吹っ飛ぶのを防ぎます")]
     public float maxForceMagnitude = 1.0f;
 
+    [Tooltip("Rigidbody全体にかける速度上限(m/s)。すり抜け防止のための保険であり、\n" +
+             "落下速度を制限するものではないので余裕を持たせること。\n" +
+             "★difficulty.maxLinearSpeed(転がりの水平上限、1〜2.5)をそのまま入れてはいけない。\n" +
+             "Rigidbody.maxLinearVelocityは3次元の速度全体を制限するため、下向き成分まで\n" +
+             "頭打ちになり、落下が極端に遅くなる(1.5mの落下は本来5.42m/s出る)")]
+    public float maxRigidbodySpeed = 12f;
+
     [Header("中央アシスト設定")]
     [Tooltip("フライパン中心付近にいるときの、中央へ引き寄せる方向の割合（0.0で完全ランダム、1.0で完全に中央へ向かう）")]
     [Range(0f, 1f)] public float centerAssistWeight = 0.3f;
@@ -199,13 +206,15 @@ public class EggController : MonoBehaviour
     {
         difficulty = newParams;
 
-        // LimitVelocity()はAddForce/AddTorqueの次のFixedUpdateで速度を制限するため、
-        // 転がり摩擦によって同フレーム内で瞬間的に上限を超える速度が生じることがある。
-        // Rigidbody.maxLinearVelocityで物理エンジン自体に同じ上限をかけ、その1フレームの
-        // 速度超過(急発進に見える現象)自体を起きなくする。数値・挙動の意図は変えない。
+        // ★以前はここで rb.maxLinearVelocity = newParams.maxLinearSpeed としていたが、
+        // Rigidbody.maxLinearVelocityは3次元の速度全体を制限するため、
+        // 転がりの水平上限(1〜2.5m/s)が落下の下向き成分にも効いてしまい、
+        // 本来5.42m/s出るはずの落下が1/5の速度になっていた。
+        // 水平方向の制限はLimitVelocity()がY成分を保持したまま行っているので、
+        // ここではすり抜け防止の保険としての上限だけをかける。
         if (rb != null)
         {
-            rb.maxLinearVelocity = newParams.maxLinearSpeed;
+            rb.maxLinearVelocity = maxRigidbodySpeed;
         }
     }
     public void DropEgg()
@@ -213,6 +222,9 @@ public class EggController : MonoBehaviour
         rb.isKinematic = false;
         rb.linearVelocity = Vector3.zero;
         rb.angularVelocity = Vector3.zero;
+
+        // 前ラウンドで設定された上限が残っていると落下が遅くなるため、必ず戻す
+        rb.maxLinearVelocity = maxRigidbodySpeed;
 
         forceTimer = 0f;
 
@@ -247,6 +259,7 @@ public class EggController : MonoBehaviour
         forceTimer = 0f;
         // 前のラウンド終盤の高い難易度が残らないよう、progress=0相当に戻す
         difficulty = DefaultDifficulty;
+        rb.maxLinearVelocity = maxRigidbodySpeed;
 
         Debug.Log("[EggController] タマゴの位置と状態をリセットしました。");
     }
