@@ -114,11 +114,11 @@ Material:
     - _DetailNormalMapScale: 1
     - _DstBlend: 1
     - _DstBlendAlpha: 10
-    - _EdgeAlpha: 2
+    - _EdgeAlpha: 2.2
     - _EdgeWidth: 0.12
     - _EnvironmentReflections: 1
-    - _FillAlpha: 0.35
-    - _FillPower: 1.6
+    - _FillAlpha: 0.8
+    - _FillPower: 0.45
     - _GlossMapScale: 0
     - _Glossiness: 0
     - _GlossyReflections: 0
@@ -150,7 +150,7 @@ Material:
     - _XRMotionVectorsPass: 1
     - _ZWrite: 0
     m_Colors:
-    - _BaseColor: {r: 0.1, g: 1, b: 0.55, a: 0.45}
+    - _BaseColor: {r: 0.05, g: 0.85, b: 0.45, a: 1}
     - _Color: {r: 0.43739253, g: 1, b: 0, a: 0.7882353}
     - _EmissionColor: {r: 0, g: 0, b: 0, a: 1}
     - _RingColor: {r: 0.4, g: 1, b: 0.85, a: 1}

@@ -29,6 +29,15 @@ Shader "Custom/EggCrackGlow"
         // C# から material.SetFloat("_CrackAmount", dangerLevel) で制御する
         _CrackAmount ("Crack Amount (Danger Level 0-1)", Range(0, 1)) = 0.0
 
+        [Header(Groove)]
+        // ★視認性のために追加。
+        // 卵の地色はクリーム色(0.95,0.93,0.85)でほぼ白なので、そこへ発光を「加算」しても
+        // 白に飽和するだけで亀裂が見えない(_EmissionIntensityをいくら上げても変わらない)。
+        // 実際のヒビは「暗い溝の奥が光っている」ものなので、亀裂部分の下地を暗くして
+        // コントラストを作る。
+        _CrackDarkness ("亀裂の溝の暗さ (0=真っ黒 / 1=暗くしない)", Range(0, 1)) = 0.12
+        _GrooveWiden ("溝を発光より太くする量", Range(1, 4)) = 1.8
+
         _Smoothness ("Smoothness", Range(0,1)) = 0.35
     }
 
@@ -79,6 +88,8 @@ Shader "Custom/EggCrackGlow"
                 float4 _EmissionColor;
                 float _EmissionIntensity;
                 float _CrackAmount;
+                float _CrackDarkness;
+                float _GrooveWiden;
                 float _Smoothness;
                 float _CrackScale;
                 float _CrackEdgeWidth;
@@ -151,7 +162,7 @@ Shader "Custom/EggCrackGlow"
             // growthFactor(危険度 0〜1)が上がるほど、卵全体に散らばった亀裂セルの"本数"が増えていく。
             // 各セル・各点の「出現タイミング」に不規則な歪み(ジャギー)を加えることで、
             // 滑らかなフェードインではなく「ビビッ」と閾値を超えて出現する非線形な進行に見せる。
-            float CrackMask(float3 objectPos, float growthFactor, out float sparkMask)
+            float CrackMask(float3 objectPos, float growthFactor, out float sparkMask, out float grooveMask)
             {
                 float3 p = objectPos * _CrackScale;
                 float f1, f2;
@@ -160,6 +171,8 @@ Shader "Custom/EggCrackGlow"
 
                 // セル境界(Voronoiエッジ)= 亀裂の線そのもの
                 float edge = 1.0 - smoothstep(0.0, _CrackEdgeWidth, f2 - f1);
+                // 溝は発光より少し太くする。光る芯の周りに暗い縁ができて立体的に見える
+                float wide = 1.0 - smoothstep(0.0, _CrackEdgeWidth * _GrooveWiden, f2 - f1);
 
                 // 基本の出現タイミング(セル単位 + 局所的なムラ)
                 float cellThreshold = Hash1(cellId);
@@ -179,6 +192,7 @@ Shader "Custom/EggCrackGlow"
                 float spark = smoothstep(_SparkWidth, 0.0, abs(distFromThreshold)) * step(0.0, distFromThreshold);
 
                 sparkMask = spark * edge;
+                grooveMask = wide * reveal;
                 return edge * reveal;
             }
 
@@ -202,7 +216,14 @@ Shader "Custom/EggCrackGlow"
 
                 // === ひび割れ発光(プロシージャル・非線形進行・全方位対応) ===
                 float sparkMask;
-                float crackMask = CrackMask(IN.positionOS, _CrackAmount, sparkMask);
+                float grooveMask;
+                float crackMask = CrackMask(IN.positionOS, _CrackAmount, sparkMask, grooveMask);
+
+                // ★まず下地を暗くする。
+                // 卵はほぼ白なので、発光を加算するだけでは白に飽和して亀裂が見えない。
+                // 溝を暗く落としてから発光を乗せることで、はっきりしたヒビになる。
+                litColor *= lerp(1.0, _CrackDarkness, saturate(grooveMask));
+
                 half3 emission = crackMask * _EmissionColor.rgb * _EmissionIntensity;
                 // スパーク: 出現の瞬間だけ白っぽく強い閃光を上乗せ
                 emission += sparkMask * _SparkStrength * lerp(_EmissionColor.rgb, half3(1,1,1), 0.6);

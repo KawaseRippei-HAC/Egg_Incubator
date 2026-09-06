@@ -55,8 +55,13 @@ Shader "Custom/SweetSpotArea"
         Pass
         {
             Name "SweetSpotArea"
-            // 加算合成。パンの上で「光っている」ように見せる
-            Blend SrcAlpha One
+            // 乗算済みアルファ(premultiplied)。
+            // ★加算合成(SrcAlpha One)だと「塗りつぶし」が作れない。加算は光を足すだけなので
+            //   濃くしようとすると白飛びするだけで、下のフライパンを隠せなかった。
+            //   premultipliedなら、rgbをaで割った比率が1に近いところは通常のアルファ合成として
+            //   下地を覆い、rgbがaより大きいところ(HDR)は加算の光として乗る。
+            //   塗りは覆い、リングと波紋は光る、という両立ができる。
+            Blend One OneMinusSrcAlpha
             ZWrite Off
             Cull Off
 
@@ -146,11 +151,10 @@ Shader "Custom/SweetSpotArea"
                 float3 v = normalize(IN.viewDirWS);
                 float rim = pow(saturate(1.0 - abs(dot(n, v))), _WallRimPower);
 
-                float a = (fade * (0.35 + rim * 0.65) + band * fade) * _WallAlpha;
-                float3 col = _WallColor.rgb * a;
-
-                col *= _Intensity;
-                a = saturate(a * _WallColor.a * _Intensity);
+                // 枠は「立ち上る光」なので、覆うより加算寄りにする(aは控えめ)
+                float e = (fade * (0.35 + rim * 0.65) + band * fade) * _WallAlpha;
+                float3 col = _WallColor.rgb * e * _Intensity;
+                float a = saturate(e * _WallColor.a * 0.5 * _Intensity);
                 return half4(col, a);
             }
 
@@ -190,10 +194,14 @@ Shader "Custom/SweetSpotArea"
                 float scan = saturate(cos(ang - _Time.y * _ScanSpeed * 6.2831853)) ;
                 scan = pow(scan, 8.0) * _ScanAlpha * (1.0 - r * 0.3);
 
-                float3 col = _BaseColor.rgb * fill
-                           + _RingColor.rgb * (ring + ripple + scan);
-                float  a   = (fill * _BaseColor.a)
-                           + (ring + ripple + scan) * _RingColor.a;
+                // --- 塗り: 下地を覆う(乗算済みなのでrgbにaを掛ける) ---
+                float fillA = saturate(fill * _BaseColor.a);
+                float3 col  = _BaseColor.rgb * fillA;
+
+                // --- リング・波紋・走査線: 光として加算する(aは少しだけ足す) ---
+                float glow = ring + ripple + scan;
+                col += _RingColor.rgb * glow;
+                float a = saturate(fillA + glow * _RingColor.a * 0.35);
 
                 col *= _Intensity;
                 a    = saturate(a * _Intensity);
