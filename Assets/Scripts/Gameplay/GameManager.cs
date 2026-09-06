@@ -38,7 +38,9 @@ namespace Gameplay
         [Header("References A")]
         [SerializeField] private PanController _panController = null;
         [SerializeField] private EggController _eggController = null;
-        [SerializeField] private GroundImpactDetector _groundImpactDetector = null;
+        // GroundImpactDetectorへの参照は廃止した。単一参照だと地面判定を複数箇所に置いても
+        // 1つしか繋がらず、繋がっていない場所へ落ちるとFALLINGのまま復帰できなかった。
+        // 現在は各GroundImpactDetectorが自分でGameManagerを見つけて登録する。
         [SerializeField] private SweetSpotController _sweetSpotController = null;
 
 
@@ -68,20 +70,27 @@ namespace Gameplay
         // BGM・開始SEを問題なく鳴らせているseSourceに一本化する。
         [SerializeField] private ScreenEffectController _screenEffectController = null;
 
+        [Header("安全装置")]
+        [Tooltip("FALLINGに入ってからこの秒数以内に地面へ衝突しなかった場合、強制的に失敗として決着させる。\n" +
+                 "地面判定コライダーの外へ落ちた場合などにFALLINGのまま操作不能になるのを防ぐ。0以下で無効")]
+        [SerializeField] private float _fallTimeoutSeconds = 3f;
+
+        [Tooltip("RESULTへ遷移してからこの秒数はタップを受け付けない。\n" +
+                 "失敗時は地面衝突と同時にRESULTになるため、その瞬間の入力で即リトライされるのを防ぐ")]
+        [SerializeField] private float _resultInputLockSeconds = 0.5f;
+
         private Vector3 _eggInitialPosition;
         private Quaternion _eggInitialRotation;
         private bool _eggInitialCaptured;
+
+        private Coroutine _fallTimeoutRoutine;
+        private float _resultInputUnlockTime;
 
         private void OnEnable()
         {
             if (_eggController != null)
             {
                 _eggController.OnEggLanded += HandleEggLanded;
-            }
-
-            if (_groundImpactDetector != null)
-            {
-                _groundImpactDetector.OnGroundImpact += HandleGroundImpact;
             }
 
             if (_eggFallDetector != null)
@@ -95,11 +104,6 @@ namespace Gameplay
             if (_eggController != null)
             {
                 _eggController.OnEggLanded -= HandleEggLanded;
-            }
-
-            if (_groundImpactDetector != null)
-            {
-                _groundImpactDetector.OnGroundImpact -= HandleGroundImpact;
             }
 
             if (_eggFallDetector != null)
@@ -190,7 +194,7 @@ namespace Gameplay
                 {
                     StartIntro();
                 }
-                else if (gameState == GameState.RESULT)
+                else if (gameState == GameState.RESULT && Time.time >= _resultInputUnlockTime)
                 {
                     Retry();
                 }
@@ -315,12 +319,43 @@ namespace Gameplay
             {
                 _feedbackController.StartFallFeedback(_eggController.transform);
             }
+            // 地面判定コライダーの外へ落ちた場合など、衝突が永遠に起きないと
+            // FALLINGのまま操作不能になる。時間で強制的に決着させる。
+            if (_fallTimeoutSeconds > 0f)
+            {
+                if (_fallTimeoutRoutine != null) StopCoroutine(_fallTimeoutRoutine);
+                _fallTimeoutRoutine = StartCoroutine(FallTimeout());
+            }
+
             Debug.Log("[GameManager] 落下開始！ 状態: FALLING, タイマー停止");
+        }
+
+        private IEnumerator FallTimeout()
+        {
+            yield return new WaitForSeconds(_fallTimeoutSeconds);
+
+            _fallTimeoutRoutine = null;
+            if (gameState != GameState.FALLING) yield break;
+
+            Debug.LogWarning($"[GameManager] 落下から{_fallTimeoutSeconds}秒経っても地面衝突が検知されませんでした。" +
+                             "強制的に失敗として決着させます。");
+            HandleGroundImpact();
+        }
+
+        private void StopFallTimeout()
+        {
+            if (_fallTimeoutRoutine != null)
+            {
+                StopCoroutine(_fallTimeoutRoutine);
+                _fallTimeoutRoutine = null;
+            }
         }
 
         public void HandleGroundImpact()
         {
             if (gameState != GameState.FALLING) return;
+
+            StopFallTimeout();
 
             if (_eggStateController != null)
             {
@@ -340,6 +375,8 @@ namespace Gameplay
 
             gameResult = GameResult.FAILURE;
             gameState = GameState.RESULT;
+            // 衝突と同時にRESULTになるため、その瞬間の入力で即リトライされないようロックする
+            _resultInputUnlockTime = Time.time + _resultInputLockSeconds;
 
             if (_uiController != null)
             {
@@ -397,6 +434,7 @@ namespace Gameplay
 
             gameResult = GameResult.SUCCESS;
             gameState = GameState.RESULT;
+            _resultInputUnlockTime = Time.time + _resultInputLockSeconds;
 
             if (_uiController != null)
             {
@@ -409,6 +447,7 @@ namespace Gameplay
         {
             if (gameState != GameState.RESULT) return;
 
+            StopFallTimeout();
             if (_sweetSpotController != null) _sweetSpotController.DeactivateSpot();
             // タイトルへ戻るので、フェードを待たずに即座にビネットを消す
             if (_screenEffectController != null) _screenEffectController.ClearEffect(immediate: true);

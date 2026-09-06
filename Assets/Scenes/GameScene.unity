@@ -5401,10 +5401,7 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents:
-    - targetCorrespondingSourceObject: {fileID: -7029948723529949830, guid: 0e90837e661e841b385d1e403855412e, type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 1671367957}
+    m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 0e90837e661e841b385d1e403855412e, type: 3}
 --- !u!1 &589189204
 GameObject:
@@ -11462,7 +11459,6 @@ MonoBehaviour:
   _eggStateController: {fileID: 1368307371}
   _panController: {fileID: 1702614853}
   _eggController: {fileID: 1419076914}
-  _groundImpactDetector: {fileID: 2133046147}
   _sweetSpotController: {fileID: 589189206}
   _feedbackController: {fileID: 1968507833}
   _uiController: {fileID: 1968507834}
@@ -11472,6 +11468,8 @@ MonoBehaviour:
   _eggFallDetector: {fileID: 1324795623}
   _tapEffectParticle: {fileID: 396466659}
   _screenEffectController: {fileID: 1057775482}
+  _fallTimeoutSeconds: 3
+  _resultInputLockSeconds: 0.5
 --- !u!4 &1057775480
 Transform:
   m_ObjectHideFlags: 0
@@ -17282,24 +17280,6 @@ PrefabInstance:
       addedObject: {fileID: 589189205}
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 0440446705846a3469d241834789b389, type: 3}
---- !u!1 &1671367955 stripped
-GameObject:
-  m_CorrespondingSourceObject: {fileID: -7029948723529949830, guid: 0e90837e661e841b385d1e403855412e, type: 3}
-  m_PrefabInstance: {fileID: 424628755}
-  m_PrefabAsset: {fileID: 0}
---- !u!114 &1671367957
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1671367955}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: a403fc81170fa09438fc63d41bfcf535, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::GroundImpactDetector
-  targetTag: Player
 --- !u!114 &1702614853 stripped
 MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 2095198503012491189, guid: 0440446705846a3469d241834789b389, type: 3}
@@ -17801,6 +17781,10 @@ PrefabInstance:
       propertyPath: eggTransform
       value: 
       objectReference: {fileID: 1419076909}
+    - target: {fileID: 3508935050733510362, guid: 65c29cb863e074ae1bbdeb9d23c4ebc0, type: 3}
+      propertyPath: showcaseFillRatio
+      value: 0.9
+      objectReference: {fileID: 0}
     - target: {fileID: 6344892050880691786, guid: 65c29cb863e074ae1bbdeb9d23c4ebc0, type: 3}
       propertyPath: m_LocalPosition.x
       value: 0
@@ -18234,6 +18218,8 @@ MonoBehaviour:
   burstSpinSpeed: 20
   burstIntensity: 1
   uprightCorrectionEuler: {x: 0, y: 180, z: 0}
+  stabilizeCharacterRotation: 1
+  stabilizedExtraEuler: {x: 0, y: 0, z: 0}
   uprightCorrectionDuration: 0.4
   uprightTarget: {fileID: 744132212}
   hideFragmentsDuringShowcase: 1
@@ -23298,6 +23284,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::GroundImpactDetector
   targetTag: Player
+  gameManager: {fileID: 0}
 --- !u!65 &2133046148
 BoxCollider:
   m_ObjectHideFlags: 0
