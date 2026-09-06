@@ -10,6 +10,14 @@ namespace Gameplay
         [Tooltip("サークルが移動するスピード（数値が高いほど速い）")]
         public float moveSpeed = 1.5f;
 
+        [Tooltip("フライパン面に接する高さ(親pan_mainのローカルY)。\n" +
+                 "★エリアが面に沈む・浮く場合はここを調整する。\n" +
+                 "以前はSetNewTargetPosition()内に-0.1がハードコードされており、\n" +
+                 "ワールドで約0.05ぶんパンの中に沈んでいた。\n" +
+                 "親のYスケールが0.5なので、この値1 = ワールド0.5に相当する。\n" +
+                 "SweetSpotVisualの底がちょうどこの高さに来るよう組んである")]
+        public float heightOnPan = 0.0012f;
+
         // ▼ 変更：AudioSourceではなく、直接音源ファイル（AudioClip）をセットできるようにしました
         [Header("Audio")]
         [Tooltip("回復中になり続けるSEをセットしてください")]
@@ -135,7 +143,7 @@ namespace Gameplay
         private void SetNewTargetPosition()
         {
             Vector2 randomCircle = Random.insideUnitCircle * spawnRadius;
-            targetLocalPosition = new Vector3(randomCircle.x, -0.1f, randomCircle.y);
+            targetLocalPosition = new Vector3(randomCircle.x, heightOnPan, randomCircle.y);
         }
 
         private void OnTriggerEnter(Collider other)
