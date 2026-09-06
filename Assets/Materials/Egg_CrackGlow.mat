@@ -34,18 +34,18 @@ Material:
     m_Ints: []
     m_Floats:
     - _CrackAmount: 0
-    - _CrackEdgeWidth: 0.045
+    - _CrackEdgeWidth: 0.085
     - _CrackScale: 7
-    - _EmissionIntensity: 3
+    - _EmissionIntensity: 6
     - _GrowthSoftness: 0.14
     - _JagFrequency: 11
     - _Jaggedness: 0.35
     - _LocalVariation: 0.4
     - _Smoothness: 0.35
-    - _SparkStrength: 2
+    - _SparkStrength: 3
     - _SparkWidth: 0.02
     m_Colors:
     - _BaseColor: {r: 0.95, g: 0.93, b: 0.85, a: 1}
-    - _EmissionColor: {r: 1, g: 0.55, b: 0.15, a: 1}
+    - _EmissionColor: {r: 1, g: 0.35, b: 0.05, a: 1}
   m_BuildTextureStacks: []
   m_AllowLocking: 1

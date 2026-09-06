@@ -114,7 +114,7 @@ Material:
     - _DetailNormalMapScale: 1
     - _DstBlend: 1
     - _DstBlendAlpha: 10
-    - _EdgeAlpha: 1.4
+    - _EdgeAlpha: 2
     - _EdgeWidth: 0.12
     - _EnvironmentReflections: 1
     - _FillAlpha: 0.35
@@ -140,14 +140,21 @@ Material:
     - _SrcBlend: 5
     - _SrcBlendAlpha: 1
     - _Surface: 1
+    - _WallAlpha: 1.2
+    - _WallBandCount: 3
+    - _WallBandSharp: 8
+    - _WallFade: 1.8
+    - _WallRimPower: 2.5
+    - _WallRiseSpeed: 0.7
     - _WorkflowMode: 0
     - _XRMotionVectorsPass: 1
     - _ZWrite: 0
     m_Colors:
-    - _BaseColor: {r: 0.3, g: 1, b: 0.45, a: 0.35}
+    - _BaseColor: {r: 0.1, g: 1, b: 0.55, a: 0.45}
     - _Color: {r: 0.43739253, g: 1, b: 0, a: 0.7882353}
     - _EmissionColor: {r: 0, g: 0, b: 0, a: 1}
-    - _RingColor: {r: 0.65, g: 1, b: 0.75, a: 1}
+    - _RingColor: {r: 0.4, g: 1, b: 0.85, a: 1}
     - _SpecColor: {r: 0.19999996, g: 0.19999996, b: 0.19999996, a: 1}
+    - _WallColor: {r: 0.3, g: 1, b: 0.8, a: 1}
   m_BuildTextureStacks: []
   m_AllowLocking: 1

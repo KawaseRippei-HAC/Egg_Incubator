@@ -14,6 +14,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Unity.RenderPipelines.Core.Runtime::UnityEngine.Rendering.VolumeProfile
   components:
   - {fileID: 7909742895598555234}
+  - {fileID: 0}
+  - {fileID: 0}
 --- !u!114 &7909742895598555234
 MonoBehaviour:
   m_ObjectHideFlags: 3

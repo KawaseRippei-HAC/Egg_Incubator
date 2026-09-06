@@ -45,6 +45,7 @@ namespace Gameplay
 
         private AudioSource _audioSource;
         private Renderer _renderer;
+        private Transform _visual;
         private Material _materialInstance;
         private Vector3 _baseScale;
         private float _pulseTime;
@@ -61,12 +62,23 @@ namespace Gameplay
             _audioSource.playOnAwake = false;
             _audioSource.loop = true;
 
-            _baseScale = transform.localScale;
+            // 描画は子(SweetSpotVisual)に分離してある。
+            // 親のスケールを触るとCapsuleCollider(トリガー範囲)まで一緒に伸びてしまうため、
+            // 拍動は子のTransformに対してかける。
+            _renderer = GetComponentInChildren<Renderer>(true);
+            if (_renderer != null)
+            {
+                _visual = _renderer.transform;
+                _baseScale = _visual.localScale;
 
-            // マテリアルはアセット共有なので、実行時にインスタンス化してから色を触る
-            // (そのまま書き換えるとアセットが汚れ、エディタ停止後も色が残る)
-            _renderer = GetComponent<Renderer>();
-            if (_renderer != null) _materialInstance = _renderer.material;
+                // マテリアルはアセット共有なので、実行時にインスタンス化してから色を触る
+                // (そのまま書き換えるとアセットが汚れ、エディタ停止後も色が残る)
+                _materialInstance = _renderer.material;
+            }
+            else
+            {
+                Debug.LogWarning($"[{nameof(SweetSpotController)}] 描画用のRendererが子に見つかりません。", this);
+            }
         }
 
         void Update()
@@ -90,14 +102,14 @@ namespace Gameplay
         /// </summary>
         private void UpdateAppearance()
         {
-            if (pulsePeriod > 0f && pulseScale > 0f)
+            if (_visual != null && pulsePeriod > 0f && pulseScale > 0f)
             {
                 _pulseTime += Time.deltaTime;
                 // 0→1→0を繰り返す(Sinを0..1へ写像)
                 float wave = (Mathf.Sin(_pulseTime / pulsePeriod * Mathf.PI * 2f) + 1f) * 0.5f;
                 float s = 1f + wave * pulseScale;
-                // 厚み(Y)は拍動させない。薄い円盤なので伸ばすと浮いて見える
-                transform.localScale = new Vector3(_baseScale.x * s, _baseScale.y, _baseScale.z * s);
+                // 高さ(Y)は拍動させない。枠の伸びる高さが呼吸すると落ち着かないため
+                _visual.localScale = new Vector3(_baseScale.x * s, _baseScale.y, _baseScale.z * s);
             }
 
             if (_materialInstance == null) return;
@@ -164,7 +176,7 @@ namespace Gameplay
             IsEggInside = false;
 
             // 前ラウンドの拍動・色が残らないよう初期状態へ戻す
-            if (_baseScale != Vector3.zero) transform.localScale = _baseScale;
+            if (_visual != null && _baseScale != Vector3.zero) _visual.localScale = _baseScale;
             if (_materialInstance != null)
             {
                 if (_materialInstance.HasProperty(BaseColorId)) _materialInstance.SetColor(BaseColorId, idleColor);

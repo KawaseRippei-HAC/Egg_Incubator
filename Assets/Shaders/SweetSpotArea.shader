@@ -32,6 +32,15 @@ Shader "Custom/SweetSpotArea"
 
         _ScanSpeed         ("走査線の回転速度", Range(0, 3)) = 0.35
         _ScanAlpha         ("走査線の強さ", Range(0, 2)) = 0.35
+
+        [Header(Wall)]
+        [HDR] _WallColor   ("上へ伸びる枠の色", Color) = (0.5, 1.0, 0.8, 1.0)
+        _WallAlpha         ("枠の強さ", Range(0, 4)) = 1.2
+        _WallFade          ("枠が上へ向かって消える速さ", Range(0.2, 6)) = 1.8
+        _WallRiseSpeed     ("枠を昇っていく光の速さ", Range(0, 4)) = 0.7
+        _WallBandCount     ("昇っていく光の本数", Range(1, 12)) = 3
+        _WallBandSharp     ("昇る光の細さ", Range(1, 32)) = 8
+        _WallRimPower      ("枠の輪郭の立ち方(大きいほど縁だけ光る)", Range(0.5, 8)) = 2.5
     }
 
     SubShader
@@ -60,6 +69,7 @@ Shader "Custom/SweetSpotArea"
             struct Attributes
             {
                 float4 positionOS : POSITION;
+                float3 normalOS   : NORMAL;
                 UNITY_VERTEX_INPUT_INSTANCE_ID
             };
 
@@ -67,6 +77,9 @@ Shader "Custom/SweetSpotArea"
             {
                 float4 positionCS : SV_POSITION;
                 float3 positionOS : TEXCOORD0;
+                float3 normalOS   : TEXCOORD1;
+                float3 viewDirWS  : TEXCOORD2;
+                float3 normalWS   : TEXCOORD3;
                 UNITY_VERTEX_OUTPUT_STEREO
             };
 
@@ -83,6 +96,13 @@ Shader "Custom/SweetSpotArea"
                 float  _RippleAlpha;
                 float  _ScanSpeed;
                 float  _ScanAlpha;
+                float4 _WallColor;
+                float  _WallAlpha;
+                float  _WallFade;
+                float  _WallRiseSpeed;
+                float  _WallBandCount;
+                float  _WallBandSharp;
+                float  _WallRimPower;
             CBUFFER_END
 
             Varyings vert(Attributes IN)
@@ -91,8 +111,12 @@ Shader "Custom/SweetSpotArea"
                 UNITY_SETUP_INSTANCE_ID(IN);
                 UNITY_INITIALIZE_VERTEX_OUTPUT_STEREO(OUT);
 
-                OUT.positionCS = TransformObjectToHClip(IN.positionOS.xyz);
+                float3 posWS = TransformObjectToWorld(IN.positionOS.xyz);
+                OUT.positionCS = TransformWorldToHClip(posWS);
                 OUT.positionOS = IN.positionOS.xyz;
+                OUT.normalOS   = IN.normalOS;
+                OUT.normalWS   = TransformObjectToWorldNormal(IN.normalOS);
+                OUT.viewDirWS  = GetWorldSpaceViewDir(posWS);
                 return OUT;
             }
 
@@ -102,8 +126,42 @@ Shader "Custom/SweetSpotArea"
                 return saturate(1.0 - abs(r - center) / max(width, 1e-4));
             }
 
+            // --- 側面(上へ伸びる枠) ---
+            // Cylinderの側面をそのまま「エリアの枠」として使う。
+            // 天面と側面は法線のY成分で判別できる(天面は±Y、側面は放射方向)。
+            half4 ShadeWall(Varyings IN)
+            {
+                // ローカルYは-0.5(下)〜0.5(上)。0(足元)〜1(てっぺん)へ写す
+                float h = saturate(IN.positionOS.y + 0.5);
+
+                // 上へ向かって消えるグラデーション。これで「地面から立ち上る」感じになる
+                float fade = pow(saturate(1.0 - h), _WallFade);
+
+                // 昇っていく光の帯
+                float band = frac(h * _WallBandCount - _Time.y * _WallRiseSpeed);
+                band = pow(saturate(1.0 - band), _WallBandSharp);
+
+                // 輪郭(フレネル)。真横から見たときに縁が光り、筒の存在が分かりやすくなる
+                float3 n = normalize(IN.normalWS);
+                float3 v = normalize(IN.viewDirWS);
+                float rim = pow(saturate(1.0 - abs(dot(n, v))), _WallRimPower);
+
+                float a = (fade * (0.35 + rim * 0.65) + band * fade) * _WallAlpha;
+                float3 col = _WallColor.rgb * a;
+
+                col *= _Intensity;
+                a = saturate(a * _WallColor.a * _Intensity);
+                return half4(col, a);
+            }
+
             half4 frag(Varyings IN) : SV_Target
             {
+                // 側面か天面かを法線で判別する
+                if (abs(normalize(IN.normalOS).y) < 0.5)
+                {
+                    return ShadeWall(IN);
+                }
+
                 // Cylinderは半径0.5・軸Y。0(中心)〜1(縁)へ正規化する
                 float r = length(IN.positionOS.xz) / 0.5;
                 clip(1.0 - r);   // 円の外は描かない
