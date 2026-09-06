@@ -34,10 +34,10 @@ Material:
     m_Ints: []
     m_Floats:
     - _CrackAmount: 0
-    - _CrackDarkness: 0.12
-    - _CrackEdgeWidth: 0.075
-    - _CrackScale: 7
-    - _EmissionIntensity: 5
+    - _CrackDarkness: 0.03
+    - _CrackEdgeWidth: 0.16
+    - _CrackScale: 4
+    - _EmissionIntensity: 7
     - _GrooveWiden: 1.8
     - _GrowthSoftness: 0.14
     - _JagFrequency: 11
@@ -46,8 +46,13 @@ Material:
     - _Smoothness: 0.35
     - _SparkStrength: 3
     - _SparkWidth: 0.02
+    - _SweetBoost: 0
+    - _SweetIntensity: 3
+    - _SweetPulseSpeed: 3
+    - _SweetRimPower: 2.5
     m_Colors:
     - _BaseColor: {r: 0.95, g: 0.93, b: 0.85, a: 1}
     - _EmissionColor: {r: 1, g: 0.35, b: 0.05, a: 1}
+    - _SweetColor: {r: 0.35, g: 1, b: 0.55, a: 1}
   m_BuildTextureStacks: []
   m_AllowLocking: 1

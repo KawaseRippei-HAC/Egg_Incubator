@@ -238,10 +238,15 @@ namespace Gameplay
                     {
                         _feedbackController.UpdateDangerFeedback(dangerLevel);
                     }
+                    bool isInside = (_sweetSpotController != null && _sweetSpotController.IsEggInside);
                     if (_screenEffectController != null)
                     {
-                        bool isInside = (_sweetSpotController != null && _sweetSpotController.IsEggInside);
                         _screenEffectController.UpdateEffectState(dangerLevel, isInside);
+                    }
+                    // スイートスポットに入っている間は卵の輪郭も光らせる
+                    if (_feedbackController != null)
+                    {
+                        _feedbackController.UpdateSweetSpotFeedback(isInside);
                     }
                 }
 

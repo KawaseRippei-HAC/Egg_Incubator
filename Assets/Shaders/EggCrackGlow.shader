@@ -38,6 +38,15 @@ Shader "Custom/EggCrackGlow"
         _CrackDarkness ("亀裂の溝の暗さ (0=真っ黒 / 1=暗くしない)", Range(0, 1)) = 0.12
         _GrooveWiden ("溝を発光より太くする量", Range(1, 4)) = 1.8
 
+        [Header(SweetSpot)]
+        // スイートスポットに入っている間、卵の輪郭を光らせる。
+        // SweetSpotController.IsEggInside -> FeedbackController -> EggCrackGlowController.SetSweetBoost()
+        [HDR] _SweetColor ("スイートスポット中のリム発光色", Color) = (0.35, 1.0, 0.55, 1)
+        _SweetBoost ("スイートスポット中の強さ (スクリプト制御 0-1)", Range(0, 1)) = 0
+        _SweetRimPower ("リムの立ち方 (大きいほど輪郭だけ)", Range(0.5, 8)) = 2.5
+        _SweetIntensity ("リムの明るさ", Range(0, 8)) = 3
+        _SweetPulseSpeed ("明滅の速さ", Range(0, 10)) = 3
+
         _Smoothness ("Smoothness", Range(0,1)) = 0.35
     }
 
@@ -90,6 +99,11 @@ Shader "Custom/EggCrackGlow"
                 float _CrackAmount;
                 float _CrackDarkness;
                 float _GrooveWiden;
+                float4 _SweetColor;
+                float _SweetBoost;
+                float _SweetRimPower;
+                float _SweetIntensity;
+                float _SweetPulseSpeed;
                 float _Smoothness;
                 float _CrackScale;
                 float _CrackEdgeWidth;
@@ -227,6 +241,15 @@ Shader "Custom/EggCrackGlow"
                 half3 emission = crackMask * _EmissionColor.rgb * _EmissionIntensity;
                 // スパーク: 出現の瞬間だけ白っぽく強い閃光を上乗せ
                 emission += sparkMask * _SparkStrength * lerp(_EmissionColor.rgb, half3(1,1,1), 0.6);
+
+                // === スイートスポット中のリム発光 ===
+                // 卵の輪郭(フレネル)を光らせる。塗りつぶすと卵の質感が消えるため輪郭に絞る。
+                if (_SweetBoost > 0.001)
+                {
+                    float rim = pow(saturate(1.0 - saturate(dot(normalWS, viewDirWS))), _SweetRimPower);
+                    float pulse = 0.7 + 0.3 * sin(_Time.y * _SweetPulseSpeed * 6.2831853);
+                    emission += rim * _SweetColor.rgb * _SweetIntensity * _SweetBoost * pulse;
+                }
 
                 half3 finalColor = litColor + emission;
                 return half4(finalColor, 1.0);

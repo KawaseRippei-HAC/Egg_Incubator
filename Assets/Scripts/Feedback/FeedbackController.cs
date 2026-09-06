@@ -188,6 +188,17 @@ public class FeedbackController : MonoBehaviour
              "ここではリトライ時のリセットのためだけに参照する")]
     public HatchShowcaseController hatchShowcaseController;
 
+    [Header("ひび割れの出方")]
+    [Tooltip("進行度(0〜1)を、ひび割れの見え方(_CrackAmount)へ変換するカーブ。\n" +
+             "そのまま渡すとゲーム中盤までヒビが『点』のままで見えないため、序盤を持ち上げる。\n" +
+             "空にすると変換なし(そのまま渡す)")]
+    public AnimationCurve crackRevealCurve = new AnimationCurve(
+        new Keyframe(0f, 0f), new Keyframe(0.3f, 0.48f), new Keyframe(1f, 1f));
+
+    [Header("スイートスポット中の卵の演出")]
+    [Tooltip("スイートスポットに入っている間、卵の輪郭を光らせる強さ")]
+    [Range(0f, 1f)] public float sweetSpotEggGlow = 1f;
+
     [Header("既存の卵演出スクリプト (実装済み・改変しない)")]
     [Tooltip("危険度(dangerLevel)の入力先。SetDangerLevel()のみを呼ぶ。TriggerBreak/TriggerHatchはB担当側の責任")]
     public EggCrackGlowController eggCrackGlowController;
@@ -260,7 +271,13 @@ public class FeedbackController : MonoBehaviour
 
         if (eggCrackGlowController != null)
         {
-            eggCrackGlowController.SetDangerLevel(_currentProgress);
+            // ★進行度をそのまま渡すと、ヒビはゲーム中盤まで「点」のままで見えない。
+            // Voronoiのセルが閾値を超えて初めて線になるため、序盤の立ち上がりを持ち上げる。
+            // 既定カーブは pow(progress, 0.6) 相当で、progress=0.3 のとき約0.48になる。
+            float shaped = crackRevealCurve != null && crackRevealCurve.length > 0
+                ? Mathf.Clamp01(crackRevealCurve.Evaluate(_currentProgress))
+                : _currentProgress;
+            eggCrackGlowController.SetDangerLevel(shaped);
         }
 
         CheckCrackThresholdCrossing(_currentProgress);
@@ -328,6 +345,15 @@ public class FeedbackController : MonoBehaviour
         audioController?.StopRolling();
         // uiController.ShowFailureResult()はここでは呼ばない。GameManager.HandleGroundImpact()が
         // 直後に個別に呼ぶ設計(GameManager.cs実装より判明)。
+    }
+
+    /// <summary>
+    /// 卵がスイートスポットに入っているかをPLAYING中に毎フレームGameManagerから渡す。
+    /// 卵の輪郭を光らせて「今おいしい状態」であることを伝える。
+    /// </summary>
+    public void UpdateSweetSpotFeedback(bool isEggInside)
+    {
+        eggCrackGlowController?.SetSweetBoost(isEggInside ? sweetSpotEggGlow : 0f);
     }
 
     /// <summary>

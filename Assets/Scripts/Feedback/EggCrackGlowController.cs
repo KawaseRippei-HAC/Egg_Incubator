@@ -100,6 +100,24 @@ public class EggCrackGlowController : MonoBehaviour
         ApplyToMaterial(amount);
     }
 
+    /// <summary>
+    /// スイートスポットに入っている間、卵の輪郭(フレネル)を光らせる強さ(0〜1)。
+    /// SweetSpotController.IsEggInside を FeedbackController 経由で受け取る。
+    /// 急に切り替わると目にうるさいので、呼び出し側ではなくここで補間する。
+    /// </summary>
+    public void SetSweetBoost(float target, float lerpSpeed = 6f)
+    {
+        _sweetBoost = Mathf.MoveTowards(_sweetBoost, Mathf.Clamp01(target), Time.deltaTime * lerpSpeed);
+
+        if (_crackMaterialInstance != null && _crackMaterialInstance.HasProperty(SweetBoostId))
+        {
+            _crackMaterialInstance.SetFloat(SweetBoostId, _sweetBoost);
+        }
+    }
+
+    private float _sweetBoost;
+    private static readonly int SweetBoostId = Shader.PropertyToID("_SweetBoost");
+
     private void ApplyToMaterial(float amount)
     {
         amount = Mathf.Clamp01(amount);
