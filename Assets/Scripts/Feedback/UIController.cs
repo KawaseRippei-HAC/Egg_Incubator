@@ -1,4 +1,5 @@
 using System.Collections;
+using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -11,8 +12,34 @@ public class UIController : MonoBehaviour
 {
     [Header("UIルート (Canvas配下のパネル等)")]
     public GameObject titleUI;
+    public GameObject playingUI;
     public GameObject resultUI;
     public GameObject retryUI;
+
+    // ★元の設計はノンバーバル(テキストを使わない)方針だったが、短時間で何度も
+    // 人が入れ替わる展示では「何をすればいいか」が伝わらないため、
+    // 各状態に短い日本語のガイドを出す方針へ変更した。
+    [Header("テキスト (TextMeshPro)")]
+    public TextMeshProUGUI titleText;
+    public TextMeshProUGUI playingText;
+    public TextMeshProUGUI resultTitleText;
+    public TextMeshProUGUI resultBodyText;
+    public TextMeshProUGUI retryText;
+
+    [Header("表示する文言")]
+    public string titleMessage = "タップしてスタート";
+    public string playingMessage = "卵を落とさず孵化させろ";
+    public string successTitle = "ゲームクリア";
+    public string successBody = "卵が孵化した";
+    public string failureTitle = "ゲームオーバー";
+    public string failureBody = "卵が割れた";
+    public string retryMessage = "タップしてリトライ";
+
+    [Header("プレイ中メッセージ")]
+    [Tooltip("表示し続けるとゲーム画面の邪魔になるので、この秒数で消す。0以下なら消さない")]
+    public float playingMessageDuration = 3f;
+    [Tooltip("消えるときのフェード時間(秒)")]
+    public float playingMessageFade = 0.7f;
 
     [Header("リザルト背景 (成功/失敗で色を変える仮実装)")]
     public Image resultBackground;
@@ -38,12 +65,17 @@ public class UIController : MonoBehaviour
         new Keyframe(0f, 1f), new Keyframe(0.15f, 0.55f), new Keyframe(1f, 0f));
 
     private Coroutine _flashRoutine;
+    private Coroutine _playingRoutine;
 
     public void ShowTitle()
     {
         SetActiveSafe(titleUI, true);
+        SetActiveSafe(playingUI, false);
         SetActiveSafe(resultUI, false);
         SetActiveSafe(retryUI, false);
+
+        SetText(titleText, titleMessage);
+        StopPlayingMessage();
     }
 
     public void ShowPlaying()
@@ -51,14 +83,68 @@ public class UIController : MonoBehaviour
         SetActiveSafe(titleUI, false);
         SetActiveSafe(resultUI, false);
         SetActiveSafe(retryUI, false);
+
+        // 「何をするゲームか」を最初の数秒だけ出す。出しっぱなしだと視界の邪魔になる。
+        SetActiveSafe(playingUI, true);
+        SetText(playingText, playingMessage);
+        StopPlayingMessage();
+        if (playingText != null && playingMessageDuration > 0f)
+        {
+            _playingRoutine = StartCoroutine(FadeOutPlayingMessage());
+        }
+    }
+
+    private IEnumerator FadeOutPlayingMessage()
+    {
+        SetAlpha(playingText, 1f);
+        yield return new WaitForSeconds(playingMessageDuration);
+
+        float t = 0f;
+        float d = Mathf.Max(playingMessageFade, 0.0001f);
+        while (t < d)
+        {
+            t += Time.deltaTime;
+            SetAlpha(playingText, 1f - Mathf.Clamp01(t / d));
+            yield return null;
+        }
+        SetAlpha(playingText, 0f);
+        SetActiveSafe(playingUI, false);
+        _playingRoutine = null;
+    }
+
+    private void StopPlayingMessage()
+    {
+        if (_playingRoutine != null)
+        {
+            StopCoroutine(_playingRoutine);
+            _playingRoutine = null;
+        }
+        SetAlpha(playingText, 1f);
+    }
+
+    private static void SetText(TextMeshProUGUI target, string value)
+    {
+        if (target != null) target.text = value;
+    }
+
+    private static void SetAlpha(TextMeshProUGUI target, float a)
+    {
+        if (target == null) return;
+        Color c = target.color;
+        c.a = a;
+        target.color = c;
     }
 
     /// <summary>FeedbackController.PlaySuccessFeedback()から呼ばれる</summary>
     public void ShowSuccessResult()
     {
         SetActiveSafe(titleUI, false);
+        SetActiveSafe(playingUI, false);
         SetActiveSafe(resultUI, true);
+        StopPlayingMessage();
         if (resultBackground != null) resultBackground.color = successColor;
+        SetText(resultTitleText, successTitle);
+        SetText(resultBodyText, successBody);
         // ★フラッシュはここでは出さない。
         // ShowSuccessResult()はGameManagerがsuccessResultDelay(3秒)待ってから呼ぶため、
         // ここで光らせると「孵化した瞬間」ではなく「リザルト画面が出た瞬間」に光ってしまう。
@@ -70,8 +156,12 @@ public class UIController : MonoBehaviour
     public void ShowFailureResult()
     {
         SetActiveSafe(titleUI, false);
+        SetActiveSafe(playingUI, false);
         SetActiveSafe(resultUI, true);
+        StopPlayingMessage();
         if (resultBackground != null) resultBackground.color = failureColor;
+        SetText(resultTitleText, failureTitle);
+        SetText(resultBodyText, failureBody);
         // 成功側と同じ理由でここでは光らせない(ImpactFxControllerが衝突の瞬間に発火させる)
         ShowRetry();
     }
@@ -79,6 +169,7 @@ public class UIController : MonoBehaviour
     public void ShowRetry()
     {
         SetActiveSafe(retryUI, true);
+        SetText(retryText, retryMessage);
     }
 
     /// <summary>画面全体を一瞬赤くフェードさせる(テキストを使わない失敗演出)</summary>
