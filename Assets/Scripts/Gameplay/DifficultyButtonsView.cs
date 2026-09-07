@@ -5,17 +5,28 @@ using UnityEngine.UI;
 namespace Gameplay
 {
     /// <summary>
-    /// 難易度ボタンの「今どれが選ばれているか」を色で示す。
-    /// これが無いと3つ並んだボタンのどれが有効なのか分からず、選択UIとして成立しない。
+    /// 難易度ボタンの見た目を管理する。
+    ///   ・今どれが選ばれているかを色で示す
+    ///     (3つ並んだボタンのどれが有効か分からないと選択UIとして成立しないため)
+    ///   ・クリア済みの難易度に CLEAR! を出す
+    ///   ・EXTRAは Easy/Normal/Hard を全てクリアするまで隠す
     /// </summary>
     public class DifficultyButtonsView : MonoBehaviour
     {
+        [System.Serializable]
+        public class Entry
+        {
+            public GameDifficulty difficulty;
+            [Tooltip("ボタンの背景Image")]
+            public Image background;
+            [Tooltip("クリア済みのときだけ出すバッジ。未設定でも可")]
+            public GameObject clearBadge;
+        }
+
         [SerializeField] private DifficultySelector _selector;
 
-        [Header("ボタンの背景Image (Easy / Normal / Hard の順)")]
-        [SerializeField] private Image _easyImage;
-        [SerializeField] private Image _normalImage;
-        [SerializeField] private Image _hardImage;
+        [Header("ボタン")]
+        [SerializeField] private Entry[] _entries;
 
         [Header("色")]
         [SerializeField] private Color _selectedColor = new Color(1f, 0.78f, 0.25f, 0.95f);
@@ -32,40 +43,54 @@ namespace Gameplay
 
         private void OnEnable()
         {
-            if (_selector != null)
-            {
-                _selector.OnDifficultyChanged += Refresh;
-                Refresh(_selector.Current);
-            }
+            if (_selector == null) return;
+
+            _selector.OnDifficultyChanged += OnChanged;
+            _selector.OnClearedChanged += Refresh;
+            // タイトルへ戻るたびにここが呼ばれるので、クリア直後の解放もここで反映される
+            Refresh();
         }
 
         private void OnDisable()
         {
-            if (_selector != null) _selector.OnDifficultyChanged -= Refresh;
+            if (_selector == null) return;
+            _selector.OnDifficultyChanged -= OnChanged;
+            _selector.OnClearedChanged -= Refresh;
         }
 
-        /// <summary>タイトルへ戻ったときなど、外から表示を合わせ直したい場合に使う</summary>
-        public void RefreshCurrent()
-        {
-            if (_selector != null) Refresh(_selector.Current);
-        }
+        private void OnChanged(GameDifficulty _) { Refresh(); }
 
-        private void Refresh(GameDifficulty current)
+        /// <summary>外から表示を合わせ直したい場合に使う</summary>
+        public void Refresh()
         {
-            Apply(_easyImage, current == GameDifficulty.Easy);
-            Apply(_normalImage, current == GameDifficulty.Normal);
-            Apply(_hardImage, current == GameDifficulty.Hard);
-        }
+            if (_selector == null || _entries == null) return;
 
-        private void Apply(Image target, bool selected)
-        {
-            if (target == null) return;
-            target.color = selected ? _selectedColor : _unselectedColor;
-
-            var label = target.GetComponentInChildren<TMPro.TextMeshProUGUI>();
-            if (label != null)
+            foreach (var e in _entries)
             {
-                label.color = selected ? _selectedTextColor : _unselectedTextColor;
+                if (e == null) continue;
+
+                bool unlocked = _selector.IsUnlocked(e.difficulty);
+                bool selected = unlocked && _selector.Current == e.difficulty;
+                bool cleared = _selector.IsCleared(e.difficulty);
+
+                if (e.background != null)
+                {
+                    // 未解放のボタンはそもそも表示しない(EXTRAの存在を隠す)
+                    e.background.gameObject.SetActive(unlocked);
+
+                    e.background.color = selected ? _selectedColor : _unselectedColor;
+
+                    var label = e.background.GetComponentInChildren<TMPro.TextMeshProUGUI>(true);
+                    if (label != null)
+                    {
+                        label.color = selected ? _selectedTextColor : _unselectedTextColor;
+                    }
+                }
+
+                if (e.clearBadge != null)
+                {
+                    e.clearBadge.SetActive(unlocked && cleared);
+                }
             }
         }
     }

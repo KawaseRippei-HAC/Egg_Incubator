@@ -81,6 +81,18 @@ namespace Gameplay
             centerAssistWeight = 0.25f, edgeCenterAssistWeight = 0.5f,
         };
 
+        [Tooltip("Easy/Normal/Hardを全てクリアすると解放される最難関")]
+        public Settings extra = new Settings
+        {
+            label = "EXTRA",
+            timeLimit = 120f,
+            minForceMultiplier = 2.4f, maxForceMultiplier = 9f,
+            maxForceInterval = 0.8f, minForceInterval = 0.25f,
+            minMaxLinearSpeed = 1.6f, maxMaxLinearSpeed = 4f,
+            minMaxAngularSpeed = 8f, maxMaxAngularSpeed = 20f,
+            centerAssistWeight = 0.1f, edgeCenterAssistWeight = 0.35f,
+        };
+
         [Header("反映先 (未設定ならAwakeで自動取得)")]
         [SerializeField] private TimerManager _timerManager;
         [SerializeField] private DifficultyManager _difficultyManager;
@@ -105,6 +117,8 @@ namespace Gameplay
 
             // 前回選んだ難易度を覚えておく(展示で毎回選び直す手間を減らす)
             _current = (GameDifficulty)PlayerPrefs.GetInt(PrefKey, (int)GameDifficulty.Normal);
+            // クリア状況を消した後などにExtraが選ばれたまま残らないようにする
+            if (!IsUnlocked(_current)) _current = GameDifficulty.Normal;
             Apply();
         }
 
@@ -114,6 +128,7 @@ namespace Gameplay
             {
                 case GameDifficulty.Easy: return easy;
                 case GameDifficulty.Hard: return hard;
+                case GameDifficulty.Extra: return extra;
                 default: return normal;
             }
         }
@@ -122,13 +137,70 @@ namespace Gameplay
         public void SelectEasy() { Select(GameDifficulty.Easy); }
         public void SelectNormal() { Select(GameDifficulty.Normal); }
         public void SelectHard() { Select(GameDifficulty.Hard); }
+        public void SelectExtra() { Select(GameDifficulty.Extra); }
 
         public void Select(GameDifficulty d)
         {
+            // 未解放の難易度は選ばせない(ボタンは隠しているが念のため)
+            if (!IsUnlocked(d)) return;
+
             _current = d;
             PlayerPrefs.SetInt(PrefKey, (int)d);
             Apply();
             OnDifficultyChanged?.Invoke(d);
+        }
+
+        // ===== クリア状況 =====
+
+        private const string ClearedKeyPrefix = "proto_d_cleared_";
+
+        /// <summary>その難易度をクリア済みか</summary>
+        public bool IsCleared(GameDifficulty d)
+        {
+            return PlayerPrefs.GetInt(ClearedKeyPrefix + (int)d, 0) != 0;
+        }
+
+        /// <summary>
+        /// クリアを記録する。GameManagerが孵化成功時に呼ぶ。
+        /// Easy/Normal/Hardが揃うとExtraが解放される。
+        /// </summary>
+        public void MarkCleared(GameDifficulty d)
+        {
+            if (IsCleared(d)) return;
+
+            PlayerPrefs.SetInt(ClearedKeyPrefix + (int)d, 1);
+            PlayerPrefs.Save();
+            Debug.Log($"[DifficultySelector] {GetSettings(d).label} をクリア");
+
+            OnClearedChanged?.Invoke();
+        }
+
+        /// <summary>
+        /// 選択できるか。Extraだけは Easy/Normal/Hard を全てクリアするまで隠す。
+        /// </summary>
+        public bool IsUnlocked(GameDifficulty d)
+        {
+            if (d != GameDifficulty.Extra) return true;
+            return IsCleared(GameDifficulty.Easy)
+                && IsCleared(GameDifficulty.Normal)
+                && IsCleared(GameDifficulty.Hard);
+        }
+
+        /// <summary>クリア状況が変わったときに通知する。UIのCLEAR表示更新用</summary>
+        public event System.Action OnClearedChanged;
+
+        /// <summary>デバッグ用: クリア状況を全部消す</summary>
+        [ContextMenu("クリア状況をリセット")]
+        public void ResetClearedProgress()
+        {
+            for (int i = 0; i <= (int)GameDifficulty.Extra; i++)
+            {
+                PlayerPrefs.DeleteKey(ClearedKeyPrefix + i);
+            }
+            PlayerPrefs.Save();
+            if (_current == GameDifficulty.Extra) Select(GameDifficulty.Normal);
+            OnClearedChanged?.Invoke();
+            Debug.Log("[DifficultySelector] クリア状況をリセットしました");
         }
 
         /// <summary>

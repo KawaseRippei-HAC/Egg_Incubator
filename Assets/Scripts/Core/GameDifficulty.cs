@@ -6,5 +6,7 @@ namespace Proto.Core
         Easy = 0,
         Normal = 1,
         Hard = 2,
+        /// <summary>Easy/Normal/Hardを全てクリアすると解放される最難関</summary>
+        Extra = 3,
     }
 }

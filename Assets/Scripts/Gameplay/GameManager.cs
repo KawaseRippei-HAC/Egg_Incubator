@@ -444,6 +444,12 @@ namespace Gameplay
             if (gameState != GameState.PLAYING ) return;
             gameState = GameState.HATCHING;
             Debug.Log("[GameManager] 成功！ HATCHING状態へ移行し、孵化を待機します。");
+
+            // クリア記録。Easy/Normal/Hardが揃うとExtraが解放される
+            if (_difficultySelector != null)
+            {
+                _difficultySelector.MarkCleared(_difficultySelector.Current);
+            }
             if (_sweetSpotController != null) _sweetSpotController.DeactivateSpot();
             // 孵化演出をビネット越しに見せないよう、PLAYINGを抜けた時点で消す
             if (_screenEffectController != null) _screenEffectController.ClearEffect();
