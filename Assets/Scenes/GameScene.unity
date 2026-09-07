@@ -5453,7 +5453,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Gameplay.DifficultyManager
   minForceMultiplier: 1
   maxForceMultiplier: 5
-  maxForceInterval: 2
+  maxForceInterval: 1.4
   minForceInterval: 0.5
   minDirectionVariance: 0.1
   maxDirectionVariance: 1
@@ -5466,27 +5466,27 @@ MonoBehaviour:
     m_Curve:
     - serializedVersion: 3
       time: 0
-      value: 0.05
-      inSlope: 0.8999999
-      outSlope: 0.8999999
+      value: 0.12
+      inSlope: 0.8
+      outSlope: 0.8
       tangentMode: 0
       weightedMode: 0
       inWeight: 0
       outWeight: 0.33333334
     - serializedVersion: 3
       time: 0.3
-      value: 0.32
-      inSlope: 0.82142854
-      outSlope: 0.82142854
+      value: 0.36
+      inSlope: 0.7428572
+      outSlope: 0.7428572
       tangentMode: 0
       weightedMode: 0
       inWeight: 0.33333334
       outWeight: 0.33333334
     - serializedVersion: 3
       time: 0.65
-      value: 0.58
-      inSlope: 1.1214285
-      outSlope: 1.1214285
+      value: 0.6
+      inSlope: 1.0428569
+      outSlope: 1.0428569
       tangentMode: 0
       weightedMode: 0
       inWeight: 0.33333334
@@ -5494,8 +5494,8 @@ MonoBehaviour:
     - serializedVersion: 3
       time: 0.85
       value: 0.88
-      inSlope: 1.15
-      outSlope: 1.15
+      inSlope: 1.0999998
+      outSlope: 1.0999998
       tangentMode: 0
       weightedMode: 0
       inWeight: 0.33333334
@@ -18732,11 +18732,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 4945188698556240071, guid: 3f8ef555b749a4546a7330604be02994, type: 3}
       propertyPath: m_LinearDamping
-      value: 0.6
+      value: 0.35
       objectReference: {fileID: 0}
     - target: {fileID: 4945188698556240071, guid: 3f8ef555b749a4546a7330604be02994, type: 3}
       propertyPath: m_AngularDamping
-      value: 0.5
+      value: 0.2
       objectReference: {fileID: 0}
     - target: {fileID: 5193109589558212658, guid: 3f8ef555b749a4546a7330604be02994, type: 3}
       propertyPath: m_Name
@@ -18966,7 +18966,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 2095198503012491189, guid: 0440446705846a3469d241834789b389, type: 3}
       propertyPath: maxAngle
-      value: 12
+      value: 16
       objectReference: {fileID: 0}
     - target: {fileID: 2095198503012491189, guid: 0440446705846a3469d241834789b389, type: 3}
       propertyPath: smoothSpeed
