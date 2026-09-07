@@ -39,20 +39,25 @@ public class UIController : MonoBehaviour
     [Tooltip("残り時間表示のルート。PLAYING中だけ表示する")]
     public GameObject timerUI;
 
-    [Tooltip("進行度に応じて横幅が変わるバー。anchorMax.xで伸縮させるのでSpriteは不要")]
+    [Tooltip("孵化の進行度に応じて伸びるバー。anchorMax.xで伸縮させるのでSpriteは不要")]
     public RectTransform timerFill;
 
     [Tooltip("残り秒数の数字。不要ならnullで可")]
     public TextMeshProUGUI timerText;
 
-    [Tooltip("残りが少ないときのバーの色")]
-    public Color timerUrgentColor = new Color(1f, 0.35f, 0.25f, 1f);
+    // ★バーは「減る」ではなく「溜まる」方向にしている。
+    // このゲームは時間切れ=孵化成功なので、残量が減る赤いバーだと
+    // 「もうすぐゲームオーバー」という逆の意味に読まれてしまう。
+    // 孵化に向けてゲージが溜まっていく形にし、色も警告色ではなく
+    // 「もうすぐ生まれる」期待感のある金色へ寄せる。
+    [Tooltip("序盤のバーの色")]
+    public Color timerStartColor = new Color(0.55f, 0.85f, 1f, 1f);
 
-    [Tooltip("通常時のバーの色")]
-    public Color timerNormalColor = new Color(0.45f, 1f, 0.6f, 1f);
+    [Tooltip("孵化が近いときのバーの色。警告ではなく期待感を持たせる色にすること")]
+    public Color timerNearHatchColor = new Color(1f, 0.82f, 0.25f, 1f);
 
-    [Tooltip("この残り割合を下回ると色が警告色へ変わる")]
-    [Range(0f, 1f)] public float timerUrgentRatio = 0.25f;
+    [Tooltip("この進行度を超えると色が孵化間近の色へ変わり始める")]
+    [Range(0f, 1f)] public float timerNearHatchProgress = 0.7f;
 
     [Header("プレイ中メッセージ")]
     [Tooltip("表示し続けるとゲーム画面の邪魔になるので、この秒数で消す。0以下なら消さない")]
@@ -151,19 +156,24 @@ public class UIController : MonoBehaviour
     /// <param name="remainingSeconds">残り秒数</param>
     public void UpdateTimer(float progress, float remainingSeconds)
     {
-        float remainRatio = Mathf.Clamp01(1f - progress);
+        progress = Mathf.Clamp01(progress);
 
         if (timerFill != null)
         {
-            // anchorMaxのxだけを動かして左詰めで縮ませる(SpriteもfillTypeも不要)
+            // anchorMaxのxだけを動かして左詰めで伸ばす(SpriteもfillTypeも不要)。
+            // 「孵化に向けて溜まっていく」方向なのでprogressをそのまま使う。
             Vector2 max = timerFill.anchorMax;
-            max.x = remainRatio;
+            max.x = progress;
             timerFill.anchorMax = max;
 
             var img = timerFill.GetComponent<Image>();
             if (img != null)
             {
-                img.color = remainRatio <= timerUrgentRatio ? timerUrgentColor : timerNormalColor;
+                // 閾値で急に切り替えるとギョッとするので、そこから滑らかに寄せる
+                float t = timerNearHatchProgress >= 1f
+                    ? 0f
+                    : Mathf.Clamp01((progress - timerNearHatchProgress) / (1f - timerNearHatchProgress));
+                img.color = Color.Lerp(timerStartColor, timerNearHatchColor, t);
             }
         }
 
