@@ -43,6 +43,14 @@ public class ImpactFxController : MonoBehaviour
     [Tooltip("Bloomが元に戻るまでの時間(実時間・秒)")]
     public float bloomDecay = 0.7f;
 
+    [Header("画角のキック (一番『効く』要素)")]
+    [Tooltip("衝撃の瞬間にカメラのFOVをこの角度だけ動かす。負で寄る(ズームイン)、正で引く。\n" +
+             "位置や回転を揺らすより画面全体が殴られた感じが出る")]
+    public float fovKick = -14f;
+
+    [Tooltip("FOVが元へ戻るまでの時間(実時間・秒)")]
+    public float fovKickRecover = 0.45f;
+
     [Header("色収差の瞬間的な増幅")]
     [Tooltip("この値まで一瞬色収差を上げる(0〜1)")]
     [Range(0f, 1f)] public float chromaticSpike = 0.85f;
@@ -55,6 +63,8 @@ public class ImpactFxController : MonoBehaviour
     private float _bloomBase;
     private float _chromaticBase;
     private Coroutine _routine;
+    private Camera _camera;
+    private float _fovBase;
 
     private void Awake()
     {
@@ -72,6 +82,9 @@ public class ImpactFxController : MonoBehaviour
 
         if (_bloom != null) _bloomBase = _bloom.intensity.value;
         if (_chromatic != null) _chromaticBase = _chromatic.intensity.value;
+
+        _camera = Camera.main;
+        if (_camera != null) _fovBase = _camera.fieldOfView;
     }
 
     /// <summary>孵化した瞬間。閃光→Bloomの余韻で「生まれた」感を出す</summary>
@@ -107,6 +120,12 @@ public class ImpactFxController : MonoBehaviour
             _chromatic.intensity.overrideState = true;
             _chromatic.intensity.value = chromaticSpike;
         }
+        if (_camera != null)
+        {
+            // 基準はAwakeで取った素の値。連続発火しても現在値を基準にしないので蓄積しない。
+            // FOVはCameraControllerが触らないため、ここが単独で持ってよい。
+            _camera.fieldOfView = _fovBase + fovKick;
+        }
 
         // --- ヒットストップ ---
         // Time.timeScaleを触るので、待機はすべて実時間(WaitForSecondsRealtime)で行う。
@@ -122,7 +141,7 @@ public class ImpactFxController : MonoBehaviour
         float t = 0f;
         float recover = Mathf.Max(hitStopRecover, 0.0001f);
         float decay = Mathf.Max(bloomDecay, chromaticDecay);
-        float total = Mathf.Max(recover, decay);
+        float total = Mathf.Max(recover, Mathf.Max(decay, fovKickRecover));
 
         while (t < total)
         {
@@ -139,6 +158,12 @@ public class ImpactFxController : MonoBehaviour
             if (_chromatic != null)
             {
                 _chromatic.intensity.value = Mathf.Lerp(chromaticSpike, _chromaticBase, Mathf.Clamp01(t / Mathf.Max(chromaticDecay, 0.0001f)));
+            }
+            if (_camera != null)
+            {
+                // 行きは一瞬、戻りは弾むように(SmoothStepでオーバーシュートせず落ち着かせる)
+                float p = Mathf.SmoothStep(0f, 1f, Mathf.Clamp01(t / Mathf.Max(fovKickRecover, 0.0001f)));
+                _camera.fieldOfView = Mathf.Lerp(_fovBase + fovKick, _fovBase, p);
             }
             yield return null;
         }
@@ -159,6 +184,7 @@ public class ImpactFxController : MonoBehaviour
         Time.fixedDeltaTime = baseFixedDeltaTime;
         if (_bloom != null) _bloom.intensity.value = _bloomBase;
         if (_chromatic != null) _chromatic.intensity.value = _chromaticBase;
+        if (_camera != null) _camera.fieldOfView = _fovBase;
     }
 
     /// <summary>リトライ時にFeedbackController.ResetFeedback()から呼ぶ。</summary>
