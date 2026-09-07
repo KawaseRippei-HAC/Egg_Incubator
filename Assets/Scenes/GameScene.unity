@@ -5324,6 +5324,99 @@ MonoBehaviour:
   maxMaxLinearSpeed: 2.5
   minMaxAngularSpeed: 5
   maxMaxAngularSpeed: 12
+  difficultyCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0.15
+      inSlope: 0.8333333
+      outSlope: 0.8333333
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0.33333334
+    - serializedVersion: 3
+      time: 0.3
+      value: 0.4
+      inSlope: 0.7309524
+      outSlope: 0.7309524
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    - serializedVersion: 3
+      time: 0.65
+      value: 0.62
+      inSlope: 1.0142856
+      outSlope: 1.0142856
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    - serializedVersion: 3
+      time: 0.85
+      value: 0.9
+      inSlope: 1.0333332
+      outSlope: 1.0333332
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    - serializedVersion: 3
+      time: 1
+      value: 1
+      inSlope: 0.6666669
+      outSlope: 0.6666669
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  dangerCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 0.64
+      outSlope: 0.64
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0.33333334
+    - serializedVersion: 3
+      time: 0.5
+      value: 0.32
+      inSlope: 0.9866667
+      outSlope: 0.9866667
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    - serializedVersion: 3
+      time: 0.8
+      value: 0.72
+      inSlope: 1.3666667
+      outSlope: 1.3666667
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    - serializedVersion: 3
+      time: 1
+      value: 1
+      inSlope: 1.4
+      outSlope: 1.4
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
 --- !u!4 &336254474
 Transform:
   m_ObjectHideFlags: 0
@@ -17103,8 +17196,8 @@ MonoBehaviour:
   baseTorque: 1.5
   maxForceMagnitude: 1
   maxRigidbodySpeed: 12
-  centerAssistWeight: 0.71
-  edgeCenterAssistWeight: 0.85
+  centerAssistWeight: 0.15
+  edgeCenterAssistWeight: 0.7
   panCenter: {fileID: 856802906}
   difficulty:
     forceMultiplier: 1
