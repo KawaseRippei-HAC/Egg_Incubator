@@ -234,9 +234,19 @@ namespace Gameplay
             }
         }
 
+        [Tooltip("この難易度でスイートスポットを使うか。DifficultySelectorが設定する。\n" +
+                 "falseにすると出現しなくなり、時間を早送りする手段が無い純粋な耐久になる")]
+        public bool spotEnabled = true;
+
         /// <summary>PLAYINGに入った瞬間にGameManager.StartGame()から呼ぶ。ここでのみ表示される。</summary>
         public void ActivateSpot()
         {
+            if (!spotEnabled)
+            {
+                DeactivateSpot();
+                return;
+            }
+
             gameObject.SetActive(true);
             SetNewTargetPosition();
             // リング上に出るようになったので、いきなりそこへワープすると目立つ。

@@ -470,7 +470,7 @@ MonoBehaviour:
   hitStopRecover: 0.25
   bloomSpike: 3.5
   bloomDecay: 0.7
-  fovKick: -14
+  fovKick: -9
   fovKickRecover: 0.45
   nearMissTimeScale: 0.35
   nearMissDuration: 0.12
@@ -11342,6 +11342,7 @@ MonoBehaviour:
   idleIntensity: 1
   activeIntensity: 2.2
   colorLerpSpeed: 10
+  spotEnabled: 1
 --- !u!136 &589189207
 CapsuleCollider:
   m_ObjectHideFlags: 0
@@ -18628,6 +18629,13 @@ MonoBehaviour:
     maxMaxAngularSpeed: 9
     centerAssistWeight: 0.7
     edgeCenterAssistWeight: 0.9
+    sweetSpotEnabled: 1
+    sweetSpotChangeInterval: 5
+    sweetSpotMoveSpeed: 1
+    sweetSpotSpawnRadius: 0.28
+    sweetSpotBaseMultiplier: 3
+    sweetSpotMaxMultiplier: 5
+    sweetSpotForceWhileInside: 1.2
   normal:
     label: NORMAL
     timeLimit: 60
@@ -18641,6 +18649,13 @@ MonoBehaviour:
     maxMaxAngularSpeed: 12
     centerAssistWeight: 0.5
     edgeCenterAssistWeight: 0.7
+    sweetSpotEnabled: 1
+    sweetSpotChangeInterval: 4
+    sweetSpotMoveSpeed: 1.5
+    sweetSpotSpawnRadius: 0.32
+    sweetSpotBaseMultiplier: 3
+    sweetSpotMaxMultiplier: 5
+    sweetSpotForceWhileInside: 1.5
   hard:
     label: HARD
     timeLimit: 90
@@ -18654,6 +18669,13 @@ MonoBehaviour:
     maxMaxAngularSpeed: 16
     centerAssistWeight: 0.25
     edgeCenterAssistWeight: 0.5
+    sweetSpotEnabled: 1
+    sweetSpotChangeInterval: 3
+    sweetSpotMoveSpeed: 2.2
+    sweetSpotSpawnRadius: 0.34
+    sweetSpotBaseMultiplier: 3
+    sweetSpotMaxMultiplier: 4.5
+    sweetSpotForceWhileInside: 1.9
   extra:
     label: EXTRA
     timeLimit: 120
@@ -18667,9 +18689,17 @@ MonoBehaviour:
     maxMaxAngularSpeed: 20
     centerAssistWeight: 0.1
     edgeCenterAssistWeight: 0.35
+    sweetSpotEnabled: 1
+    sweetSpotChangeInterval: 1.8
+    sweetSpotMoveSpeed: 3.6
+    sweetSpotSpawnRadius: 0.37
+    sweetSpotBaseMultiplier: 2.2
+    sweetSpotMaxMultiplier: 3
+    sweetSpotForceWhileInside: 2.6
   _timerManager: {fileID: 0}
   _difficultyManager: {fileID: 0}
   _eggController: {fileID: 0}
+  _sweetSpotController: {fileID: 589189206}
   _current: 1
 --- !u!1 &1102076526
 GameObject:
@@ -22363,16 +22393,20 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 1419076909}
     - target: {fileID: 3508935050733510362, guid: 65c29cb863e074ae1bbdeb9d23c4ebc0, type: 3}
+      propertyPath: shakeMagnitude
+      value: 0.08
+      objectReference: {fileID: 0}
+    - target: {fileID: 3508935050733510362, guid: 65c29cb863e074ae1bbdeb9d23c4ebc0, type: 3}
       propertyPath: showcaseFillRatio
       value: 0.9
       objectReference: {fileID: 0}
     - target: {fileID: 3508935050733510362, guid: 65c29cb863e074ae1bbdeb9d23c4ebc0, type: 3}
       propertyPath: impactShakeDuration
-      value: 0.45
+      value: 0.35
       objectReference: {fileID: 0}
     - target: {fileID: 3508935050733510362, guid: 65c29cb863e074ae1bbdeb9d23c4ebc0, type: 3}
       propertyPath: impactShakeMagnitude
-      value: 0.6
+      value: 0.22
       objectReference: {fileID: 0}
     - target: {fileID: 6344892050880691786, guid: 65c29cb863e074ae1bbdeb9d23c4ebc0, type: 3}
       propertyPath: m_LocalPosition.x
