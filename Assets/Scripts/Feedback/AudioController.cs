@@ -44,6 +44,9 @@ public class AudioController : MonoBehaviour
     [Tooltip("卵が地面で割れた瞬間に鳴らすSE。GameManager.HandleGroundImpact()と同じタイミングで発火する")]
     public AudioClip failureSe;
 
+    [Tooltip("EXTRA解放のファンファーレ。未設定ならsuccessSeで代用する")]
+    public AudioClip unlockSe;
+
     public enum BGMType { Title, Playing, ResultSuccess, ResultFailure }
     public enum SEType { Tap, Start }
 
@@ -142,5 +145,13 @@ public class AudioController : MonoBehaviour
         {
             seSource.PlayOneShot(failureSe);
         }
+    }
+
+    /// <summary>EXTRA解放のファンファーレ。ExtraUnlockBannerから呼ばれる。</summary>
+    public void PlayUnlock()
+    {
+        if (seSource == null) return;
+        AudioClip clip = unlockSe != null ? unlockSe : successSe;
+        if (clip != null) seSource.PlayOneShot(clip);
     }
 }

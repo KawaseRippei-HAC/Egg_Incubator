@@ -146,9 +146,16 @@ namespace Gameplay
 
             _current = d;
             PlayerPrefs.SetInt(PrefKey, (int)d);
+            // SetIntだけだと通常はアプリ終了時にしか書き込まれず、
+            // モバイルでタスクキルされると選択が失われる。都度確定させる。
+            PlayerPrefs.Save();
             Apply();
             OnDifficultyChanged?.Invoke(d);
         }
+
+        // アプリが中断・終了するタイミングでも念のため確定させる
+        private void OnApplicationPause(bool pause) { if (pause) PlayerPrefs.Save(); }
+        private void OnApplicationQuit() { PlayerPrefs.Save(); }
 
         // ===== クリア状況 =====
 
@@ -168,11 +175,43 @@ namespace Gameplay
         {
             if (IsCleared(d)) return;
 
+            // 記録する前にEXTRAが解放済みだったかを覚えておく。
+            // 「今回のクリアで初めて解放された」ときだけ演出を出したいため。
+            bool wasUnlocked = IsUnlocked(GameDifficulty.Extra);
+
             PlayerPrefs.SetInt(ClearedKeyPrefix + (int)d, 1);
             PlayerPrefs.Save();
             Debug.Log($"[DifficultySelector] {GetSettings(d).label} をクリア");
 
             OnClearedChanged?.Invoke();
+
+            if (!wasUnlocked && IsUnlocked(GameDifficulty.Extra))
+            {
+                Debug.Log("[DifficultySelector] EXTRA を解放しました");
+                OnExtraUnlocked?.Invoke();
+            }
+        }
+
+        /// <summary>EXTRAが「今」解放された瞬間に一度だけ発火する。解放演出用</summary>
+        public event System.Action OnExtraUnlocked;
+
+        /// <summary>
+        /// デバッグ用: Easy/Normal/Hardを全てクリア済みにしてEXTRAを解放する。
+        /// 解放演出の確認や、展示前の動作確認に使う。
+        /// </summary>
+        [ContextMenu("EXTRAを解放する (デバッグ)")]
+        public void DebugUnlockExtra()
+        {
+            bool wasUnlocked = IsUnlocked(GameDifficulty.Extra);
+            for (int i = 0; i <= (int)GameDifficulty.Hard; i++)
+            {
+                PlayerPrefs.SetInt(ClearedKeyPrefix + i, 1);
+            }
+            PlayerPrefs.Save();
+
+            OnClearedChanged?.Invoke();
+            if (!wasUnlocked) OnExtraUnlocked?.Invoke();
+            Debug.Log("[DifficultySelector] デバッグ: EXTRAを解放しました");
         }
 
         /// <summary>

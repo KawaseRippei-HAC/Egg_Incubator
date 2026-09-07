@@ -313,6 +313,18 @@ namespace Gameplay
                 if (Keyboard.current.fKey.wasPressedThisFrame) HandleEggFall();       // Fキーで落下開始
                 if (Keyboard.current.gKey.wasPressedThisFrame) HandleGroundImpact();  // Gキーで地面衝突
                 if (Keyboard.current.rKey.wasPressedThisFrame) Retry();
+                if (Keyboard.current.uKey.wasPressedThisFrame)
+                {
+                    // Shift+U でクリア状況を全消し、Uだけで EXTRA を一発解放
+                    if (Keyboard.current.leftShiftKey.isPressed || Keyboard.current.rightShiftKey.isPressed)
+                    {
+                        _difficultySelector?.ResetClearedProgress();
+                    }
+                    else
+                    {
+                        _difficultySelector?.DebugUnlockExtra();
+                    }
+                }
             }
         }
         /// <summary>
