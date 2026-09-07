@@ -1,4 +1,5 @@
 using System.Collections;
+using DG.Tweening;
 using TMPro;
 using UnityEngine;
 
@@ -57,7 +58,7 @@ namespace Gameplay
             if (_selector != null) _selector.OnExtraUnlocked += Play;
         }
 
-        private void OnDisable()
+        private void UnsubscribeSelector()
         {
             if (_selector != null) _selector.OnExtraUnlocked -= Play;
         }
@@ -74,46 +75,46 @@ namespace Gameplay
             if (_text != null) _text.text = message;
             _group.alpha = 0f;
 
-            // ヒットストップでTime.timeScaleが落ちている可能性があるので実時間で進める
+            // ヒットストップでTime.timeScaleが落ちている可能性があるので実時間で待つ
             if (delay > 0f) yield return new WaitForSecondsRealtime(delay);
 
             _audioController?.PlayUnlock();
 
-            float t = 0f;
-            while (t < fadeIn)
+            // DOTweenで「ドンと出て、しばらく出しっぱなし、すっと消える」を一本のSequenceに。
+            // SetUpdate(true)でヒットストップの影響を受けない。
+            _group.DOKill();
+            if (_panel != null)
             {
-                t += Time.unscaledDeltaTime;
-                float p = Mathf.Clamp01(t / Mathf.Max(fadeIn, 0.0001f));
-                _group.alpha = p;
-                if (_panel != null)
-                {
-                    float s = Mathf.Lerp(punchScale, 1f, Mathf.SmoothStep(0f, 1f, p));
-                    _panel.localScale = new Vector3(s, s, 1f);
-                }
-                yield return null;
+                _panel.DOKill();
+                _panel.localScale = Vector3.one * punchScale;
             }
-            _group.alpha = 1f;
-            if (_panel != null) _panel.localScale = Vector3.one;
 
-            yield return new WaitForSecondsRealtime(hold);
-
-            t = 0f;
-            while (t < fadeOut)
+            var seq = DOTween.Sequence().SetUpdate(true).SetLink(gameObject);
+            seq.Append(_group.DOFade(1f, fadeIn).SetEase(Ease.OutQuad));
+            if (_panel != null)
             {
-                t += Time.unscaledDeltaTime;
-                _group.alpha = 1f - Mathf.Clamp01(t / Mathf.Max(fadeOut, 0.0001f));
-                yield return null;
+                // 大きめから等倍へ。OutBackで一度わずかに行き過ぎてから収まる
+                seq.Join(_panel.DOScale(1f, fadeIn).SetEase(Ease.OutBack));
             }
-            _group.alpha = 0f;
-            _routine = null;
+            seq.AppendInterval(hold);
+            seq.Append(_group.DOFade(0f, fadeOut).SetEase(Ease.InQuad));
+            seq.OnComplete(() => _routine = null);
+
+            yield break;
         }
 
         /// <summary>リトライ時などに途中で消したい場合</summary>
         public void Hide()
         {
             if (_routine != null) { StopCoroutine(_routine); _routine = null; }
-            if (_group != null) _group.alpha = 0f;
-            if (_panel != null) _panel.localScale = Vector3.one;
+            if (_group != null) { _group.DOKill(); _group.alpha = 0f; }
+            if (_panel != null) { _panel.DOKill(); _panel.localScale = Vector3.one; }
+        }
+
+        private void OnDisable()
+        {
+            UnsubscribeSelector();
+            Hide();
         }
     }
 }

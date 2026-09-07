@@ -29648,6 +29648,7 @@ GameObject:
   - component: {fileID: 2058630174}
   - component: {fileID: 2058630173}
   - component: {fileID: 2058630172}
+  - component: {fileID: 2058630176}
   m_Layer: 0
   m_Name: CreditsPanel
   m_TagString: Untagged
@@ -29702,6 +29703,9 @@ MonoBehaviour:
     3D\u30E2\u30C7\u30EB\nAnimated Easy Enemies / Quaternius\n  quaternius.itch.io/animated-easy-enemies\nKitchen
     / styloo\n  styloo.itch.io/kitchen\n\n\u25A0 \u30D5\u30A9\u30F3\u30C8\nM PLUS
     Rounded 1c\n  SIL Open Font License 1.1\n"
+  openDuration: 0.25
+  closeDuration: 0.18
+  openFromScale: 0.92
 --- !u!114 &2058630173
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -29770,6 +29774,18 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2058630170}
   m_CullTransparentMesh: 1
+--- !u!225 &2058630176
+CanvasGroup:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2058630170}
+  m_Enabled: 1
+  m_Alpha: 1
+  m_Interactable: 1
+  m_BlocksRaycasts: 1
+  m_IgnoreParentGroups: 0
 --- !u!1 &2068553530
 GameObject:
   m_ObjectHideFlags: 0

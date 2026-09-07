@@ -1,4 +1,4 @@
-using System.Collections;
+using DG.Tweening;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
@@ -9,9 +9,10 @@ namespace Gameplay
     /// UIボタンを押したときの手応え(音・押し込み・光)をまとめて出す。
     /// ボタンと同じGameObjectに付けるだけで動く。
     ///
-    /// ★DOTweenは導入していないためコルーチンで実装している。
-    /// 依存を増やさずに済むうえ、やっていることは押し込み→跳ね返りのイージングだけなので
-    /// 挙動としては同等。DOTweenを入れる場合はPunchRoutineを差し替えればよい。
+    /// アニメーションはDOTweenで行う。
+    /// ★ヒットストップ(ImpactFxControllerがTime.timeScaleを落とす)の影響を受けないよう、
+    /// 全てのTweenに SetUpdate(true) を付けて実時間で動かす。
+    /// ★SetLink(gameObject) を付けて、オブジェクト破棄時にTweenも一緒に消えるようにする。
     ///
     /// ★色はボタン本体のImageではなく、専用の白いオーバーレイで光らせる。
     /// DifficultyButtonsViewが選択状態に応じてImageの色を書き換えるので、
@@ -44,7 +45,6 @@ namespace Gameplay
         private Vector3 _baseScale;
         private Image _flash;
         private AudioController _audio;
-        private Coroutine _routine;
 
         private void Awake()
         {
@@ -56,10 +56,10 @@ namespace Gameplay
 
         private void OnDisable()
         {
-            // 押した状態のまま非表示になると縮んだまま残るので戻す
-            if (_routine != null) { StopCoroutine(_routine); _routine = null; }
-            if (_rt != null) _rt.localScale = _baseScale;
-            if (_flash != null) SetFlashAlpha(0f);
+            // 押した状態のまま非表示になると縮んだまま残るので、Tweenを止めて戻す
+            // (ExtraButtonは未解放時に非アクティブになる)
+            if (_rt != null) { _rt.DOKill(); _rt.localScale = _baseScale; }
+            if (_flash != null) { _flash.DOKill(); SetFlashAlpha(0f); }
         }
 
         private void EnsureFlash()
@@ -100,45 +100,38 @@ namespace Gameplay
         {
             if (playSound) _audio?.PlaySE(AudioController.SEType.Tap);
 
-            if (_routine != null) StopCoroutine(_routine);
-            _routine = StartCoroutine(PunchRoutine());
+            // 連打で複数のTweenが重なるとスケールが壊れるので、必ず止めてから始める
+            _rt.DOKill();
+            _rt.localScale = _baseScale;
+
+            DOTween.Sequence()
+                .SetUpdate(true)              // ヒットストップの影響を受けない
+                .SetLink(gameObject)          // 破棄されたらTweenも消える
+                .Append(_rt.DOScale(_baseScale * pressScale, pressDuration).SetEase(Ease.OutQuad))
+                // OutBackで戻すと自然に overshoot 分だけ跳ねてから収束する
+                .Append(_rt.DOScale(_baseScale, releaseDuration)
+                           .SetEase(Ease.OutBack, ComputeBackOvershoot()));
+
+            if (_flash != null && flashAlpha > 0f)
+            {
+                _flash.DOKill();
+                SetFlashAlpha(0f);
+                DOTween.Sequence()
+                    .SetUpdate(true)
+                    .SetLink(gameObject)
+                    .Append(_flash.DOFade(flashAlpha, pressDuration))
+                    .Append(_flash.DOFade(0f, flashDuration).SetEase(Ease.OutQuad));
+            }
         }
 
-        private IEnumerator PunchRoutine()
+        /// <summary>
+        /// overshootScale(例1.06)を Ease.OutBack の overshoot 係数へ変換する。
+        /// OutBackの既定値1.70158でおよそ+10%跳ねるので、そこから比例で求める。
+        /// </summary>
+        private float ComputeBackOvershoot()
         {
-            // ヒットストップでTime.timeScaleが落ちていても同じ速さで動くよう実時間で進める
-            float t = 0f;
-            while (t < pressDuration)
-            {
-                t += Time.unscaledDeltaTime;
-                float p = Mathf.Clamp01(t / Mathf.Max(pressDuration, 0.0001f));
-                _rt.localScale = _baseScale * Mathf.Lerp(1f, pressScale, p);
-                if (flashAlpha > 0f) SetFlashAlpha(flashAlpha * p);
-                yield return null;
-            }
-
-            t = 0f;
-            while (t < releaseDuration)
-            {
-                t += Time.unscaledDeltaTime;
-                float p = Mathf.Clamp01(t / Mathf.Max(releaseDuration, 0.0001f));
-                // 前半で膨らみ、後半で等倍へ収束する
-                float s = p < 0.5f
-                    ? Mathf.Lerp(pressScale, overshootScale, Mathf.SmoothStep(0f, 1f, p * 2f))
-                    : Mathf.Lerp(overshootScale, 1f, Mathf.SmoothStep(0f, 1f, (p - 0.5f) * 2f));
-                _rt.localScale = _baseScale * s;
-
-                if (flashAlpha > 0f)
-                {
-                    float fp = Mathf.Clamp01(t / Mathf.Max(flashDuration, 0.0001f));
-                    SetFlashAlpha(flashAlpha * (1f - fp));
-                }
-                yield return null;
-            }
-
-            _rt.localScale = _baseScale;
-            SetFlashAlpha(0f);
-            _routine = null;
+            float amount = Mathf.Max(overshootScale - 1f, 0f);
+            return Mathf.Max(0.01f, amount / 0.10f * 1.70158f);
         }
     }
 }

@@ -1,3 +1,4 @@
+using DG.Tweening;
 using UnityEngine;
 
 namespace Gameplay
@@ -69,6 +70,14 @@ namespace Gameplay
             _panel.SetActive(false);
         }
 
+        [Header("開閉アニメーション")]
+        public float openDuration = 0.25f;
+        public float closeDuration = 0.18f;
+        [Tooltip("この倍率から等倍へ開く")]
+        public float openFromScale = 0.92f;
+
+        private CanvasGroup _group;
+
         /// <summary>タイトルのCREDITSボタンから呼ぶ</summary>
         public void Open()
         {
@@ -76,12 +85,45 @@ namespace Gameplay
             _panel.SetActive(true);
             // 開くたびに先頭から読ませる
             if (_scroll != null) _scroll.verticalNormalizedPosition = 1f;
+
+            var g = GetGroup();
+            var t = _panel.transform;
+            g.DOKill(); t.DOKill();
+            g.alpha = 0f;
+            t.localScale = Vector3.one * openFromScale;
+
+            DOTween.Sequence().SetUpdate(true).SetLink(_panel)
+                .Append(g.DOFade(1f, openDuration).SetEase(Ease.OutQuad))
+                .Join(t.DOScale(1f, openDuration).SetEase(Ease.OutBack));
         }
 
         /// <summary>閉じるボタンから呼ぶ</summary>
         public void Close()
         {
-            _panel.SetActive(false);
+            var g = GetGroup();
+            var t = _panel.transform;
+            g.DOKill(); t.DOKill();
+
+            DOTween.Sequence().SetUpdate(true).SetLink(_panel)
+                .Append(g.DOFade(0f, closeDuration).SetEase(Ease.InQuad))
+                .Join(t.DOScale(openFromScale, closeDuration).SetEase(Ease.InQuad))
+                .OnComplete(() =>
+                {
+                    // 閉じ終わってから非アクティブにする。先に消すとTweenが走らない
+                    _panel.SetActive(false);
+                    t.localScale = Vector3.one;
+                    g.alpha = 1f;
+                });
+        }
+
+        private CanvasGroup GetGroup()
+        {
+            if (_group == null)
+            {
+                _group = _panel.GetComponent<CanvasGroup>();
+                if (_group == null) _group = _panel.AddComponent<CanvasGroup>();
+            }
+            return _group;
         }
 
         public bool IsOpen => _panel != null && _panel.activeSelf;
