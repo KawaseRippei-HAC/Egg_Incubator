@@ -5466,36 +5466,36 @@ MonoBehaviour:
     m_Curve:
     - serializedVersion: 3
       time: 0
-      value: 0.15
-      inSlope: 0.8333333
-      outSlope: 0.8333333
+      value: 0.05
+      inSlope: 0.8999999
+      outSlope: 0.8999999
       tangentMode: 0
       weightedMode: 0
       inWeight: 0
       outWeight: 0.33333334
     - serializedVersion: 3
       time: 0.3
-      value: 0.4
-      inSlope: 0.7309524
-      outSlope: 0.7309524
+      value: 0.32
+      inSlope: 0.82142854
+      outSlope: 0.82142854
       tangentMode: 0
       weightedMode: 0
       inWeight: 0.33333334
       outWeight: 0.33333334
     - serializedVersion: 3
       time: 0.65
-      value: 0.62
-      inSlope: 1.0142856
-      outSlope: 1.0142856
+      value: 0.58
+      inSlope: 1.1214285
+      outSlope: 1.1214285
       tangentMode: 0
       weightedMode: 0
       inWeight: 0.33333334
       outWeight: 0.33333334
     - serializedVersion: 3
       time: 0.85
-      value: 0.9
-      inSlope: 1.0333332
-      outSlope: 1.0333332
+      value: 0.88
+      inSlope: 1.15
+      outSlope: 1.15
       tangentMode: 0
       weightedMode: 0
       inWeight: 0.33333334
@@ -5503,8 +5503,8 @@ MonoBehaviour:
     - serializedVersion: 3
       time: 1
       value: 1
-      inSlope: 0.6666669
-      outSlope: 0.6666669
+      inSlope: 0.80000013
+      outSlope: 0.80000013
       tangentMode: 0
       weightedMode: 0
       inWeight: 0.33333334
@@ -18730,6 +18730,14 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 4945188698556240071, guid: 3f8ef555b749a4546a7330604be02994, type: 3}
+      propertyPath: m_LinearDamping
+      value: 0.6
+      objectReference: {fileID: 0}
+    - target: {fileID: 4945188698556240071, guid: 3f8ef555b749a4546a7330604be02994, type: 3}
+      propertyPath: m_AngularDamping
+      value: 0.5
+      objectReference: {fileID: 0}
     - target: {fileID: 5193109589558212658, guid: 3f8ef555b749a4546a7330604be02994, type: 3}
       propertyPath: m_Name
       value: Egg_Test
@@ -18865,7 +18873,7 @@ MonoBehaviour:
   baseTorque: 1.5
   maxForceMagnitude: 1
   maxRigidbodySpeed: 12
-  centerAssistWeight: 0.4
+  centerAssistWeight: 0.5
   edgeCenterAssistWeight: 0.7
   panCenter: {fileID: 856802906}
   difficulty:
@@ -18956,6 +18964,14 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 2095198503012491189, guid: 0440446705846a3469d241834789b389, type: 3}
+      propertyPath: maxAngle
+      value: 12
+      objectReference: {fileID: 0}
+    - target: {fileID: 2095198503012491189, guid: 0440446705846a3469d241834789b389, type: 3}
+      propertyPath: smoothSpeed
+      value: 14
+      objectReference: {fileID: 0}
     - target: {fileID: 3414138486906080430, guid: 0440446705846a3469d241834789b389, type: 3}
       propertyPath: m_Name
       value: pan_main
