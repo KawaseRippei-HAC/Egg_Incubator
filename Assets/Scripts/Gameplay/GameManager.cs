@@ -149,6 +149,17 @@ namespace Gameplay
                 _eggRigidbody.isKinematic = false;
             }
             _uiController?.ShowPlaying();
+            // ShowPlaying()でタイマー表示が出るが、UpdateTimer()はPLAYINGに入るまで
+            // 呼ばれない。ここで初期値を入れておかないと、卵が落ちている間ずっと
+            // 前ラウンドの残り秒数とバーが表示されたままになる。
+            RefreshTimerUI();
+        }
+
+        /// <summary>タイマー表示を現在のTimerManagerの状態に合わせ直す。</summary>
+        private void RefreshTimerUI()
+        {
+            if (_uiController == null || _timerManager == null) return;
+            _uiController.UpdateTimer(_timerManager.GetProgress(), _timerManager.GetRemainingTime());
         }
 
         public void HandleEggLanded()
@@ -497,6 +508,10 @@ namespace Gameplay
             {
                 _timerManager.ResetTimer();
             }
+            // タイマーをリセットしたら表示もその場で合わせる。
+            // 次にUpdateTimer()が呼ばれるのはPLAYINGに入ってからなので、
+            // ここで戻さないと前ラウンドの数値が残る。
+            RefreshTimerUI();
 
             if (_eggStateController != null)
             {
