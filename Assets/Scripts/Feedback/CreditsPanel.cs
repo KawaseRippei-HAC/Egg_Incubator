@@ -19,10 +19,6 @@ namespace Gameplay
         [TextArea(10, 40)]
         [Tooltip("クレジット本文。Inspectorで直接編集できる")]
         public string credits =
-"■ 開発\n" +
-"CyberAgentHack チームD\n" +
-"松崎正弘 / 川瀬莉平 / 伊藤俊生\n" +
-"\n" +
 "■ BGM\n" +
 "Children's March Theme\n" +
 "  opengameart.org/content/childrens-march-theme\n" +
@@ -57,8 +53,6 @@ namespace Gameplay
 "  soundeffect-lab.info\n" +
 "\n" +
 "■ 3Dモデル\n" +
-"卵の中身 / st happens\n" +
-"  sketchfab.com/3d-models/st-happens\n" +
 "Animated Easy Enemies / Quaternius\n" +
 "  quaternius.itch.io/animated-easy-enemies\n" +
 "Kitchen / styloo\n" +

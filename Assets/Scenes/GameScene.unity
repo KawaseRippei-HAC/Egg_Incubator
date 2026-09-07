@@ -6084,7 +6084,7 @@ RectTransform:
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 1, y: 1}
   m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 0, y: 2167.71}
+  m_SizeDelta: {x: 0, y: 1900.41}
   m_Pivot: {x: 0.5, y: 1}
 --- !u!222 &366421199
 CanvasRenderer:
@@ -6128,17 +6128,14 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: "\u25A0 \u958B\u767A\nCyberAgentHack \u30C1\u30FC\u30E0D\n\u677E\u5D0E\u6B63\u5F18
-    / \u5DDD\u702C\u8389\u5E73 / \u4F0A\u85E4\u4FCA\u751F\n\n\u25A0 BGM\nChildren's
-    March Theme\n  opengameart.org/content/childrens-march-theme\nTwo Simple Game
-    Music Loops\n  opengameart.org/content/two-simple-game-music-loops\n\u3084\u3089\u304B\u3057\u305F
+  m_text: "\u25A0 BGM\nChildren's March Theme\n  opengameart.org/content/childrens-march-theme\nTwo
+    Simple Game Music Loops\n  opengameart.org/content/two-simple-game-music-loops\n\u3084\u3089\u304B\u3057\u305F
     Game Over\n  opengameart.org/content/yarakashitagameover-music\nWin Jingle\n 
     opengameart.org/content/win-jingle\n\n\u25A0 \u52B9\u679C\u97F3 (Freesound)\nFaulkin
     / sounds/336262\ntbone1999 / sounds/401706\ndeleted_user_2104797 / sounds/164576\negomassive
     / sounds/536759\n\n\u25A0 \u52B9\u679C\u97F3 (Pixabay)\nscreen-tap-38717\nwhistle-slide-down-323778\ngame-start-6104\nsuccess-fanfare-trumpets-6185\nsuccess-videogame-sfx-mrstokes302-423626\nmusical-playful-failure-310480\nrolling-24b-100544\nheartbeat-single-383748\negg-crack-3-389261\nhousehold-egg-cracking-6844\negg-crack21-85839\n\n\u25A0
     \u52B9\u679C\u97F3\n\u52B9\u679C\u97F3\u30E9\u30DC\n  soundeffect-lab.info\n\n\u25A0
-    3D\u30E2\u30C7\u30EB\n\u5375\u306E\u4E2D\u8EAB / st happens\n  sketchfab.com/3d-models/st-happens\nAnimated
-    Easy Enemies / Quaternius\n  quaternius.itch.io/animated-easy-enemies\nKitchen
+    3D\u30E2\u30C7\u30EB\nAnimated Easy Enemies / Quaternius\n  quaternius.itch.io/animated-easy-enemies\nKitchen
     / styloo\n  styloo.itch.io/kitchen\n\n\u25A0 \u30D5\u30A9\u30F3\u30C8\nM PLUS
     Rounded 1c\n  SIL Open Font License 1.1\n"
   m_isRightToLeft: 0
@@ -29018,17 +29015,14 @@ MonoBehaviour:
   _panel: {fileID: 2058630170}
   _body: {fileID: 366421201}
   _scroll: {fileID: 2058630173}
-  credits: "\u25A0 \u958B\u767A\nCyberAgentHack \u30C1\u30FC\u30E0D\n\u677E\u5D0E\u6B63\u5F18
-    / \u5DDD\u702C\u8389\u5E73 / \u4F0A\u85E4\u4FCA\u751F\n\n\u25A0 BGM\nChildren's
-    March Theme\n  opengameart.org/content/childrens-march-theme\nTwo Simple Game
-    Music Loops\n  opengameart.org/content/two-simple-game-music-loops\n\u3084\u3089\u304B\u3057\u305F
+  credits: "\u25A0 BGM\nChildren's March Theme\n  opengameart.org/content/childrens-march-theme\nTwo
+    Simple Game Music Loops\n  opengameart.org/content/two-simple-game-music-loops\n\u3084\u3089\u304B\u3057\u305F
     Game Over\n  opengameart.org/content/yarakashitagameover-music\nWin Jingle\n 
     opengameart.org/content/win-jingle\n\n\u25A0 \u52B9\u679C\u97F3 (Freesound)\nFaulkin
     / sounds/336262\ntbone1999 / sounds/401706\ndeleted_user_2104797 / sounds/164576\negomassive
     / sounds/536759\n\n\u25A0 \u52B9\u679C\u97F3 (Pixabay)\nscreen-tap-38717\nwhistle-slide-down-323778\ngame-start-6104\nsuccess-fanfare-trumpets-6185\nsuccess-videogame-sfx-mrstokes302-423626\nmusical-playful-failure-310480\nrolling-24b-100544\nheartbeat-single-383748\negg-crack-3-389261\nhousehold-egg-cracking-6844\negg-crack21-85839\n\n\u25A0
     \u52B9\u679C\u97F3\n\u52B9\u679C\u97F3\u30E9\u30DC\n  soundeffect-lab.info\n\n\u25A0
-    3D\u30E2\u30C7\u30EB\n\u5375\u306E\u4E2D\u8EAB / st happens\n  sketchfab.com/3d-models/st-happens\nAnimated
-    Easy Enemies / Quaternius\n  quaternius.itch.io/animated-easy-enemies\nKitchen
+    3D\u30E2\u30C7\u30EB\nAnimated Easy Enemies / Quaternius\n  quaternius.itch.io/animated-easy-enemies\nKitchen
     / styloo\n  styloo.itch.io/kitchen\n\n\u25A0 \u30D5\u30A9\u30F3\u30C8\nM PLUS
     Rounded 1c\n  SIL Open Font License 1.1\n"
 --- !u!114 &2058630173
