@@ -98,6 +98,13 @@ public class EggHatchController : MonoBehaviour
     // 孵化時にhatchFragmentsをワールド空間へ切り離すため、元の親を覚えておく
     private Transform _hatchFragmentsOriginalParent;
 
+    // 破片ごとの初期ローカル変換。ResetForTesting()は破片ルートしか戻していなかったため、
+    // 一度孵化したあとリトライすると、物理とprePhysicsSeparationで散らばった位置のまま
+    // 殻が再表示されてしまう(EggBreakControllerで直したのと同じ問題)。
+    private Transform[] _fragmentTransforms;
+    private Vector3[] _fragmentInitialLocalPositions;
+    private Quaternion[] _fragmentInitialLocalRotations;
+
     private void SetShellVisible(bool visible)
     {
         if (shellWhole == null) return;
@@ -148,6 +155,22 @@ public class EggHatchController : MonoBehaviour
             {
                 hatchAnimator = hatchVisual.GetComponent<Animator>();
             }
+
+            // リトライ時に殻を「閉じた卵」の配置へ戻せるよう、破片ごとの初期状態を控えておく
+            if (hatchFragments != null)
+            {
+                var bodies = hatchFragments.GetComponentsInChildren<Rigidbody>(includeInactive: true);
+                _fragmentTransforms = new Transform[bodies.Length];
+                _fragmentInitialLocalPositions = new Vector3[bodies.Length];
+                _fragmentInitialLocalRotations = new Quaternion[bodies.Length];
+                for (int i = 0; i < bodies.Length; i++)
+                {
+                    _fragmentTransforms[i] = bodies[i].transform;
+                    _fragmentInitialLocalPositions[i] = bodies[i].transform.localPosition;
+                    _fragmentInitialLocalRotations[i] = bodies[i].transform.localRotation;
+                }
+            }
+
             hatchVisual.SetActive(false);
         }
     }
@@ -320,6 +343,22 @@ public class EggHatchController : MonoBehaviour
             hatchFragments.transform.localPosition = Vector3.zero;
             hatchFragments.transform.localRotation = Quaternion.identity;
             hatchFragments.transform.localScale = Vector3.one;
+
+            // 破片ひとつひとつも「閉じた卵」の配置へ戻す。
+            // ルートだけ戻しても、物理とprePhysicsSeparationで散らばった各破片は
+            // そのままなので、2回目の孵化で殻が散った状態のまま出てしまう。
+            if (_fragmentTransforms != null)
+            {
+                for (int i = 0; i < _fragmentTransforms.Length; i++)
+                {
+                    if (_fragmentTransforms[i] == null) continue;
+                    _fragmentTransforms[i].localPosition = _fragmentInitialLocalPositions[i];
+                    _fragmentTransforms[i].localRotation = _fragmentInitialLocalRotations[i];
+                }
+            }
+
+            // HatchShowcaseControllerが縮めて非表示にしている場合があるので戻す
+            hatchFragments.SetActive(true);
         }
 
         if (_eggRigidbody != null)

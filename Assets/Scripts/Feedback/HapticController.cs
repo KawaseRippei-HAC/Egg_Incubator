@@ -15,11 +15,17 @@ using UnityEngine;
 public class HapticController : MonoBehaviour
 {
     [Header("危険度に応じた振動間隔 (仕様書3.3節)")]
-    public float minVibrateInterval = 0.3f;
+    [Tooltip("危険度が最大のときの振動間隔(秒)。Handheld.Vibrate()はAndroidで約0.5秒鳴るため、" +
+             "これを0.3秒まで詰めると事実上鳴りっぱなしになる")]
+    public float minVibrateInterval = 0.45f;
     public float maxVibrateInterval = 1.2f;
 
-    [Tooltip("この危険度未満では振動させない")]
-    public float minDangerToVibrate = 0.05f;
+    [Tooltip("この危険度未満では振動させない。\n" +
+             "★卵はほぼ常にフライパン中心から少しずれているため、ここが低いと" +
+             "プレイ中ずっと振動し続けて『危ない』という情報が伝わらなくなる。" +
+             "CameraController.dangerShakeThreshold(0.6)と近い水準にして、" +
+             "本当に落ちそうなときだけ鳴らす")]
+    public float minDangerToVibrate = 0.5f;
 
     private float _nextVibrateTime;
 
