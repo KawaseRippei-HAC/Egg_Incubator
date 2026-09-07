@@ -63,9 +63,24 @@ namespace Gameplay
 "M PLUS Rounded 1c\n" +
 "  SIL Open Font License 1.1\n";
 
+        // ★このコンポーネントは「常にアクティブなオブジェクト」(Canvasなど)に付けること。
+        // パネル自身に付けると、パネルが非アクティブな間はAwake()が走らず、
+        // 最初のOpen()でSetActive(true)した瞬間に初めてAwake()が実行され、
+        // その中のSetActive(false)で即座に閉じてしまう
+        // (1回目は開かず2回目から開く、という症状になる)。
         private void Awake()
         {
-            if (_panel == null) _panel = gameObject;
+            if (_panel == null)
+            {
+                Debug.LogError($"[{nameof(CreditsPanel)}] _panel が未設定です。", this);
+                return;
+            }
+            if (_panel == gameObject)
+            {
+                Debug.LogWarning($"[{nameof(CreditsPanel)}] このコンポーネントは常時アクティブな" +
+                                 "オブジェクトに付けてください。パネル自身に付けると初回が開きません。", this);
+            }
+
             if (_body != null) _body.text = credits;
             _panel.SetActive(false);
         }
