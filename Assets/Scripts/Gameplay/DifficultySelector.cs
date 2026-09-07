@@ -71,6 +71,11 @@ namespace Gameplay
 
             [Tooltip("滞在中に卵の力へ掛ける倍率。大きいほど『うまいが危険』になる")]
             public float sweetSpotForceWhileInside = 1.5f;
+
+            [Tooltip("スポットの外にいるときのタイマー進行倍率。\n" +
+                     "0にすると『スポットにいる間しか孵化が進まない』。\n" +
+                     "この場合 timeLimit は実時間ではなく『必要な滞在量』を意味する")]
+            public float sweetSpotOutsideMultiplier = 0f;
         }
 
         [Header("プリセット")]
@@ -324,6 +329,7 @@ namespace Gameplay
                 _sweetSpotController.baseSpeedMultiplier = s.sweetSpotBaseMultiplier;
                 _sweetSpotController.maxSpeedMultiplier = s.sweetSpotMaxMultiplier;
                 _sweetSpotController.forceMultiplierWhileInside = s.sweetSpotForceWhileInside;
+                _sweetSpotController.outsideSpeedMultiplier = s.sweetSpotOutsideMultiplier;
             }
 
             Debug.Log($"[DifficultySelector] 難易度: {s.label} (制限時間 {s.timeLimit}秒 / " +

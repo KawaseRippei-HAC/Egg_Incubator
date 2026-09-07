@@ -11757,6 +11757,7 @@ MonoBehaviour:
   moveSpeed: 1.5
   baseSpeedMultiplier: 3
   maxSpeedMultiplier: 5
+  outsideSpeedMultiplier: 0
   rampUpSeconds: 3
   forceMultiplierWhileInside: 1.5
   minSpawnRadiusRatio: 0.5
@@ -19200,6 +19201,7 @@ MonoBehaviour:
     sweetSpotBaseMultiplier: 3
     sweetSpotMaxMultiplier: 5
     sweetSpotForceWhileInside: 1.2
+    sweetSpotOutsideMultiplier: 0
   normal:
     label: NORMAL
     timeLimit: 60
@@ -19220,9 +19222,10 @@ MonoBehaviour:
     sweetSpotBaseMultiplier: 3
     sweetSpotMaxMultiplier: 5
     sweetSpotForceWhileInside: 1.5
+    sweetSpotOutsideMultiplier: 0
   hard:
     label: HARD
-    timeLimit: 90
+    timeLimit: 80
     minForceMultiplier: 1.6
     maxForceMultiplier: 7
     maxForceInterval: 1
@@ -19240,9 +19243,10 @@ MonoBehaviour:
     sweetSpotBaseMultiplier: 3
     sweetSpotMaxMultiplier: 4.5
     sweetSpotForceWhileInside: 1.9
+    sweetSpotOutsideMultiplier: 0
   extra:
     label: EXTRA
-    timeLimit: 120
+    timeLimit: 70
     minForceMultiplier: 2.4
     maxForceMultiplier: 9
     maxForceInterval: 0.8
@@ -19260,6 +19264,7 @@ MonoBehaviour:
     sweetSpotBaseMultiplier: 2.2
     sweetSpotMaxMultiplier: 3
     sweetSpotForceWhileInside: 2.6
+    sweetSpotOutsideMultiplier: 0
   _timerManager: {fileID: 0}
   _difficultyManager: {fileID: 0}
   _eggController: {fileID: 0}

@@ -22,6 +22,12 @@ namespace Gameplay
         [Tooltip("居続けたときに到達する最大の加速倍率")]
         public float maxSpeedMultiplier = 5f;
 
+        [Tooltip("スポットの外にいるときのタイマー進行倍率。\n" +
+                 "★0にすると『スポットにいる間しか孵化が進まない』ルールになる。\n" +
+                 "卵を放置しても勝てる問題への対処で、プレイヤーは必ず取りに行く必要がある。\n" +
+                 "0.2などにすると『外でもゆっくりは進む』救済寄りの設定にできる")]
+        public float outsideSpeedMultiplier = 0f;
+
         [Tooltip("baseからmaxまで伸びきるのにかかる連続滞在秒数。外に出ると0に戻る")]
         public float rampUpSeconds = 3f;
 
@@ -154,7 +160,7 @@ namespace Gameplay
             else
             {
                 _dwellTime = 0f;
-                CurrentSpeedMultiplier = 1f;
+                CurrentSpeedMultiplier = outsideSpeedMultiplier;
                 if (_audioSource != null) _audioSource.pitch = 1f;
             }
         }
@@ -243,6 +249,14 @@ namespace Gameplay
         {
             if (!spotEnabled)
             {
+                // スポットを出さない設定で、かつ外の進行倍率が0だと
+                // 孵化する手段が無くなり詰む。その場合だけ通常進行に戻す。
+                if (outsideSpeedMultiplier <= 0f)
+                {
+                    Debug.LogWarning($"[{nameof(SweetSpotController)}] spotEnabled=false かつ " +
+                                     "outsideSpeedMultiplier=0 では孵化できないため、外の進行を1.0に戻します。", this);
+                    outsideSpeedMultiplier = 1f;
+                }
                 DeactivateSpot();
                 return;
             }
@@ -271,7 +285,9 @@ namespace Gameplay
         {
             IsEggInside = false;
             _dwellTime = 0f;
-            CurrentSpeedMultiplier = 1f;
+            // PLAYING外(タイトル/リザルト)ではタイマー自体が止まっているので値は影響しないが、
+            // 外にいる扱いなので外の倍率に合わせておく
+            CurrentSpeedMultiplier = outsideSpeedMultiplier;
 
             if (_audioSource != null)
             {
