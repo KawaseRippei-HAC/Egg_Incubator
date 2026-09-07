@@ -188,6 +188,9 @@ public class FeedbackController : MonoBehaviour
              "ここではリトライ時のリセットのためだけに参照する")]
     public HatchShowcaseController hatchShowcaseController;
 
+    [Tooltip("孵化・破壊の『瞬間』を強調する衝撃演出(ヒットストップ/Bloom/色収差/フラッシュ)")]
+    public ImpactFxController impactFxController;
+
     [Header("ひび割れの出方")]
     [Tooltip("進行度(0〜1)を、ひび割れの見え方(_CrackAmount)へ変換するカーブ。\n" +
              "そのまま渡すとゲーム中盤までヒビが『点』のままで見えないため、序盤を持ち上げる。\n" +
@@ -314,6 +317,10 @@ public class FeedbackController : MonoBehaviour
         audioController?.PlaySuccess(); // 任意。破片音を既存スクリプト側(hatchAudioSource)で鳴らす場合は空実装のままでよい(3.5節)
         audioController?.PlayBGM(AudioController.BGMType.ResultSuccess);
         audioController?.StopRolling();
+        // 孵化した「瞬間」に閃光+Bloom+ヒットストップ。
+        // フラッシュはUIController.ShowSuccessResult()から移設した(あちらは3秒後に呼ばれるため、
+        // 一番の見せ場ではなくリザルト画面と同時に光ってしまっていた)。
+        impactFxController?.PlaySuccessImpact();
         // uiController.ShowSuccessResult()はここでは呼ばない。GameManager.SuccessSequence()が
         // successResultDelay分の演出待ちをした後に個別に呼ぶ設計(GameManager.cs実装より判明)。
     }
@@ -343,6 +350,8 @@ public class FeedbackController : MonoBehaviour
         audioController?.PlayFailure(); // 任意。既存スクリプト側(breakAudioSource)運用でも可(3.5節)
         audioController?.PlayBGM(AudioController.BGMType.ResultFailure);
         audioController?.StopRolling();
+        // 割れた「瞬間」に短く鋭いヒットストップ+赤フラッシュ
+        impactFxController?.PlayFailureImpact();
         // uiController.ShowFailureResult()はここでは呼ばない。GameManager.HandleGroundImpact()が
         // 直後に個別に呼ぶ設計(GameManager.cs実装より判明)。
     }
@@ -391,6 +400,8 @@ public class FeedbackController : MonoBehaviour
 
         cameraController?.ResetCamera();
         hatchShowcaseController?.ResetShowcase();
+        // 演出中にリトライされてもTime.timeScaleが落ちたまま残らないよう必ず戻す
+        impactFxController?.ResetFx();
         audioController?.PlayBGM(AudioController.BGMType.Title);
         audioController?.StopRolling();
         uiController?.ShowTitle();

@@ -281,6 +281,60 @@ MonoBehaviour:
     modifyNameEnabled: 1
   modified: 0
   modifiedChildren: 0
+--- !u!1 &172496140
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 172496141}
+  - component: {fileID: 172496142}
+  m_Layer: 0
+  m_Name: ImpactFx
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &172496141
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 172496140}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 875637736}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &172496142
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 172496140}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: be9021be56bde4266b7143c0f81945c2, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ImpactFxController
+  _volume: {fileID: 846574474}
+  _uiController: {fileID: 1968507834}
+  hitStopScale: 0.05
+  failureHitStop: 0.12
+  successHitStop: 0.18
+  hitStopRecover: 0.25
+  bloomSpike: 3.5
+  bloomDecay: 0.7
+  chromaticSpike: 0.85
+  chromaticDecay: 0.5
 --- !u!1 &236180036
 GameObject:
   m_ObjectHideFlags: 0
@@ -310,7 +364,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: cf37986fc0ef4eea8a71f01cf956492b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Gameplay.TimerManager
-  timeLimit: 300
+  timeLimit: 10
 --- !u!4 &236180038
 Transform:
   m_ObjectHideFlags: 0
@@ -17771,6 +17825,10 @@ PrefabInstance:
     m_TransformParent: {fileID: 0}
     m_Modifications:
     - target: {fileID: 462303100719155955, guid: 65c29cb863e074ae1bbdeb9d23c4ebc0, type: 3}
+      propertyPath: impactFxController
+      value: 
+      objectReference: {fileID: 172496142}
+    - target: {fileID: 462303100719155955, guid: 65c29cb863e074ae1bbdeb9d23c4ebc0, type: 3}
       propertyPath: eggCrackGlowController
       value: 
       objectReference: {fileID: 1419076908}
@@ -17891,6 +17949,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 6344892050880691786, guid: 65c29cb863e074ae1bbdeb9d23c4ebc0, type: 3}
       insertIndex: -1
       addedObject: {fileID: 880333265}
+    - targetCorrespondingSourceObject: {fileID: 6344892050880691786, guid: 65c29cb863e074ae1bbdeb9d23c4ebc0, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 172496141}
     m_AddedComponents:
     - targetCorrespondingSourceObject: {fileID: 5947544358899267932, guid: 65c29cb863e074ae1bbdeb9d23c4ebc0, type: 3}
       insertIndex: -1

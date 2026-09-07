@@ -32,6 +32,11 @@ public class UIController : MonoBehaviour
     public Color successFlashColor = new Color(1f, 0.9f, 0.4f, 0.5f);
     public float flashDuration = 0.4f;
 
+    [Tooltip("フラッシュの減衰カーブ(横=経過0〜1、縦=不透明度の倍率)。\n" +
+             "既定は一瞬で最大→素早く落ちて尾を引く形。空にすると線形")]
+    public AnimationCurve flashCurve = new AnimationCurve(
+        new Keyframe(0f, 1f), new Keyframe(0.15f, 0.55f), new Keyframe(1f, 0f));
+
     private Coroutine _flashRoutine;
 
     public void ShowTitle()
@@ -54,7 +59,10 @@ public class UIController : MonoBehaviour
         SetActiveSafe(titleUI, false);
         SetActiveSafe(resultUI, true);
         if (resultBackground != null) resultBackground.color = successColor;
-        FlashSuccess();
+        // ★フラッシュはここでは出さない。
+        // ShowSuccessResult()はGameManagerがsuccessResultDelay(3秒)待ってから呼ぶため、
+        // ここで光らせると「孵化した瞬間」ではなく「リザルト画面が出た瞬間」に光ってしまう。
+        // 現在はImpactFxController.PlaySuccessImpact()がイベントの瞬間に発火させる。
         ShowRetry();
     }
 
@@ -64,7 +72,7 @@ public class UIController : MonoBehaviour
         SetActiveSafe(titleUI, false);
         SetActiveSafe(resultUI, true);
         if (resultBackground != null) resultBackground.color = failureColor;
-        FlashDanger();
+        // 成功側と同じ理由でここでは光らせない(ImpactFxControllerが衝突の瞬間に発火させる)
         ShowRetry();
     }
 
@@ -102,8 +110,12 @@ public class UIController : MonoBehaviour
         float t = 0f;
         while (t < flashDuration)
         {
-            t += Time.deltaTime;
-            flashImage.alpha = Mathf.Lerp(color.a, 0f, t / flashDuration);
+            // ヒットストップ(ImpactFxControllerがTime.timeScaleを落とす)の影響を受けないよう実時間で進める
+            t += Time.unscaledDeltaTime;
+            float p = Mathf.Clamp01(t / flashDuration);
+            // 線形だとぼんやり消えるだけなので、立ち上がりは瞬間・減衰は速く落として尾を引かせる
+            float k = flashCurve != null && flashCurve.length > 0 ? flashCurve.Evaluate(p) : 1f - p;
+            flashImage.alpha = color.a * k;
             yield return null;
         }
         flashImage.alpha = 0f;
