@@ -202,19 +202,25 @@ namespace Gameplay
             // TODO: PLAYING状態での毎フレーム更新処理（Timer, progress, dangerLevelの更新など）
             if (gameState == GameState.PLAYING && _timerManager != null)
             {
-                float speedMultiplier = 1.0f;
+                // 加速倍率はSweetSpotControllerが持つ(連続滞在で3倍→5倍に伸びる)。
+                // 以前はここに3.0fがハードコードされていて、滞在時間の概念が無かった。
+                float speedMultiplier = _sweetSpotController != null
+                    ? _sweetSpotController.CurrentSpeedMultiplier
+                    : 1.0f;
 
-                if (_sweetSpotController != null && _sweetSpotController.IsEggInside)
-                {
-                    speedMultiplier = 3.0f;
-                }
-                
                 _timerManager.UpdateTimer(speedMultiplier);
                 
                 gameProgress = _timerManager.GetProgress();
                 if (_difficultyManager != null)
                 {
                     Proto.Core.DifficultyParams currentDifficulty = _difficultyManager.GetDifficultyParams(gameProgress);
+
+                    // スイートスポットに入っている間は卵の暴れる力も強くする。
+                    // 「速く進むがそのぶん危ない」= 攻めるか守るかの選択にするため。
+                    if (_sweetSpotController != null)
+                    {
+                        currentDifficulty.forceMultiplier *= _sweetSpotController.CurrentForceMultiplier;
+                    }
 
                     // 2025/08/29修正: EggController.csが Proto.Core.DifficultyParams を直接使うように
                     // 統一されたため、以前の変換コード(global::DifficultyParamsへの詰め替え)は不要になった。

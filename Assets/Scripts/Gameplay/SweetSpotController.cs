@@ -10,6 +10,34 @@ namespace Gameplay
         [Tooltip("サークルが移動するスピード（数値が高いほど速い）")]
         public float moveSpeed = 1.5f;
 
+        [Header("リスクと報酬")]
+        // ★このゲームで唯一の能動的な選択肢。
+        // 元は「入ると3倍速」というだけのボーナスだったが、進行度が上がると難易度も
+        // 上がる仕組みなので、実際にはハイリスク・ハイリターンになっていた。
+        // それがプレイヤーに全く伝わっていなかったため、リスクを見せたうえで
+        // 報酬側も伸ばし、「攻めるか守るか」の選択にする。
+        [Tooltip("入った直後のタイマー加速倍率")]
+        public float baseSpeedMultiplier = 3f;
+
+        [Tooltip("居続けたときに到達する最大の加速倍率")]
+        public float maxSpeedMultiplier = 5f;
+
+        [Tooltip("baseからmaxまで伸びきるのにかかる連続滞在秒数。外に出ると0に戻る")]
+        public float rampUpSeconds = 3f;
+
+        [Tooltip("滞在中に卵の暴れる力へ掛ける倍率。1より大きいほど『おいしいが危ない』場所になる")]
+        public float forceMultiplierWhileInside = 1.5f;
+
+        [Tooltip("出現位置の内側の下限(spawnRadiusに対する割合)。0.5なら中心寄り半分には出ない。\n" +
+                 "中心の安全地帯に出さないことで『取りに行く=端に寄る』構造を作る")]
+        [Range(0f, 0.95f)] public float minSpawnRadiusRatio = 0.5f;
+
+        /// <summary>現在のタイマー加速倍率。GameManagerが毎フレーム参照する</summary>
+        public float CurrentSpeedMultiplier { get; private set; } = 1f;
+
+        /// <summary>卵が中にいる間、難易度のforceMultiplierへ掛ける倍率(外なら1)</summary>
+        public float CurrentForceMultiplier => IsEggInside ? forceMultiplierWhileInside : 1f;
+
         [Tooltip("フライパン面に接する高さ(親pan_mainのローカルY)。\n" +
                  "★エリアが面に沈む・浮く場合はここを調整する。\n" +
                  "以前はSetNewTargetPosition()内に-0.1がハードコードされており、\n" +
@@ -49,6 +77,7 @@ namespace Gameplay
         public bool IsEggInside { get; private set; }
 
         private float timer;
+        private float _dwellTime;
         private Vector3 targetLocalPosition;
 
         private AudioSource _audioSource;
@@ -100,7 +129,34 @@ namespace Gameplay
 
             transform.localPosition = Vector3.MoveTowards(transform.localPosition, targetLocalPosition, Time.deltaTime * moveSpeed);
 
+            UpdateDwell();
             UpdateAppearance();
+        }
+
+        /// <summary>
+        /// 連続滞在時間に応じてタイマー加速倍率を伸ばす。
+        /// 一度でも外に出たら0へ戻るので、「入り直し」では稼げない。
+        /// </summary>
+        private void UpdateDwell()
+        {
+            if (IsEggInside)
+            {
+                _dwellTime += Time.deltaTime;
+                float t = rampUpSeconds > 0f ? Mathf.Clamp01(_dwellTime / rampUpSeconds) : 1f;
+                CurrentSpeedMultiplier = Mathf.Lerp(baseSpeedMultiplier, maxSpeedMultiplier, t);
+
+                // 倍率が伸びていることを音でも伝える(SEのピッチを上げる)
+                if (_audioSource != null)
+                {
+                    _audioSource.pitch = Mathf.Lerp(1f, 1.35f, t);
+                }
+            }
+            else
+            {
+                _dwellTime = 0f;
+                CurrentSpeedMultiplier = 1f;
+                if (_audioSource != null) _audioSource.pitch = 1f;
+            }
         }
 
         /// <summary>
@@ -142,8 +198,13 @@ namespace Gameplay
         
         private void SetNewTargetPosition()
         {
-            Vector2 randomCircle = Random.insideUnitCircle * spawnRadius;
-            targetLocalPosition = new Vector3(randomCircle.x, heightOnPan, randomCircle.y);
+            // 中心付近には出さず、minSpawnRadiusRatio〜1.0のリング上に出す。
+            // 「取りに行く = フライパンの端に寄る = 落ちるリスクを取る」構造を作るため。
+            Vector2 dir = Random.insideUnitCircle.normalized;
+            if (dir.sqrMagnitude < 0.0001f) dir = Vector2.right;
+            float r = Random.Range(spawnRadius * minSpawnRadiusRatio, spawnRadius);
+
+            targetLocalPosition = new Vector3(dir.x * r, heightOnPan, dir.y * r);
         }
 
         private void OnTriggerEnter(Collider other)
@@ -178,9 +239,13 @@ namespace Gameplay
         {
             gameObject.SetActive(true);
             SetNewTargetPosition();
-            transform.localPosition = targetLocalPosition;
+            // リング上に出るようになったので、いきなりそこへワープすると目立つ。
+            // 中心から出現させてMoveTowardsで寄っていく形にする。
+            transform.localPosition = new Vector3(0f, heightOnPan, 0f);
             timer = 0f;
             _pulseTime = 0f;
+            _dwellTime = 0f;
+            CurrentSpeedMultiplier = 1f;
             IsEggInside = false;
 
             // 前ラウンドの拍動・色が残らないよう初期状態へ戻す
@@ -195,6 +260,8 @@ namespace Gameplay
         public void DeactivateSpot()
         {
             IsEggInside = false;
+            _dwellTime = 0f;
+            CurrentSpeedMultiplier = 1f;
 
             if (_audioSource != null)
             {

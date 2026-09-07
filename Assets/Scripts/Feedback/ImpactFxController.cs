@@ -51,6 +51,19 @@ public class ImpactFxController : MonoBehaviour
     [Tooltip("FOVが元へ戻るまでの時間(実時間・秒)")]
     public float fovKickRecover = 0.45f;
 
+    [Header("危機一髪 (落ちそうになってから持ち直した瞬間)")]
+    [Tooltip("スローにする倍率。決着の演出より控えめにする")]
+    [Range(0.05f, 1f)] public float nearMissTimeScale = 0.35f;
+
+    [Tooltip("スローが続く時間(実時間・秒)")]
+    public float nearMissDuration = 0.12f;
+
+    [Tooltip("元の速度へ戻すのにかける時間(実時間・秒)")]
+    public float nearMissRecover = 0.3f;
+
+    [Tooltip("危機一髪のFOVキック。決着より弱くする")]
+    public float nearMissFovKick = -6f;
+
     [Header("色収差の瞬間的な増幅")]
     [Tooltip("この値まで一瞬色収差を上げる(0〜1)")]
     [Range(0f, 1f)] public float chromaticSpike = 0.85f;
@@ -99,6 +112,43 @@ public class ImpactFxController : MonoBehaviour
     {
         _uiController?.FlashDanger();
         Restart(failureHitStop);
+    }
+
+    /// <summary>
+    /// 「危機一髪」。落ちそうになってから持ち直した瞬間に鳴らす。
+    /// 成功/失敗より控えめ(閃光なし、短いスロー、弱いFOVキック)にして、
+    /// 決着の演出と区別がつくようにする。
+    /// </summary>
+    public void PlayNearMiss()
+    {
+        if (_routine != null) StopCoroutine(_routine);
+        _routine = StartCoroutine(NearMissRoutine());
+    }
+
+    private IEnumerator NearMissRoutine()
+    {
+        float baseFixed = Time.fixedDeltaTime / Mathf.Max(Time.timeScale, 0.0001f);
+
+        if (_camera != null) _camera.fieldOfView = _fovBase + nearMissFovKick;
+        SetTimeScale(nearMissTimeScale, baseFixed);
+        yield return new WaitForSecondsRealtime(nearMissDuration);
+
+        float t = 0f;
+        float recover = Mathf.Max(nearMissRecover, 0.0001f);
+        while (t < recover)
+        {
+            t += Time.unscaledDeltaTime;
+            float p = Mathf.Clamp01(t / recover);
+            SetTimeScale(Mathf.Lerp(nearMissTimeScale, 1f, p), baseFixed);
+            if (_camera != null)
+            {
+                _camera.fieldOfView = Mathf.Lerp(_fovBase + nearMissFovKick, _fovBase, Mathf.SmoothStep(0f, 1f, p));
+            }
+            yield return null;
+        }
+
+        RestoreImmediate(baseFixed);
+        _routine = null;
     }
 
     private void Restart(float hitStopDuration)

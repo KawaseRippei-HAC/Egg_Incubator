@@ -68,17 +68,24 @@ namespace Feedback
             // PLAYING中以外はtargetIntensity=0のまま、下のLerpでビネットが消えていく
             if (_isActive)
             {
-                // 1. 【緑優先】サークル内にいる場合（危険度に関わらず緑にする）
+                float dangerIntensity = _targetDangerLevel > 0.05f
+                    ? _targetDangerLevel * _maxIntensity
+                    : 0f;
+
                 if (_isSweetSpotInside)
                 {
-                    targetColor = _sweetSpotColor;
-                    targetIntensity = _maxIntensity * 0.8f;
+                    // ★以前は「サークル内なら危険度に関わらず緑」だった。
+                    // スイートスポットは端寄りに出現し、滞在中は卵の暴れも強くなる
+                    // ハイリスク・ハイリターンの場所なので、危険を緑で塗り潰すと
+                    // 「おいしいが危ない」という肝心の情報が消えてしまう。
+                    // 緑(報酬)と赤(危険)をブレンドし、強度は両者の大きい方を採る。
+                    targetColor = Color.Lerp(_sweetSpotColor, _dangerColor, _targetDangerLevel);
+                    targetIntensity = Mathf.Max(_maxIntensity * 0.8f, dangerIntensity);
                 }
-                // 2. サークル外であり、かつフライパンの端（危険度がある）場合
-                else if (_targetDangerLevel > 0.05f)
+                else if (dangerIntensity > 0f)
                 {
                     targetColor = _dangerColor;
-                    targetIntensity = _targetDangerLevel * _maxIntensity;
+                    targetIntensity = dangerIntensity;
                 }
             }
 

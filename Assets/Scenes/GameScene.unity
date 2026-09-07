@@ -335,6 +335,10 @@ MonoBehaviour:
   bloomDecay: 0.7
   fovKick: -14
   fovKickRecover: 0.45
+  nearMissTimeScale: 0.35
+  nearMissDuration: 0.12
+  nearMissRecover: 0.3
+  nearMissFovKick: -6
   chromaticSpike: 0.85
   chromaticDecay: 0.5
 --- !u!1 &236180036
@@ -366,7 +370,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: cf37986fc0ef4eea8a71f01cf956492b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Gameplay.TimerManager
-  timeLimit: 10
+  timeLimit: 60
 --- !u!4 &236180038
 Transform:
   m_ObjectHideFlags: 0
@@ -10403,6 +10407,11 @@ MonoBehaviour:
   changeInterval: 4
   spawnRadius: 0.32
   moveSpeed: 1.5
+  baseSpeedMultiplier: 3
+  maxSpeedMultiplier: 5
+  rampUpSeconds: 3
+  forceMultiplierWhileInside: 1.5
+  minSpawnRadiusRatio: 0.5
   heightOnPan: 0.0012132188
   healSE: {fileID: 8300000, guid: 4248d361742684f14bfdef1e7c37ec0d, type: 3}
   pulsePeriod: 1.2

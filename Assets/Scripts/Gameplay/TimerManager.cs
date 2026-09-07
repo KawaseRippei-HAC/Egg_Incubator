@@ -4,7 +4,9 @@ namespace Gameplay
 {
     public class TimerManager : MonoBehaviour
     {
-        [SerializeField] private float timeLimit = 120f;
+        // 落下=即死を維持する設計なので、120秒では1回あたりの投資が大きすぎる。
+        // 60秒ならリトライ性と展示映えが両立する。
+        [SerializeField] private float timeLimit = 60f;
         private float elapsedTime = 0f;
         private bool isRunning = false;
 

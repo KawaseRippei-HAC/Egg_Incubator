@@ -198,6 +198,16 @@ public class FeedbackController : MonoBehaviour
     public AnimationCurve crackRevealCurve = new AnimationCurve(
         new Keyframe(0f, 0f), new Keyframe(0.3f, 0.48f), new Keyframe(1f, 1f));
 
+    [Header("危機一髪 (落ちそうになってから持ち直した瞬間)")]
+    [Tooltip("この危険度を超えると『落ちそう』とみなす")]
+    [Range(0f, 1f)] public float nearMissEnterDanger = 0.85f;
+
+    [Tooltip("『落ちそう』のあとここまで戻ったら危機一髪として発火する")]
+    [Range(0f, 1f)] public float nearMissExitDanger = 0.5f;
+
+    [Tooltip("連発を防ぐクールダウン(秒)")]
+    public float nearMissCooldown = 3f;
+
     [Header("スイートスポット中の卵の演出")]
     [Tooltip("スイートスポットに入っている間、卵の輪郭を光らせる強さ")]
     [Range(0f, 1f)] public float sweetSpotEggGlow = 1f;
@@ -261,6 +271,42 @@ public class FeedbackController : MonoBehaviour
         heartbeatController?.UpdateHeartbeat(_currentDanger);
         hapticController?.PlayHeartbeat(_currentDanger);
         cameraController?.PlayDangerShake(_currentDanger);
+
+        CheckNearMiss(_currentDanger);
+    }
+
+    /// <summary>
+    /// 「落ちそうになってから持ち直した」瞬間を検出して演出を出す。
+    /// 危険度が上がった瞬間ではなく、下がりきった瞬間に鳴らすのが肝で、
+    /// ヒヤリとした体験を『助かった』という快感に変える。
+    /// </summary>
+    private void CheckNearMiss(float danger)
+    {
+        if (impactFxController == null) return;
+
+        if (danger >= nearMissEnterDanger)
+        {
+            _wasInDanger = true;
+            return;
+        }
+
+        if (!_wasInDanger || danger > nearMissExitDanger) return;
+
+        _wasInDanger = false;
+        if (Time.time < _nextNearMissTime) return;
+
+        _nextNearMissTime = Time.time + nearMissCooldown;
+        impactFxController.PlayNearMiss();
+    }
+
+    private bool _wasInDanger;
+    private float _nextNearMissTime;
+
+    /// <summary>危機一髪の判定状態をリセットする。リトライ時に呼ぶ。</summary>
+    private void ResetNearMiss()
+    {
+        _wasInDanger = false;
+        _nextNearMissTime = 0f;
     }
 
     /// <summary>
@@ -402,6 +448,7 @@ public class FeedbackController : MonoBehaviour
         hatchShowcaseController?.ResetShowcase();
         // 演出中にリトライされてもTime.timeScaleが落ちたまま残らないよう必ず戻す
         impactFxController?.ResetFx();
+        ResetNearMiss();
         audioController?.PlayBGM(AudioController.BGMType.Title);
         audioController?.StopRolling();
         uiController?.ShowTitle();
