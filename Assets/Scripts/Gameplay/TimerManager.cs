@@ -41,6 +41,21 @@ namespace Gameplay
             return elapsedTime > timeLimit;
         }
 
+        /// <summary>
+        /// 孵化までの残り秒数。UI表示用。
+        /// スイートスポットで加速している間はelapsedTimeが速く進むため、
+        /// この値も速く減る(攻めた結果が数字で見える)。
+        /// </summary>
+        public float GetRemainingTime()
+        {
+            return Mathf.Max(0f, timeLimit - elapsedTime);
+        }
+
+        public float GetTimeLimit()
+        {
+            return timeLimit;
+        }
+
         public void ResetTimer()
         {
             elapsedTime = 0f;

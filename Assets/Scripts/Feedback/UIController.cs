@@ -35,6 +35,25 @@ public class UIController : MonoBehaviour
     public string failureBody = "卵が割れた";
     public string retryMessage = "タップしてリトライ";
 
+    [Header("孵化までの残り時間")]
+    [Tooltip("残り時間表示のルート。PLAYING中だけ表示する")]
+    public GameObject timerUI;
+
+    [Tooltip("進行度に応じて横幅が変わるバー。anchorMax.xで伸縮させるのでSpriteは不要")]
+    public RectTransform timerFill;
+
+    [Tooltip("残り秒数の数字。不要ならnullで可")]
+    public TextMeshProUGUI timerText;
+
+    [Tooltip("残りが少ないときのバーの色")]
+    public Color timerUrgentColor = new Color(1f, 0.35f, 0.25f, 1f);
+
+    [Tooltip("通常時のバーの色")]
+    public Color timerNormalColor = new Color(0.45f, 1f, 0.6f, 1f);
+
+    [Tooltip("この残り割合を下回ると色が警告色へ変わる")]
+    [Range(0f, 1f)] public float timerUrgentRatio = 0.25f;
+
     [Header("プレイ中メッセージ")]
     [Tooltip("表示し続けるとゲーム画面の邪魔になるので、この秒数で消す。0以下なら消さない")]
     public float playingMessageDuration = 3f;
@@ -73,6 +92,7 @@ public class UIController : MonoBehaviour
         SetActiveSafe(playingUI, false);
         SetActiveSafe(resultUI, false);
         SetActiveSafe(retryUI, false);
+        SetActiveSafe(timerUI, false);
 
         SetText(titleText, titleMessage);
         StopPlayingMessage();
@@ -83,6 +103,7 @@ public class UIController : MonoBehaviour
         SetActiveSafe(titleUI, false);
         SetActiveSafe(resultUI, false);
         SetActiveSafe(retryUI, false);
+        SetActiveSafe(timerUI, true);
 
         // 「何をするゲームか」を最初の数秒だけ出す。出しっぱなしだと視界の邪魔になる。
         SetActiveSafe(playingUI, true);
@@ -122,6 +143,37 @@ public class UIController : MonoBehaviour
         SetAlpha(playingText, 1f);
     }
 
+    /// <summary>
+    /// 孵化までの残り時間を更新する。GameManagerがPLAYING中に毎フレーム呼ぶ。
+    /// バーは「残っている量」を表すので、progressが進むほど縮む。
+    /// </summary>
+    /// <param name="progress">0〜1の進行度</param>
+    /// <param name="remainingSeconds">残り秒数</param>
+    public void UpdateTimer(float progress, float remainingSeconds)
+    {
+        float remainRatio = Mathf.Clamp01(1f - progress);
+
+        if (timerFill != null)
+        {
+            // anchorMaxのxだけを動かして左詰めで縮ませる(SpriteもfillTypeも不要)
+            Vector2 max = timerFill.anchorMax;
+            max.x = remainRatio;
+            timerFill.anchorMax = max;
+
+            var img = timerFill.GetComponent<Image>();
+            if (img != null)
+            {
+                img.color = remainRatio <= timerUrgentRatio ? timerUrgentColor : timerNormalColor;
+            }
+        }
+
+        if (timerText != null)
+        {
+            // 0.9秒を「0」と出すと嘘になるので切り上げる
+            timerText.text = Mathf.CeilToInt(remainingSeconds).ToString();
+        }
+    }
+
     private static void SetText(TextMeshProUGUI target, string value)
     {
         if (target != null) target.text = value;
@@ -141,6 +193,7 @@ public class UIController : MonoBehaviour
         SetActiveSafe(titleUI, false);
         SetActiveSafe(playingUI, false);
         SetActiveSafe(resultUI, true);
+        SetActiveSafe(timerUI, false);
         StopPlayingMessage();
         if (resultBackground != null) resultBackground.color = successColor;
         SetText(resultTitleText, successTitle);
@@ -158,6 +211,7 @@ public class UIController : MonoBehaviour
         SetActiveSafe(titleUI, false);
         SetActiveSafe(playingUI, false);
         SetActiveSafe(resultUI, true);
+        SetActiveSafe(timerUI, false);
         StopPlayingMessage();
         if (resultBackground != null) resultBackground.color = failureColor;
         SetText(resultTitleText, failureTitle);

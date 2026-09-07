@@ -19,11 +19,18 @@ public class PanController : MonoBehaviour
     private Rigidbody rb;
     private Quaternion targetRot = Quaternion.identity;
 
+    // 「水平」とみなす基準の加速度。CalibrateNeutral()で更新する
+    private Vector3 neutralAccel = Vector3.zero;
+
     void Start()
     {
         // 端末のジャイロセンサーを有効化
         Input.gyro.enabled = true;
         rb = GetComponent<Rigidbody>();
+
+        // 起動時の持ち方を基準にしておく。
+        // 端末を完全に水平に持つ人はいないので、基準を取らないと最初から傾いた状態になる。
+        CalibrateNeutral();
     }
 
     void Update()
@@ -31,12 +38,44 @@ public class PanController : MonoBehaviour
         // スマホの加速度センサーを取得して、傾きを検知
         Vector3 accel = Input.acceleration;
 
+        // ★基準姿勢からの差分で傾きを求める。
+        // 生の加速度をそのまま使うと「端末を完全に水平に持つ」ことが暗黙の前提になり、
+        // 寝転がって遊ぶ・机に置く・角度をつけて持つといった姿勢では
+        // 常にフライパンが傾いたままになってしまう。
+        Vector3 delta = accel - neutralAccel;
+
         // スマホの縦の傾きと横の傾きを計算し、最大角度で制限します。
-        float pitch = Mathf.Clamp(accel.y * sensitivity * maxAngle, -maxAngle, maxAngle);
-        float roll = Mathf.Clamp(-accel.x * sensitivity * maxAngle, -maxAngle, maxAngle);
+        float pitch = Mathf.Clamp(delta.y * sensitivity * maxAngle, -maxAngle, maxAngle);
+        float roll = Mathf.Clamp(-delta.x * sensitivity * maxAngle, -maxAngle, maxAngle);
 
         // 目的となるフライパンの角度を作成
         targetRot = Quaternion.Euler(pitch, 0f, roll);
+    }
+
+    /// <summary>
+    /// 「今この持ち方」を水平の基準にする。UIのリセットボタンから呼ぶ。
+    /// 押した瞬間の加速度を覚え、以後はそこからの差分で傾きを計算する。
+    /// </summary>
+    public void CalibrateNeutral()
+    {
+        Vector3 accel = Input.acceleration;
+
+        // エディタでは加速度が常にゼロ。そのまま基準にしても問題ないが、
+        // 実機で値が取れていない場合の保険として、ほぼ無入力なら
+        // 一般的な「やや手前に傾けて持つ」姿勢を仮の基準にする。
+        if (accel.sqrMagnitude < 0.01f)
+        {
+            neutralAccel = Vector3.zero;
+        }
+        else
+        {
+            neutralAccel = accel;
+        }
+
+        // 基準を取り直した瞬間にフライパンが跳ねないよう、目標角も水平へ戻す
+        targetRot = Quaternion.identity;
+
+        Debug.Log($"[PanController] 傾きの基準をリセットしました。neutral={neutralAccel}");
     }
 
     void FixedUpdate()

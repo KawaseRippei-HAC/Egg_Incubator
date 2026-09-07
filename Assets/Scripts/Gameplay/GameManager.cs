@@ -187,7 +187,9 @@ namespace Gameplay
         public void Update()
         {
             // タップでの進行操作: TITLE中のタップでStartIntro()、RESULT中のタップでRetry()
-            if (Input.GetMouseButtonDown(0))
+            // UIボタン(傾きリセット等)の上をタップしたときは、画面タップとして扱わない。
+            // これが無いと、ボタンを押した瞬間にStartIntro()やRetry()まで走ってしまう。
+            if (Input.GetMouseButtonDown(0) && !IsPointerOverUI())
             {
                 PlayTapFeedback();
                 if (gameState == GameState.TITLE)
@@ -211,6 +213,13 @@ namespace Gameplay
                 _timerManager.UpdateTimer(speedMultiplier);
                 
                 gameProgress = _timerManager.GetProgress();
+
+                // 孵化までの残り時間表示。スイートスポットで加速している間は
+                // ここが目に見えて速く減るので、攻めた結果が数字で分かる。
+                if (_uiController != null)
+                {
+                    _uiController.UpdateTimer(gameProgress, _timerManager.GetRemainingTime());
+                }
                 if (_difficultyManager != null)
                 {
                     Proto.Core.DifficultyParams currentDifficulty = _difficultyManager.GetDifficultyParams(gameProgress);
@@ -288,6 +297,22 @@ namespace Gameplay
                 if (Keyboard.current.rKey.wasPressedThisFrame) Retry();
             }
         }
+        /// <summary>
+        /// 指(またはマウス)がUI要素の上にあるか。UIボタンとの二重反応を防ぐために使う。
+        /// タッチとマウスでAPIが違うので両方見る。
+        /// </summary>
+        private static bool IsPointerOverUI()
+        {
+            var es = UnityEngine.EventSystems.EventSystem.current;
+            if (es == null) return false;
+
+            if (Input.touchCount > 0)
+            {
+                return es.IsPointerOverGameObject(Input.GetTouch(0).fingerId);
+            }
+            return es.IsPointerOverGameObject();
+        }
+
         private void PlayTapFeedback()
         {
             // タップSEはAudioController.tapSe(Feedback.prefabで設定済み)をseSourceで鳴らす。
