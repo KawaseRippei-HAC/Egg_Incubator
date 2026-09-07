@@ -42,6 +42,8 @@ namespace Gameplay
         // 1つしか繋がらず、繋がっていない場所へ落ちるとFALLINGのまま復帰できなかった。
         // 現在は各GroundImpactDetectorが自分でGameManagerを見つけて登録する。
         [SerializeField] private SweetSpotController _sweetSpotController = null;
+        [Tooltip("Easy/Normal/Hardのプリセット。未設定でも動作する(その場合は各コンポーネントの値がそのまま使われる)")]
+        [SerializeField] private DifficultySelector _difficultySelector = null;
 
 
         [Header("References C")]
@@ -135,6 +137,11 @@ namespace Gameplay
             if (gameState != GameState.TITLE && gameState != GameState.RESULT) return;
 
             gameState = GameState.INTRO;
+
+            // 選ばれている難易度をここで確定させる。
+            // タイトルで選び直してからスタートした場合も、この一回で全部反映される。
+            _difficultySelector?.Apply();
+
             Debug.Log("[GameManager] Intro開始！ タイマーはまだ動かず、卵が落下します。");
 
             if (_eggController != null)

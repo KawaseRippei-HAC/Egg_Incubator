@@ -56,6 +56,12 @@ namespace Gameplay
             return timeLimit;
         }
 
+        /// <summary>難易度プリセットから制限時間を差し替える。DifficultySelectorが呼ぶ。</summary>
+        public void SetTimeLimit(float value)
+        {
+            timeLimit = Mathf.Max(1f, value);
+        }
+
         public void ResetTimer()
         {
             elapsedTime = 0f;

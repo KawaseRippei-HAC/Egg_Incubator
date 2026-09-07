@@ -62,6 +62,26 @@ namespace Gameplay
             return parameters;
         }
 
+        /// <summary>
+        /// 難易度プリセット(Easy/Normal/Hard)から各レンジを差し替える。
+        /// DifficultySelectorがゲーム開始時に呼ぶ。
+        /// </summary>
+        public void ApplyRanges(
+            float minForce, float maxForce,
+            float maxInterval, float minInterval,
+            float minSpeed, float maxSpeed,
+            float minAngular, float maxAngular)
+        {
+            minForceMultiplier = minForce;
+            maxForceMultiplier = maxForce;
+            maxForceInterval = maxInterval;
+            minForceInterval = minInterval;
+            minMaxLinearSpeed = minSpeed;
+            maxMaxLinearSpeed = maxSpeed;
+            minMaxAngularSpeed = minAngular;
+            maxMaxAngularSpeed = maxAngular;
+        }
+
         public float CalculateDanger(float normalizedDistance)
         {
             float d = Mathf.Clamp01(normalizedDistance);
