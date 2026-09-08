@@ -163,9 +163,16 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8b260f65d441fbd42b55aae209ba6076, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PanController
-  maxAngle: 25
-  sensitivity: 1.5
-  smoothSpeed: 10
+  maxAngle: 16
+  fullTiltAngle: 25
+  responseExponent: 1.3
+  deadZone: 0.05
+  inputSmoothTime: 0.02
+  smoothSpeed: 45
+  maxAngularSpeed: 300
+  tiltSource: 0
+  invertPitch: 0
+  invertRoll: 0
   panRadius: 0.4
 --- !u!54 &914251274495482308
 Rigidbody:
@@ -191,7 +198,7 @@ Rigidbody:
   m_ImplicitTensor: 1
   m_UseGravity: 0
   m_IsKinematic: 1
-  m_Interpolate: 0
+  m_Interpolate: 1
   m_Constraints: 0
   m_CollisionDetection: 0
 --- !u!1 &3696435427523137860

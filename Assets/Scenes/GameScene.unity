@@ -21475,7 +21475,7 @@ PrefabInstance:
     - target: {fileID: 1586480026551320325, guid: 3f8ef555b749a4546a7330604be02994, type: 3}
       propertyPath: m_Material
       value: 
-      objectReference: {fileID: 1731915144}
+      objectReference: {fileID: 1569992902}
     - target: {fileID: 2475989971690519014, guid: 3f8ef555b749a4546a7330604be02994, type: 3}
       propertyPath: breakParticles
       value: 
@@ -22306,6 +22306,19 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1553781107}
   m_CullTransparentMesh: 1
+--- !u!134 &1569992902
+PhysicsMaterial:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: 
+  serializedVersion: 2
+  m_DynamicFriction: 0.6
+  m_StaticFriction: 0.6
+  m_Bounciness: 0
+  m_FrictionCombine: 0
+  m_BounceCombine: 0
 --- !u!1 &1599732688
 GameObject:
   m_ObjectHideFlags: 0
@@ -22451,13 +22464,17 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 914251274495482308, guid: 0440446705846a3469d241834789b389, type: 3}
+      propertyPath: m_Interpolate
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 2095198503012491189, guid: 0440446705846a3469d241834789b389, type: 3}
       propertyPath: maxAngle
       value: 16
       objectReference: {fileID: 0}
     - target: {fileID: 2095198503012491189, guid: 0440446705846a3469d241834789b389, type: 3}
       propertyPath: smoothSpeed
-      value: 14
+      value: 45
       objectReference: {fileID: 0}
     - target: {fileID: 3414138486906080430, guid: 0440446705846a3469d241834789b389, type: 3}
       propertyPath: m_Name
@@ -22534,19 +22551,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8b260f65d441fbd42b55aae209ba6076, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PanController
---- !u!134 &1731915144
-PhysicsMaterial:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_Name: 
-  serializedVersion: 2
-  m_DynamicFriction: 0.6
-  m_StaticFriction: 0.6
-  m_Bounciness: 0
-  m_FrictionCombine: 0
-  m_BounceCombine: 0
 --- !u!1 &1773807027
 GameObject:
   m_ObjectHideFlags: 0

@@ -79,8 +79,16 @@ public class ImpactFxController : MonoBehaviour
     private Camera _camera;
     private float _fovBase;
 
+    // プロジェクト設定のFixed Timestep。ヒットストップ中はこれを縮めるので、
+    // 復帰先として起動時の値を控えておく。
+    // ★以前は復帰処理で 0.02f をベタ書きしていたため、Project Settings の
+    //   Fixed Timestep を変更すると、演出が終わるたびに勝手に50Hzへ戻っていた。
+    private float _defaultFixedDeltaTime = 0.02f;
+
     private void Awake()
     {
+        _defaultFixedDeltaTime = Time.fixedDeltaTime;
+
         if (_volume == null) _volume = FindFirstObjectByType<Volume>();
         if (_uiController == null) _uiController = FindFirstObjectByType<UIController>();
 
@@ -246,7 +254,7 @@ public class ImpactFxController : MonoBehaviour
             _routine = null;
         }
         // 演出中にリトライされてもtimeScaleが戻らない事故を防ぐ
-        RestoreImmediate(0.02f);
+        RestoreImmediate(_defaultFixedDeltaTime);
     }
 
     // 再生停止やシーン遷移でtimeScaleが0.05のまま残ると、次の再生まで
@@ -254,7 +262,7 @@ public class ImpactFxController : MonoBehaviour
     private void OnDisable()
     {
         Time.timeScale = 1f;
-        Time.fixedDeltaTime = 0.02f;
+        Time.fixedDeltaTime = _defaultFixedDeltaTime;
     }
 }
 
