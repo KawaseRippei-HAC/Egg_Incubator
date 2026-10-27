@@ -68,10 +68,10 @@
   スマートフォンのジャイロセンサー入力を取得し、フライパン（台）の回転・傾きへと直感的に変換するスクリプトです。<br>
 - **`Scripts/GamePlay/EggFallDetector`**<br>
   ゲームループ進行上における落下の判定を行い、ゲームオーバー（失敗）ステートへの移行を管理するスクリプトです。<br>
-  https://github.com/KawaseRippei-HAC/Egg_Incubator/blob/main/Assets/Scripts/Gameplay/DifficultyManager.cs
+  https://github.com/KawaseRippei-HAC/Egg_Incubator/blob/main/Assets/Scripts/Gameplay/EggFallDetector.cs
 - **`Scripts/GamePlay/DifficultyManager`**<br>
   時間経過に伴う力の強さや間隔など、タマゴや台のパラメータを管理・調整するスクリプトです。<br>
-  https://github.com/KawaseRippei-HAC/Egg_Incubator/blob/main/Assets/Scripts/Gameplay/EggFallDetector.cs
+  https://github.com/KawaseRippei-HAC/Egg_Incubator/blob/main/Assets/Scripts/Gameplay/DifficultyManager.cs
 
 ## ✨アピールポイント・苦労した点
 
