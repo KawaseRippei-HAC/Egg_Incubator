@@ -33,37 +33,52 @@
 - プレイ画面の上のゲージを満たすと孵化(クリア)
 - スイートスポットに乗っていると孵化ゲージが進む
 
-### タイトル画面
-<img width="216" height="466" alt="Title" src="https://github.com/user-attachments/assets/a2b455e9-b361-4593-a07d-e412f39a5e75" />
-
-### 通常時
-<img width="216" height="466" alt="PlayScreen" src="https://github.com/user-attachments/assets/440fac93-4c1f-4aa1-8e23-0bb98e2cf451" />
-
-### スイートスポット時
-<img width="216" height="466" alt="SweetSpot" src="https://github.com/user-attachments/assets/53cf73ab-45fb-4c9b-833d-6877b1944aeb" />
-
-### クリア時リザルト
-<img width="216" height="466" alt="Result_Clear" src="https://github.com/user-attachments/assets/fa67d52a-3304-4bbe-9ac5-e5e5f77a1806" />
+<table>
+  <tr>
+    <td align="center">
+      <b>タイトル画面</b><br>
+      <img width="216" height="466" alt="Title" src="https://github.com/user-attachments/assets/a2b455e9-b361-4593-a07d-e412f39a5e75" />
+    </td>
+    <td align="center">
+      <b>通常時</b><br>
+      <img width="216" height="466" alt="PlayScreen" src="https://github.com/user-attachments/assets/440fac93-4c1f-4aa1-8e23-0bb98e2cf451" />
+    </td>
+  </tr>
+  <tr>
+    <td align="center">
+      <b>スイートスポット時</b><br>
+      <img width="216" height="466" alt="SweetSpot" src="https://github.com/user-attachments/assets/53cf73ab-45fb-4c9b-833d-6877b1944aeb" />
+    </td>
+    <td align="center">
+      <b>クリア時リザルト</b><br>
+      <img width="216" height="466" alt="Result_Clear" src="https://github.com/user-attachments/assets/fa67d52a-3304-4bbe-9ac5-e5e5f77a1806" />
+    </td>
+  </tr>
+</table>
 
 ## 💻担当箇所 (ソースコード)
-主にタマゴの物理挙動とジャイロセンサーを利用した入力制御を実装しました。
+主にタマゴの物理挙動とジャイロセンサーを利用した入力制御、およびゲームの難易度管理を実装しました。
 
-- **`Scripts/Input/EggController`**
+- **`Scripts/Input/EggController`**<br>
   タマゴの基本物理挙動および、時間経過や難易度に応じて内部から暴れる処理を制御するスクリプトです。速度や角速度に上限を設け、想定外の吹き飛びを防ぐ安全制御も実装しています。
-- **`Scripts/Input/EggFallDetector`**
+- **`Scripts/Input/EggFallDetector`**<br>
   タマゴがフライパンの判定外に出た（落下した）ことを検知するスクリプトです。落下時にカメラを追従させる演出のトリガーとしても機能します。
-- **`Scripts/PanController/PanController`**
+- **`Scripts/PanController/PanController`**<br>
   スマートフォンのジャイロセンサー入力を取得し、フライパン（台）の回転・傾きへと直感的に変換するスクリプトです。
-- **`Scripts/GamePlay/EggFallDetector`**
+- **`Scripts/GamePlay/EggFallDetector`**<br>
   ゲームループ進行上における落下の判定を行い、ゲームオーバー（失敗）ステートへの移行を管理するスクリプトです。
+- **`Scripts/DifficultyManager`**<br>
+  時間経過に伴う力の強さや間隔など、タマゴや台のパラメータを管理・調整するスクリプトです。
 
 ## ✨アピールポイント・苦労した点
 
 ### アピールポイント
 タマゴの挙動において、物理演算（Rigidbody）に完全に依存するのではなく、スクリプト制御（AddForce / AddTorque）を組み合わせることで、「予測不能すぎない範囲で暴れる」という制御された不規則さを実現しました。また、ジャイロ入力値に感度や最大傾斜角、補間を設けることで細かい手ブレを防ぎ、プレイヤーの操作が直感的にタマゴの反応に繋がる手触りの良い操作性を構築できた点が技術的なアピールポイントです。
 
+さらに、タマゴの挙動や台のパラメータを細かく設定できるよう設計し、`DifficultyManager`を通じて時間経過による力の強さや間隔の変化を一元管理したことで、直感的かつ容易な難易度調整を実現しました。
+
 ### 苦労した点
-- スマホ向けゲームを制作したのが初で、ジャイロ機能についての知識がなく実装について具体的なイメージができなかった点
-  -> 事前の準備期間でジャイロ機能の実装についてUnityリファレンスやQiita等のブログを閲覧し、技術検証を行ったことにより2日間中の1日目での実装がかなった
-- 事前想定よりも、実装をしてみたらたまごの暴れる動きが思ったより激しくなってしまい、理不尽にたまごが落ちてしまう問題が起きた点
-  -> 微妙に中心へ向かう補正を入れることにより(`EggController`)、一回の動きで台の外に落ちないようにし、ユーザー自身のジャイロ操作でカバーできることが可能になった。
+- **ジャイロ機能の理解と実装**
+  スマートフォン向けゲームの開発が初めてであり、ジャイロ機能の実装に関する具体的なイメージを持てませんでした。そのため、事前の準備期間にUnityリファレンスなどの技術記事を調査し、技術検証を行ったことで、2日間の開発期間のうち初日で実装を完了できました。
+- **タマゴの挙動調整と理不尽さの解消**
+  実装後のテストにおいて、タマゴの挙動が想定以上に激しくなり、プレイヤーの操作に関わらずタマゴが落下してしまう問題が発生しました。これに対し、タマゴが中心へ向かうよう微小な補正（`EggController`）を加えることで、一度の動きで盤外に落ちることを防ぎ、プレイヤーのジャイロ操作で十分に対応できるよう改善しました。
