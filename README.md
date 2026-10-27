@@ -37,13 +37,13 @@
 <img width="216" height="466" alt="Title" src="https://github.com/user-attachments/assets/a2b455e9-b361-4593-a07d-e412f39a5e75" />
 
 ### 通常時
-<img width="432" height="932" alt="PlayScreen" src="https://github.com/user-attachments/assets/440fac93-4c1f-4aa1-8e23-0bb98e2cf451" />
+<img width="216" height="466" alt="PlayScreen" src="https://github.com/user-attachments/assets/440fac93-4c1f-4aa1-8e23-0bb98e2cf451" />
 
 ### スイートスポット時
-<img width="432" height="932" alt="SweetSpot" src="https://github.com/user-attachments/assets/53cf73ab-45fb-4c9b-833d-6877b1944aeb" />
+<img width="216" height="466" alt="SweetSpot" src="https://github.com/user-attachments/assets/53cf73ab-45fb-4c9b-833d-6877b1944aeb" />
 
 ### クリア時リザルト
-<img width="432" height="932" alt="Result_Clear" src="https://github.com/user-attachments/assets/fa67d52a-3304-4bbe-9ac5-e5e5f77a1806" />
+<img width="216" height="466" alt="Result_Clear" src="https://github.com/user-attachments/assets/fa67d52a-3304-4bbe-9ac5-e5e5f77a1806" />
 
 ## 💻担当箇所 (ソースコード)
 主にタマゴの物理挙動とジャイロセンサーを利用した入力制御を実装しました。
