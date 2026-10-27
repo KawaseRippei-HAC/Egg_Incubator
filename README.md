@@ -59,7 +59,7 @@
 ## 💻担当箇所 (ソースコード)
 主にタマゴの物理挙動とジャイロセンサーを利用した入力制御、およびゲームの難易度管理を実装しました。
 
-Assets/Scripts/Input
+[Assets/Scripts/Input](https://github.com/KawaseRippei-HAC/Egg_Incubator/tree/main/Assets/Scripts/Input)
 - **`Scripts/Input/EggController`**<br>
   タマゴの基本物理挙動および、時間経過や難易度に応じて内部から暴れる処理を制御するスクリプトです。速度や角速度に上限を設け、想定外の吹き飛びを防ぐ安全制御も実装しています。
 - **`Scripts/Input/EggFallDetector`**<br>
