@@ -66,11 +66,12 @@
   タマゴがフライパンの判定外に出た（落下した）ことを検知するスクリプトです。落下時にカメラを追従させる演出のトリガーとしても機能します。
 - **`Scripts/Input/PanController`**<br>
   スマートフォンのジャイロセンサー入力を取得し、フライパン（台）の回転・傾きへと直感的に変換するスクリプトです。<br>
-  https://github.com/KawaseRippei-HAC/Egg_Incubator/blob/main/Assets/Scripts/Gameplay/DifficultyManager.cs
 - **`Scripts/GamePlay/EggFallDetector`**<br>
-  ゲームループ進行上における落下の判定を行い、ゲームオーバー（失敗）ステートへの移行を管理するスクリプトです。
+  ゲームループ進行上における落下の判定を行い、ゲームオーバー（失敗）ステートへの移行を管理するスクリプトです。<br>
+  https://github.com/KawaseRippei-HAC/Egg_Incubator/blob/main/Assets/Scripts/Gameplay/DifficultyManager.cs
 - **`Scripts/GamePlay/DifficultyManager`**<br>
-  時間経過に伴う力の強さや間隔など、タマゴや台のパラメータを管理・調整するスクリプトです。
+  時間経過に伴う力の強さや間隔など、タマゴや台のパラメータを管理・調整するスクリプトです。<br>
+  https://github.com/KawaseRippei-HAC/Egg_Incubator/blob/main/Assets/Scripts/Gameplay/EggFallDetector.cs
 
 ## ✨アピールポイント・苦労した点
 
