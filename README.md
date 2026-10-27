@@ -34,7 +34,7 @@
 - スイートスポットに乗っていると孵化ゲージが進む
 
 ### タイトル画面
-<img width="432" height="932" alt="Title" src="https://github.com/user-attachments/assets/a2b455e9-b361-4593-a07d-e412f39a5e75" />
+<img width="216" height="466" alt="Title" src="https://github.com/user-attachments/assets/a2b455e9-b361-4593-a07d-e412f39a5e75" />
 
 ### 通常時
 <img width="432" height="932" alt="PlayScreen" src="https://github.com/user-attachments/assets/440fac93-4c1f-4aa1-8e23-0bb98e2cf451" />
